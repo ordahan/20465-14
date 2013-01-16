@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "datatypes.h"
+#include "machine.h"
 #include "symbol.h"
 
 /* TODO: Is this rly the restriction we need?
@@ -20,8 +20,8 @@
 #define ASSEMBLER_DATA_MAX_SIZE_CELLS 2000
 
 /* Typedefs */
-typedef cell_t code_segment_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-typedef cell_t data_segment_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+typedef machine_cell_t code_segment_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+typedef machine_cell_t data_segment_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
 
 /* External functions */
 int assembler_compile(const FILE* pAssemblyFile,
