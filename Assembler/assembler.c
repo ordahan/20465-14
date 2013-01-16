@@ -8,6 +8,9 @@
 
 #include "assembler.h"
 
+/* Internal functions */
+
+
 int assembler_compile(const FILE* pAssemblyFile,
 					  symbol_table_t *o_pSymbols,
 					  code_segment_t *o_pCode,
