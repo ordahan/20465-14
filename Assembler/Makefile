@@ -16,11 +16,11 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(EXECUTABLE) *.o
+	rm -f $(EXECUTABLE) *.o *.out
 	
 # This is done only for my own testing,
 # should not be executed
-TEST_EXECUTALBE=test_$(EXECUTABLE)
+TEST_EXECUTALBE=test_$(EXECUTABLE).out
 TEST_SOURCES=test_main.c test_assembler.c
 TEST_OBJECTS=$(TEST_SOURCES:.c=.o)
 
