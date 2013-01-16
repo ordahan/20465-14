@@ -8,11 +8,13 @@
 
 #include "assembler.h"
 
-/* Internal data types */
-typedef enum
-{
+#include <memory.h>
 
-};
+/* Internal data types */
+//typedef enum
+//{
+//
+//};
 
 /* Internal functions */
 int first_pass();
@@ -29,5 +31,5 @@ int assembler_compile(const FILE* flProgram,
 	memset(*o_pCode, 0, sizeof(*o_pCode));
 	memset(*o_pData, 0, sizeof(*o_pData));
 
-	return -1;
+	return 0;
 }

@@ -11,6 +11,7 @@
 #include <memory.h>
 
 #include "assembler.h"
+#include "instruction.h"
 
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t *symbol_expected,
@@ -27,22 +28,97 @@ int test_assembler()
 	static code_segment_arr_t code_expected;
 	static data_segment_arr_t data_expected;
 
+	symbol_t *pSymbol = NULL;
+	instruction_t *pInstruction = NULL;
+
 	printf("Testing assembler module:\n");
 
+	/**********************************************/
 	init_test_assembler_compile(&symbols_expected,
 								&code_expected,
 								&data_expected);
 
-	printf("	Empty file: \n");
-	test_assembler_compile("tests/empty.as", &symbols_expected, &code_expected, &data_expected);
+	printf("	Empty file: ");
+	assert(0 == test_assembler_compile("tests/empty.as",
+									   &symbols_expected,
+									   &code_expected,
+									   &data_expected));
+	printf("PASSED.\n");
+	/**********************************************/
 
-	printf("	File only with comments: \n");
-	test_assembler_compile("tests/comments.as", &symbols_expected, &code_expected, &data_expected);
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	printf("	File only with comments: ");
+	assert(0 == test_assembler_compile("tests/comments.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	pSymbol = &symbols_expected[0];
+	pSymbol->address = ADDR_EXTERNAL;
+	pSymbol->name = "ThisIsMySymbol!";
+
+	printf("	File only with extern: ");
+	assert(0 == test_assembler_compile("tests/extern.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	/* todo: is entry relocatable or absolute? */
+	pSymbol = &symbols_expected[0];
+	pSymbol->address = ADDR_RELOCATABLE;
+	pSymbol->name = "ThisIsMySymbol!";
+
+	printf("	File only with entry: ");
+	assert(0 == test_assembler_compile("tests/entry.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	pInstruction = (instruction_t*)&code_expected[0];
+	pInstruction->comb = 0;
+	pInstruction->dest_reg = R1;
+	pInstruction->dest_addressing =  OPERAND_ADDR_REGISTER;
+	pInstruction->src_reg = R0; /* NOT REFERENCED, CONVENTION */
+	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
+	pInstruction->opcode = MOV;
+	pInstruction->type = 0;
+	pInstruction->rfu = 0; /* NOT REFERENCED, CONVENTION */
+	code_expected[1].val = 3;
+
+	printf("	File only with one instruction: ");
+	assert(0 == test_assembler_compile("tests/instruction.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected));
+	printf("PASSED.\n");
+	/**********************************************/
 
 	/* todo: test cases for the assembler
-	 * .extern
-	 * .entry
-	 * instruction without label
 	 * instruction with label
 	 * .data
 	 * .string
@@ -71,31 +147,44 @@ int test_assembler_compile(const char* szTestFile,
 	static symbol_table_arr_t symbols;
 	static code_segment_arr_t code;
 	static data_segment_arr_t data;
+	int compile_res = 0;
 
 	init_test_assembler_compile(&symbols, &code, &data);
 
 	/* Open the test file */
 	FILE* fd = fopen(szTestFile, "r");
-	assert(fd != NULL);
+	if(fd == NULL)
+	{
+		return -1;
+	}
 
 	/* Compile it */
-	assert(assembler_compile(fd,
-							 &symbols,
-							 &code,
-							 &data) == 0);
+	compile_res = assembler_compile(fd,
+									 &symbols,
+									 &code,
+									 &data);
+	if (compile_res != 0)
+	{
+		return -2;
+	}
 
 	/* Don't forget to close the test file */
 	fclose(fd);
 
 	/* Check that we got what we expected */
-	assert(0 == memcmp(*symbol_expected,
-					   symbols,
-					   sizeof(symbols)));
-	assert(0 == memcmp(*code_expected,
+	if (0 != memcmp(*symbol_expected,
+				    symbols,
+				    sizeof(symbols)))
+		return -3;
+
+	if (0 != memcmp(*code_expected,
 					   code,
-					   sizeof(code)));
-	assert(0 == memcmp(*data_expected,
+					   sizeof(code)))
+		return -4;
+	if (0 != memcmp(*data_expected,
 					   data,
-					   sizeof(data)));
+					   sizeof(data)))
+		return -5;
+
 	return 0;
 }
