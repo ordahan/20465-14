@@ -3,7 +3,7 @@
 CC=gcc
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=main.c
+SOURCES=main.c assembler.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=assembler
 
