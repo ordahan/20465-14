@@ -5,6 +5,7 @@
  *      Author: Or Dahan 201644929
  */
 
+#include "assembler.h"
 
 int main(int argc, char** argv)
 {
