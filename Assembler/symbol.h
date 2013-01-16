@@ -24,10 +24,10 @@ typedef struct
 	char*			  	name;/*TODO: Ptr or array?*/
 }symbol_t;
 
-typedef symbol_t symbol_table_t[MAX_SYMBOLS];
+typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];
 
-int symbol_add_to_table(symbol_table_t table, symbol_t symbol);
+int symbol_add_to_table(symbol_table_arr_t table, symbol_t symbol);
 
-const symbol_t* symbol_get_from_table_by_name(const symbol_table_t table, const char* szName);
+const symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table, const char* szName);
 
 #endif /* SYMBOL_H_ */

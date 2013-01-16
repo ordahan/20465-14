@@ -13,19 +13,19 @@
 #include "assembler.h"
 
 int test_assembler_compile(const char* szTestFile,
-						   symbol_table_t *symbol_expected,
-						   code_segment_t *code_expected,
-						   data_segment_t *data_expected);
+						   symbol_table_arr_t *symbol_expected,
+						   code_segment_arr_t *code_expected,
+						   data_segment_arr_t *data_expected);
 
-void init_test_assembler_compile(symbol_table_t *symbol_expected,
-						   	   	 code_segment_t *code_expected,
-						   	   	 data_segment_t *data_expected);
+void init_test_assembler_compile(symbol_table_arr_t *symbol_expected,
+						   	   	 code_segment_arr_t *code_expected,
+						   	   	 data_segment_arr_t *data_expected);
 
 int test_assembler()
 {
-	static symbol_table_t symbols_expected;
-	static code_segment_t code_expected;
-	static data_segment_t data_expected;
+	static symbol_table_arr_t symbols_expected;
+	static code_segment_arr_t code_expected;
+	static data_segment_arr_t data_expected;
 
 	printf("Testing assembler module:\n");
 
@@ -54,9 +54,9 @@ int test_assembler()
 }
 
 
-void init_test_assembler_compile(symbol_table_t *symbol_expected,
-						   	   	 code_segment_t *code_expected,
-						   	   	 data_segment_t *data_expected)
+void init_test_assembler_compile(symbol_table_arr_t *symbol_expected,
+						   	   	 code_segment_arr_t *code_expected,
+						   	   	 data_segment_arr_t *data_expected)
 {
 	memset(*symbol_expected, 0, sizeof(*symbol_expected));
 	memset(*code_expected, 0, sizeof(*code_expected));
@@ -64,13 +64,13 @@ void init_test_assembler_compile(symbol_table_t *symbol_expected,
 }
 
 int test_assembler_compile(const char* szTestFile,
-						   symbol_table_t *symbol_expected,
-						   code_segment_t *code_expected,
-						   data_segment_t *data_expected)
+						   symbol_table_arr_t *symbol_expected,
+						   code_segment_arr_t *code_expected,
+						   data_segment_arr_t *data_expected)
 {
-	static symbol_table_t symbols;
-	static code_segment_t code;
-	static data_segment_t data;
+	static symbol_table_arr_t symbols;
+	static code_segment_arr_t code;
+	static data_segment_arr_t data;
 
 	init_test_assembler_compile(&symbols, &code, &data);
 
