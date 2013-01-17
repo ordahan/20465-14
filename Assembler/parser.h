@@ -76,4 +76,21 @@ typedef struct
  */
 int parser_get_statement(statement_t* io_pLine);
 
+/**
+ * Takes a string list of items and fills the given array of items
+ * with ptrs to each of the items on the list.
+ * The number of elements that should be in the output list
+ * is given, and if the list doesn't contain that exact number
+ * of items, an error occurs.
+ * @param szList String containing a comma-separated items.
+ * @param o_arrItems Items found on the list (each item will be a
+ * null-terminated string and any leading or trailing whitespaces
+ * will be truncated from it).
+ * @param nListSize Number of items that should be on the list.
+ * @return 0 for success, anything else on error.
+ */
+int parser_get_items_from_list(char* szList,
+							   char** o_arrItems,
+							   size_t nListSize);
+
 #endif /* PARSER_H_ */

@@ -13,10 +13,12 @@
 #include "parser.h"
 
 int test_get_statement();
+int test_get_items_from_list();
 
 int test_parser()
 {
 	assert(test_get_statement() == 0);
+	assert(test_get_items_from_list() == 0);
 	return 0;
 }
 
@@ -361,6 +363,333 @@ int test_get_statement()
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
+
+	return 0;
+}
+
+#define MAX_NUM_ITEMS 5
+int test_get_items_from_list()
+{
+	char* arrItems[MAX_NUM_ITEMS];
+	char* szList = NULL;
+
+	/**********************************************/
+	printf("	Empty list:");
+	szList = "";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   0));
+	assert(arrItems[0] == NULL);
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   1));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Empty list with whitespaces:");
+	szList = "   		 	";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   0));
+	assert(arrItems[0] == NULL);
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   1));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Only delimiter:");
+	szList = ",";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   0));
+	assert(arrItems[0] == NULL);
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   1));
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   2));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Delimiter with whitespaces:");
+	szList = "   	, 	";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   0));
+	assert(arrItems[0] == NULL);
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   1));
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   2));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	One item in list:");
+	szList = "hello";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   0));
+	/* Equal */
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   1));
+	assert(arrItems[0] == &szList[0]);
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   2));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Two items in list:");
+	szList = "hello,love";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   0));
+	/* Equal */
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   2));
+	assert(arrItems[0] == &szList[0]);
+	assert(arrItems[1] == &szList[6]);
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	N items in list:");
+	szList = "hello,love,nice,to,meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	assert(arrItems[0] == &szList[0]);
+	assert(arrItems[1] == &szList[6]);
+	assert(arrItems[2] == &szList[11]);
+	assert(arrItems[3] == &szList[16]);
+	assert(arrItems[4] == &szList[19]);
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Whitespaces in list:");
+	szList = "hello ,love	,nice,  	to, meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	assert(arrItems[0] == &szList[0]);
+	assert(arrItems[1] == &szList[7]);
+	assert(arrItems[2] == &szList[13]);
+	assert(arrItems[3] == &szList[21]);
+	assert(arrItems[4] == &szList[25]);
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Leading whitespaces before list:");
+	szList = " hello,love,nice,to,meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	assert(arrItems[0] == &szList[1]);
+	assert(arrItems[1] == &szList[7]);
+	assert(arrItems[2] == &szList[12]);
+	assert(arrItems[3] == &szList[17]);
+	assert(arrItems[4] == &szList[20]);
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Trailing whitespaces after list:");
+	szList = "hello,love,nice,to,meet	";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 == parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	assert(arrItems[0] == &szList[0]);
+	assert(arrItems[1] == &szList[6]);
+	assert(arrItems[2] == &szList[11]);
+	assert(arrItems[3] == &szList[16]);
+	assert(arrItems[4] == &szList[19]);
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Illegal delimiter:");
+	szList = "hello,love;nice,to,meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Item contains whitespaces:");
+	szList = "hello,love nice,to,meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   4));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Empty in start:");
+	szList = ",hello,love,nice,to,meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Empty in middle:");
+	szList = "hello,love,,nice,to,meet";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* Might consider equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   7));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Empty in end:");
+	szList = "hello,love,nice,to,meet,";
+	memset(arrItems, NULL, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/* todo: test list parsing
+	 * For each test, expect less,equal,more than list size
+	 * #Empty list (no less)
+	 * #Empty list with whitespaces
+	 * #Only delimiter
+	 * #Delimiter and whitespaces
+	 * #One value
+	 * #Two values
+	 * #N values
+	 * #Whitespaces inside list
+	 * #Leading whitespaces before list
+	 * #Trailing whitespaces after list
+	 * #Items separated by illegal delimiter
+	 * #Item contains whitespaces
+	 * #Items separated by illegal delimiter with whitespaces
+	 * #Empty item in start of list
+	 * #Empty item in middle of list
+	 * #Empty item in end of list
+	 */
 
 	return 0;
 }

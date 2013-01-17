@@ -335,3 +335,18 @@ int parser_check_label_syntax(const char* szLabel)
 
 	return nLabelLength;
 }
+
+int parser_get_items_from_list(char* szList,
+							   char** o_arrItems,
+							   size_t nListSize)
+{
+	/* Split the list to its different tokens */
+
+	/* Clean the current item's whitespaces */
+
+	/* Place the current item in the array (make sure not to
+	 * go out of bounds)
+	 */
+
+	return -1;
+}

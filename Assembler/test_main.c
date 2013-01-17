@@ -15,9 +15,9 @@ extern int test_directive();
 
 int test_main()
 {
+	assert(test_parser() == 0);
 	assert(test_directive() == 0);
 	assert(test_assembler() == 0);
-	assert(test_parser() == 0);
 
 	return 0;
 }

@@ -16,3 +16,9 @@ int directive_compile_dummy_instruction(directive_type_t type,
 {
 	return -1;
 }
+
+int directive_compile_extern(char* szValue,
+							 symbol_table_arr_t io_pSymbols)
+{
+	return -1;
+}
