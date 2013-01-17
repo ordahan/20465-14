@@ -4,3 +4,6 @@
 /main.o
 /test_assembler.o
 /test_main.o
+/test_assembler.out
+/parser.o
+/test_parser.o
