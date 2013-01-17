@@ -50,7 +50,10 @@ typedef enum
 	PRN,
 	JSR,
 	RTS,
-	STOP
+	STOP,
+
+	/* This must be last */
+	ILLEGAL
 }opcode_t;
 
 typedef struct
