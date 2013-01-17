@@ -51,8 +51,7 @@ typedef struct
 {
 	opcode_t	name;
 	const char* modifiers;
-	const char* operand_first;
-	const char* operand_second;
+	const char* operands;
 }instruction_statement_t;
 
 typedef struct
@@ -79,13 +78,12 @@ typedef struct
 
 /**
  * Parses a line of assembly code into its different fields.
+ * Makes sure the syntax of the label (if exists) is valid.
  * Doesn't parse the syntax of the directive's value
  * (valid number, valid string etc) or the instruction's operands
  * (number of operands, register names or even syntax of memory addressing etc),
- * only makes sure the command exists in the language and that the number
- * of operands / values is plausible (for example: no instruction takes 3 operands,
- * operands are divided by a single ',' character, and a .string directive only
- * describes a single string)
+ * only makes sure the command exists in the language.
+ *
  * @param io_pLine Statement to parse (content field is 'input only',
  * 				   is pre-filled and guaranteed not to change)
  * @return 0 if valid statement, any other val otherwise.
