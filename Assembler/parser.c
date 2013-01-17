@@ -17,6 +17,7 @@
 /* Defines */
 #define BLANKS "\t "
 #define LABEL_SEPARATOR ':'
+#define INSTRUCTION_MODIFIER_SEPARATOR "/"
 
 /* fixme: A line that contains only a label and ':'
  * is considered legal(?), and it might take the entire line
@@ -68,6 +69,7 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
 int parser_check_label_syntax(const char* szLabel);
 
 /* Implementations */
+/* fixme: shorter this one */
 int parser_get_statement(statement_t* io_pLine)
 {
 	char* szOperation = NULL;
@@ -139,8 +141,7 @@ int parser_get_statement(statement_t* io_pLine)
 		/* Check if the operation is a directive */
 		if (szOperation[0] == '.')
 		{
-			io_pLine->type = STATEMENT_TYPE_DIRECTIVE;
-			/* Convert the directive type without the '.' */
+			/* Get the directive type */
 			io_pLine->info.directive.name =
 					parser_string_to_directive_type(szOperation + 1);
 			if (io_pLine->info.directive.name == DIRECTIVE_ILLEGAL)
@@ -149,21 +150,32 @@ int parser_get_statement(statement_t* io_pLine)
 				return -3;
 			}
 
+			/* Check values for the directive later,
+			 * this is valid enough for this stage */
+			io_pLine->type = STATEMENT_TYPE_DIRECTIVE;
 			return 0;
 		}
 
 		/* The operation must be some sort of instruction then */
-		io_pLine->info.instruction.name = parser_string_to_instruction_type(szOperation);
+
+		/* Split instruction to 'type' and 'name' */
+		szOperation = strtok(szOperation, INSTRUCTION_MODIFIER_SEPARATOR);
+		io_pLine->info.instruction.modifiers =
+				strtok(NULL, INSTRUCTION_MODIFIER_SEPARATOR);
+
+		io_pLine->info.instruction.name =
+				parser_string_to_instruction_type(szOperation);
 		if (io_pLine->info.instruction.name == ILLEGAL)
 		{
 			/* Style errors generaly? */
 			printf("Error! Illegal instruction: %s\n", szOperation);
 			return -4;
 		}
-		else
-		{
-			/* todo: continue with parsing the type and the operands */
-		}
+
+		/* Check modifiers and operands in evaluation,
+		 * this is valid enough for this stage */
+		io_pLine->type = STATEMENT_TYPE_INSTRUCION;
+		return 0;
 	}
 
 	return -1;
@@ -206,9 +218,9 @@ opcode_t parser_string_to_instruction_type(const char* szInstruction)
 		 "cmp",
 		 "add",
 		 "sub",
-		 "lea",
 		 "not",
 		 "clr",
+		 "lea",
 		 "inc",
 		 "dec",
 		 "jmp",
@@ -219,6 +231,7 @@ opcode_t parser_string_to_instruction_type(const char* szInstruction)
 		 "rts",
 		 "stop"
 		};
+
 	opcode_t currOpcode;
 
 	if (szInstruction == NULL)
