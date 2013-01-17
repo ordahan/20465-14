@@ -17,10 +17,11 @@
 
 #define MAX_LINE_LENGTH 80
 
-/* A line that contains only a label and ':'
- * is considered legal, and it might take the entire line
+/* fixme:
+ * A line that contains only a label and ':'
+ * is considered legal(?), and it might take the entire line
  */
-#define MAX_LABEL_LENGTH (MAX_LINE_LENGTH-1)
+#define MAX_LABEL_LENGTH (31)
 
 /* todo: decide on a good number.. maybe use some other #define
  * for memory size etc?
@@ -78,8 +79,8 @@ typedef struct
 /**
  * Parses a line of assembly code into its different fields.
  * @param io_pLine Statement to parse (content only is pre-filled)
- * @return One of the different statement types.
+ * @return 0 if valid statement, any other val otherwise.
  */
-statement_type_t parser_get_statement(statement_t* io_pLine);
+int parser_get_statement(statement_t* io_pLine);
 
 #endif /* PARSER_H_ */

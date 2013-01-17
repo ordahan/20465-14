@@ -7,7 +7,7 @@
 
 #include "parser.h"
 
-statement_type_t parser_get_statement(const char* szLine, statement_t* o_pLine)
+int parser_get_statement(statement_t* io_pLine)
 {
-	return STATEMENT_TYPE_ERROR;
+	return -1;
 }
