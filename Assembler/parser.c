@@ -10,40 +10,69 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
+
+#include "machine.h"
 
 /* Defines */
 #define BLANKS "\t "
+#define LABEL_SEPARATOR ':'
+
+/* fixme: A line that contains only a label and ':'
+ * is considered legal(?), and it might take the entire line
+ */
+/* fixme: 30 chars .. or 31? not sure */
+#define MAX_LABEL_LENGTH ((unsigned int)30)
 
 /* Internal functions declarations */
 /**
  * Finds out which directive code corresponds to
  * the given string.
  *
- * @param szDirectiveString String representing a directive
+ * @param szDirective String representing a directive
  * (without the leading '.' character)
  *
  * @return type of directive found, or DIRECTIVE_ILLEGAL if
  * the given string isn't legal.
  */
-directive_type_t parser_string_to_directive_type(const char* szDirectiveString);
+directive_type_t parser_string_to_directive_type(const char* szDirective);
 
 /**
  * Finds out which instruction code corresponds to
  * the given string.
  *
- * @param szInstructionString String representing an instruction
+ * @param szInstruction String representing an instruction
  * (including its modifiers, e.g 'mov/1/0/1')
  *
  * @return type of instruction found, or ILLEGAL if
  * the given string isn't legal.
  */
-instruction_type_t parser_string_to_instruction_type(const char* szInstructionString);
+opcode_t parser_string_to_instruction_type(const char* szInstruction);
+
+/**
+ * Finds out which register code corresponds to
+ * the given string.
+ *
+ * @param szRegister String representing a valid GP register
+ *
+ * @return type of register found, or REGISTERS_LAST if
+ * the given string isn't legal.
+ */
+machine_registers_t parser_string_to_register_type(const char* szRegister);
+
+/**
+ * Makes sure that the given label is valid.
+ * @param szLabel Label to check
+ * @return Length of the label, 0 if label have any syntax errors
+ */
+int parser_check_label_syntax(const char* szLabel);
 
 /* Implementations */
 int parser_get_statement(statement_t* io_pLine)
 {
 	char* szOperation = NULL;
-	size_t nLabelLength = 0;
+	char* pLabelEnd = NULL;
+	size_t nLabelSectionLength = 0;
 
 	/* Don't crash the program if we aren't given a
 	 * valid ptr
@@ -64,31 +93,35 @@ int parser_get_statement(statement_t* io_pLine)
 	/* fixme: can there be a label before a comment line?,
 	 * 		  in an empty line?
 	 */
-	/* Search for a label in the beginning of line */
-	io_pLine->pLabel = strtok(io_pLine->szContent, ":");
-
-	/* How long is the label? */
-	if (io_pLine->pLabel != NULL)
+	/* Is there a label in the line? */
+	pLabelEnd = strchr(io_pLine->szContent, LABEL_SEPARATOR);
+	if (pLabelEnd != NULL)
 	{
-		/* Is this really a label or was it just not found? */
-		if (strtok(NULL, ":") == NULL)
+		/* Replace the end separator with \0,
+		 * like strtok would.
+		 */
+		*pLabelEnd = '\0';
+
+		/* Essentialy we have split the content into 2 parts */
+		io_pLine->pLabel = io_pLine->szContent;
+
+		nLabelSectionLength = parser_check_label_syntax(io_pLine->pLabel);
+
+		/* Make sure the label is valid */
+		if (nLabelSectionLength == 0)
 		{
-			io_pLine->pLabel = NULL;
-		}
-		else
-		{
-			nLabelLength = strlen(io_pLine->pLabel);
+			return -4;
 		}
 
-		/* fixme: Check label length here? assert it is legal? */
+		/* Count the \0 as it is a part of the label's section
+		 * in the content.
+		 */
+		nLabelSectionLength++;
 	}
 
-	/* Split the line according to whitespaces, find the first
+	/* Split the line according to whitespaces, fetch the first
 	 * word after the label (if exists) */
-	/* fixme: Assume that the token ':' was found only once? it isn't
-	 * legal in any of the other parts of the line?
-	 */
-	szOperation = strtok(io_pLine->szContent + nLabelLength, BLANKS);
+	szOperation = strtok(io_pLine->szContent + nLabelSectionLength, BLANKS);
 
 	/* Given line is empty*/
 	if (szOperation == NULL)
@@ -137,26 +170,26 @@ int parser_get_statement(statement_t* io_pLine)
 }
 
 /* fixme: make this more elegant */
-directive_type_t parser_string_to_directive_type(const char* szDirectiveString)
+directive_type_t parser_string_to_directive_type(const char* szDirective)
 {
-	if (szDirectiveString == NULL)
+	if (szDirective == NULL)
 		return DIRECTIVE_ILLEGAL;
 
 	/* fixme: Is this case sensitive? */
 	/* Match to a directive */
-	if (strcmp("data", szDirectiveString) == 0)
+	if (strcmp("data", szDirective) == 0)
 	{
 		return DIRECTIVE_DATA;
 	}
-	else if (strcmp("string", szDirectiveString) == 0)
+	else if (strcmp("string", szDirective) == 0)
 	{
 		return DIRECTIVE_STRING;
 	}
-	else if (strcmp("entry", szDirectiveString) == 0)
+	else if (strcmp("entry", szDirective) == 0)
 	{
 		return DIRECTIVE_ENTRY;
 	}
-	else if (strcmp("extern", szDirectiveString) == 0)
+	else if (strcmp("extern", szDirective) == 0)
 	{
 		return DIRECTIVE_EXTERN;
 	}
@@ -166,7 +199,7 @@ directive_type_t parser_string_to_directive_type(const char* szDirectiveString)
 	}
 }
 
-instruction_type_t parser_string_to_instruction_type(const char* szInstructionString)
+opcode_t parser_string_to_instruction_type(const char* szInstruction)
 {
 	static const char* arrInstructionNames[ILLEGAL] =
 		{"mov",
@@ -188,18 +221,104 @@ instruction_type_t parser_string_to_instruction_type(const char* szInstructionSt
 		};
 	opcode_t currOpcode;
 
-	if (szInstructionString == NULL)
+	if (szInstruction == NULL)
 		return ILLEGAL;
 
 	/* fixme: Is this case sensitive? */
 	/* Match to an instruction */
 	for (currOpcode = (opcode_t)0; currOpcode < ILLEGAL; currOpcode++)
 	{
-		if (strcmp(szInstructionString, arrInstructionNames[currOpcode]) == 0)
+		if (strcmp(szInstruction, arrInstructionNames[currOpcode]) == 0)
 		{
 			return currOpcode;
 		}
 	}
 
 	return ILLEGAL;
+}
+
+machine_registers_t parser_string_to_register_type(const char* szRegister)
+{
+	static const char* arrRegisterNames[REGISTERS_LAST] =
+		{
+		"r0",
+		"r1",
+		"r2",
+		"r3",
+		"r4",
+		"r5",
+		"r6",
+		"r7"
+		};
+	machine_registers_t currRegister;
+
+	if (szRegister == NULL)
+		return ILLEGAL;
+
+	/* fixme: Is this case sensitive? */
+	/* Match to an instruction */
+	for (currRegister = (opcode_t)0;
+		 currRegister < REGISTERS_LAST;
+		 currRegister++)
+	{
+		if (strcmp(szRegister, arrRegisterNames[currRegister]) == 0)
+		{
+			return currRegister;
+		}
+	}
+
+	return REGISTERS_LAST;
+}
+
+int parser_check_label_syntax(const char* szLabel)
+{
+	size_t nLabelLength = 0;
+
+	if (szLabel == NULL)
+		return 0;
+
+	/* Must begin with a lower / upper case letter */
+	if (isalpha(szLabel[0]) == 0)
+	{
+		printf("Error! label '%s' doesn't begin with a letter.\n",
+				szLabel);
+		return 0;
+	}
+
+	/* Must not be too long */
+	nLabelLength = strlen(szLabel);
+	if (nLabelLength == 0)
+	{
+		printf("Error! label must contain at least 1 character.\n");
+		return 0;
+	}
+	else
+	{
+		if (nLabelLength > MAX_LABEL_LENGTH)
+		{
+			printf("Error! label '%s' is %u characters long, max length is %u.\n",
+					szLabel,
+					nLabelLength,
+					MAX_LABEL_LENGTH);
+			return 0;
+		}
+	}
+
+	/* Make sure it's not an instruction name */
+	if (parser_string_to_instruction_type(szLabel) != ILLEGAL)
+	{
+		printf("Error! name '%s' is an instruction name, cannot be a label.\n",
+				szLabel);
+		return 0;
+	}
+
+	/* Make sure its not a register name */
+	if (parser_string_to_register_type(szLabel) != REGISTERS_LAST)
+	{
+		printf("Error! name '%s' is a register name, cannot be a label.\n",
+				szLabel);
+		return 0;
+	}
+
+	return nLabelLength;
 }

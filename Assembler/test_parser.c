@@ -199,9 +199,8 @@ int test_get_statement()
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
-	assert(&stResult.szContent[8] == stResult.szOperationData);
+	assert(&stResult.szContent[15] == stResult.szOperationData);
 	assert(stResult.szContent == stResult.pLabel);
-	assert(5 == stResult.lenbLabel); /* Not including ':' separator */
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -230,10 +229,22 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Label too long: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELLO31: .extern foo");
+	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELLO: .extern foo");
 	assert(0 == parser_get_statement(&stResult));
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELLO32: .extern foo");
+	/* fixme: 30 chars .. or 31? not sure */
+	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELL31: .extern foo");
+	assert(0 != parser_get_statement(&stResult));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Label with reserved name: ");
+	memset(&stResult, 0, sizeof(stResult));
+	strcpy(stResult.szContent, "r5: .extern foo");
+	assert(0 != parser_get_statement(&stResult));
+	memset(&stResult, 0, sizeof(stResult));
+	strcpy(stResult.szContent, "rts: .extern foo");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -287,7 +298,6 @@ int test_get_statement()
 	assert(&stResult.szContent[8] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[11] == stResult.szOperationData);
 	assert(stResult.szContent == stResult.pLabel);
-	assert(4 == stResult.lenbLabel); /* Not including ':' separator */
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -314,7 +324,6 @@ int test_get_statement()
 	assert(&stResult.szContent[8] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
 	assert(stResult.szContent == stResult.pLabel);
-	assert(4 == stResult.lenbLabel); /* Not including ':' separator */
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -329,7 +338,6 @@ int test_get_statement()
 	assert(&stResult.szContent[8] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
 	assert(stResult.szContent == stResult.pLabel);
-	assert(4 == stResult.lenbLabel); /* Not including ':' separator */
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -343,7 +351,6 @@ int test_get_statement()
 	assert(&stResult.szContent[14] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[23] == stResult.szOperationData);
 	assert(stResult.szContent == stResult.pLabel);
-	assert(4 == stResult.lenbLabel); /* Not including ':' separator */
 	printf("PASSED.\n");
 	/**********************************************/
 

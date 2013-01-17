@@ -18,12 +18,6 @@
 
 #define MAX_LINE_LENGTH 80
 
-/* fixme:
- * A line that contains only a label and ':'
- * is considered legal(?), and it might take the entire line
- */
-#define MAX_LABEL_LENGTH (30)
-
 /* todo: decide on a good number.. maybe use some other #define
  * for memory size etc?
  */
@@ -56,8 +50,7 @@ typedef struct
 	statement_type_t type;
 
 	char* pLabel;			/* NULL if there is no label */
-	unsigned int lenbLabel;	/* Length of the label in bytes,
-							 * 0 if there is no label */
+
 	union
 	{
 		directive_statement_t 	directive;
