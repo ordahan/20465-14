@@ -11,10 +11,6 @@
 #include <memory.h>
 
 /* Internal data types */
-//typedef enum
-//{
-//
-//};
 
 /* Internal functions */
 int first_pass();

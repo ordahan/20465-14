@@ -44,13 +44,11 @@ typedef struct
 {
 	opcode_t	name;
 	const char* modifiers;
-	const char* operands;
 }instruction_statement_t;
 
 typedef struct
 {
 	directive_type_t name;
-	const char*		 value;
 }directive_statement_t;
 
 typedef struct
@@ -65,6 +63,8 @@ typedef struct
 		directive_statement_t 	directive;
 		instruction_statement_t instruction;
 	}info;
+
+	char* szOperationData;
 
 	char szContent[MAX_LINE_LENGTH]; /* Original line */
 }statement_t;
@@ -82,29 +82,5 @@ typedef struct
  * @return 0 if valid statement, any other val otherwise.
  */
 int parser_get_statement(statement_t* io_pLine);
-
-/**
- * Finds out which directive code corresponds to
- * the given string.
- *
- * @param szDirectiveString String representing a directive
- * (without the leading '.' character)
- *
- * @return type of directive found, or DIRECTIVE_ILLEGAL if
- * the given string isn't legal.
- */
-directive_type_t parser_get_directive(const char* szDirectiveString);
-
-/**
- * Finds out which instruction code corresponds to
- * the given string.
- *
- * @param szInstructionString String representing an instruction
- * (including its modifiers, e.g 'mov/1/0/1')
- *
- * @return type of instruction found, or ILLEGAL if
- * the given string isn't legal.
- */
-instruction_type_t parser_get_instruction(const char* szInstructionString);
 
 #endif /* PARSER_H_ */

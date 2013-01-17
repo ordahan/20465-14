@@ -9,9 +9,37 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
+/* Defines */
 #define BLANKS "\t "
 
+/* Internal functions declarations */
+/**
+ * Finds out which directive code corresponds to
+ * the given string.
+ *
+ * @param szDirectiveString String representing a directive
+ * (without the leading '.' character)
+ *
+ * @return type of directive found, or DIRECTIVE_ILLEGAL if
+ * the given string isn't legal.
+ */
+directive_type_t parser_string_to_directive_type(const char* szDirectiveString);
+
+/**
+ * Finds out which instruction code corresponds to
+ * the given string.
+ *
+ * @param szInstructionString String representing an instruction
+ * (including its modifiers, e.g 'mov/1/0/1')
+ *
+ * @return type of instruction found, or ILLEGAL if
+ * the given string isn't legal.
+ */
+instruction_type_t parser_string_to_instruction_type(const char* szInstructionString);
+
+/* Implementations */
 int parser_get_statement(statement_t* io_pLine)
 {
 	char* szOperation = NULL;
@@ -21,7 +49,7 @@ int parser_get_statement(statement_t* io_pLine)
 	 * valid ptr
 	 */
 	if (io_pLine == NULL)
-		return -1;
+		return 1;
 
 	/* Assume we didn't find anything */
 	io_pLine->type = STATEMENT_TYPE_ERROR;
@@ -73,36 +101,31 @@ int parser_get_statement(statement_t* io_pLine)
 		/* fixme: directive / instruction must appear right after label
 		 * or can there be any whitespaces separating them?
 		 */
+		io_pLine->szOperationData = strtok(NULL, BLANKS);
+
 		/* Check if the operation is a directive */
-		io_pLine->info.directive.name = parser_get_directive(szOperation);
-		if (io_pLine->info.directive.name != DIRECTIVE_ILLEGAL)
+		if (szOperation[0] == '.')
 		{
 			io_pLine->type = STATEMENT_TYPE_DIRECTIVE;
-
-			/* The next part right after the directive should
-			 * be at least one value that it refers to
-			 */
-			/* fixme: this part is actually common to the directive
-			 * and to the instruction.. maybe change the statement struct
-			 * and support this?
-			 */
-			io_pLine->info.directive.value = strtok(NULL, BLANKS);
-
-			/* No value.. syntax error */
-			if (io_pLine->info.directive.value == NULL)
+			/* Convert the directive type without the '.' */
+			io_pLine->info.directive.name =
+					parser_string_to_directive_type(szOperation + 1);
+			if (io_pLine->info.directive.name == DIRECTIVE_ILLEGAL)
 			{
-				return -2;
+				printf("Error! Illegal directive: %s\n", szOperation);
+				return -3;
 			}
 
 			return 0;
 		}
 
-		/* Instruction line */
-		io_pLine->info.instruction.name = parser_get_instruction(szOperation);
+		/* The operation must be some sort of instruction then */
+		io_pLine->info.instruction.name = parser_string_to_instruction_type(szOperation);
 		if (io_pLine->info.instruction.name == ILLEGAL)
 		{
 			/* Style errors generaly? */
-			printf("Error! Illegal instruction: %d\n", szOperation);
+			printf("Error! Illegal instruction: %s\n", szOperation);
+			return -4;
 		}
 		else
 		{
@@ -114,7 +137,7 @@ int parser_get_statement(statement_t* io_pLine)
 }
 
 /* fixme: make this more elegant */
-directive_type_t parser_get_directive(const char* szDirectiveString)
+directive_type_t parser_string_to_directive_type(const char* szDirectiveString)
 {
 	if (szDirectiveString == NULL)
 		return DIRECTIVE_ILLEGAL;
@@ -143,7 +166,40 @@ directive_type_t parser_get_directive(const char* szDirectiveString)
 	}
 }
 
-instruction_type_t parser_get_instruction(const char* szInstructionString)
+instruction_type_t parser_string_to_instruction_type(const char* szInstructionString)
 {
+	static const char* arrInstructionNames[ILLEGAL] =
+		{"mov",
+		 "cmp",
+		 "add",
+		 "sub",
+		 "lea",
+		 "not",
+		 "clr",
+		 "inc",
+		 "dec",
+		 "jmp",
+		 "bne",
+		 "red",
+		 "prn",
+		 "jsr",
+		 "rts",
+		 "stop"
+		};
+	opcode_t currOpcode;
+
+	if (szInstructionString == NULL)
+		return ILLEGAL;
+
+	/* fixme: Is this case sensitive? */
+	/* Match to an instruction */
+	for (currOpcode = (opcode_t)0; currOpcode < ILLEGAL; currOpcode++)
+	{
+		if (strcmp(szInstructionString, arrInstructionNames[currOpcode]) == 0)
+		{
+			return currOpcode;
+		}
+	}
+
 	return ILLEGAL;
 }
