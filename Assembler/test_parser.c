@@ -61,7 +61,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
 	assert(&stResult.szContent[8] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	strcpy(stResult.szContent, ".extern");
 	assert(0 == parser_get_statement(&stResult));
 	strcpy(stResult.szContent, ".extern ");
@@ -77,7 +77,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_ENTRY == stResult.info.directive.name);
 	assert(&stResult.szContent[7] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	strcpy(stResult.szContent, ".entry");
 	assert(0 == parser_get_statement(&stResult));
 	strcpy(stResult.szContent, ".entry ");
@@ -93,7 +93,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -105,7 +105,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -118,7 +118,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -131,7 +131,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -143,7 +143,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_STRING == stResult.info.directive.name);
 	assert(&stResult.szContent[8] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -155,7 +155,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_STRING == stResult.info.directive.name);
 	assert(&stResult.szContent[8] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -167,7 +167,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_STRING == stResult.info.directive.name);
 	assert(&stResult.szContent[8] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -179,7 +179,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
 	assert(&stResult.szContent[18] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -200,7 +200,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
-	assert(stResult.szContent == stResult.pLabel);
+	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -258,7 +258,7 @@ int test_get_statement()
 	assert(RTS == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(NULL == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -271,7 +271,7 @@ int test_get_statement()
 	assert(CLR == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -284,7 +284,7 @@ int test_get_statement()
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -297,7 +297,7 @@ int test_get_statement()
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[9] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[11] == stResult.szOperationData);
-	assert(stResult.szContent == stResult.pLabel);
+	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -310,7 +310,7 @@ int test_get_statement()
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[10] == stResult.szOperationData);
-	assert(NULL == stResult.pLabel);
+	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -323,7 +323,7 @@ int test_get_statement()
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[9] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
-	assert(stResult.szContent == stResult.pLabel);
+	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -337,7 +337,7 @@ int test_get_statement()
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[9] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
-	assert(stResult.szContent == stResult.pLabel);
+	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -350,7 +350,7 @@ int test_get_statement()
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[15] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[23] == stResult.szOperationData);
-	assert(stResult.szContent == stResult.pLabel);
+	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 

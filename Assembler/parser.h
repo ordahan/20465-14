@@ -49,7 +49,7 @@ typedef struct
 {
 	statement_type_t type;
 
-	char* pLabel;			/* NULL if there is no label */
+	char* szLabel;			/* NULL if there is no label */
 
 	union
 	{

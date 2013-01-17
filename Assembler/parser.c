@@ -105,9 +105,9 @@ int parser_get_statement(statement_t* io_pLine)
 		*pLabelEnd = '\0';
 
 		/* Essentialy we have split the content into 2 parts */
-		io_pLine->pLabel = io_pLine->szContent;
+		io_pLine->szLabel = io_pLine->szContent;
 
-		nLabelSectionLength = parser_check_label_syntax(io_pLine->pLabel);
+		nLabelSectionLength = parser_check_label_syntax(io_pLine->szLabel);
 
 		/* Make sure the label is valid */
 		if (nLabelSectionLength == 0)
