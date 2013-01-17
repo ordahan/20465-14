@@ -1,7 +1,7 @@
 # Or Dahan 201644929
 
 CC=gcc
-CFLAGS=-c -Wall -g -O0
+CFLAGS=-c -Wall -g -O0 -ansi
 LDFLAGS=
 SOURCES=main.c assembler.c parser.c
 OBJECTS=$(SOURCES:.c=.o)
