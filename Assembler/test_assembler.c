@@ -15,18 +15,18 @@
 
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t *symbol_expected,
-						   code_segment_arr_t *code_expected,
-						   data_segment_arr_t *data_expected);
+						   code_section_t *code_expected,
+						   data_section_t *data_expected);
 
 void init_test_assembler_compile(symbol_table_arr_t *symbol_expected,
-						   	   	 code_segment_arr_t *code_expected,
-						   	   	 data_segment_arr_t *data_expected);
+						   	   	 code_section_t *code_expected,
+						   	   	 data_section_t *data_expected);
 
 int test_assembler()
 {
 	static symbol_table_arr_t symbols_expected;
-	static code_segment_arr_t code_expected;
-	static data_segment_arr_t data_expected;
+	static code_section_t code_expected;
+	static data_section_t data_expected;
 
 	symbol_t *pSymbol = NULL;
 	instruction_t *pInstruction = NULL;
@@ -99,7 +99,7 @@ int test_assembler()
 								&code_expected,
 								&data_expected);
 
-	pInstruction = (instruction_t*)&code_expected[0];
+	pInstruction = (instruction_t*)&code_expected.content[0];
 	pInstruction->comb = 0;
 	pInstruction->dest_reg = R1;
 	pInstruction->dest_addressing =  OPERAND_ADDR_REGISTER;
@@ -108,7 +108,7 @@ int test_assembler()
 	pInstruction->opcode = MOV;
 	pInstruction->type = 0;
 	pInstruction->rfu = 0; /* NOT REFERENCED, CONVENTION */
-	code_expected[1].val = 3;
+	code_expected.content[1].val = 3;
 
 	printf("	File only with one instruction: ");
 	assert(0 == test_assembler_compile("tests/instruction.as",
@@ -131,22 +131,22 @@ int test_assembler()
 
 
 void init_test_assembler_compile(symbol_table_arr_t *symbol_expected,
-						   	   	 code_segment_arr_t *code_expected,
-						   	   	 data_segment_arr_t *data_expected)
+						   	   	 code_section_t *code_expected,
+						   	   	 data_section_t *data_expected)
 {
 	memset(*symbol_expected, 0, sizeof(*symbol_expected));
-	memset(*code_expected, 0, sizeof(*code_expected));
-	memset(*data_expected, 0, sizeof(*data_expected));
+	memset(code_expected, 0, sizeof(*code_expected));
+	memset(data_expected, 0, sizeof(*data_expected));
 }
 
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t *symbol_expected,
-						   code_segment_arr_t *code_expected,
-						   data_segment_arr_t *data_expected)
+						   code_section_t *code_expected,
+						   data_section_t *data_expected)
 {
 	static symbol_table_arr_t symbols;
-	static code_segment_arr_t code;
-	static data_segment_arr_t data;
+	static code_section_t code;
+	static data_section_t data;
 	int compile_res = 0;
 
 	init_test_assembler_compile(&symbols, &code, &data);
@@ -177,13 +177,13 @@ int test_assembler_compile(const char* szTestFile,
 				    sizeof(symbols)))
 		return -3;
 
-	if (0 != memcmp(*code_expected,
-					   code,
-					   sizeof(code)))
+	if (0 != memcmp(code_expected,
+					&code,
+					sizeof(code)))
 		return -4;
-	if (0 != memcmp(*data_expected,
-					   data,
-					   sizeof(data)))
+	if (0 != memcmp(data_expected,
+					&data,
+					sizeof(data)))
 		return -5;
 
 	return 0;

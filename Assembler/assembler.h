@@ -9,6 +9,7 @@
 #define ASSEMBLER_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "machine.h"
 #include "symbol.h"
@@ -20,8 +21,19 @@
 #define ASSEMBLER_DATA_MAX_SIZE_CELLS 2000
 
 /* Typedefs */
-typedef machine_cell_t code_segment_arr_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-typedef machine_cell_t data_segment_arr_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+typedef struct
+{
+	machine_cell_t content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+	size_t		   length;
+}code_section_t;
+
+typedef struct
+{
+	machine_cell_t content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+	size_t		   length;
+}data_section_t;
+
+/* todo: Add tests for the lengths of the given sections */
 
 /* External functions */
 /**
@@ -32,9 +44,9 @@ typedef machine_cell_t data_segment_arr_t[ASSEMBLER_CODE_MAX_SIZE_CELLS];
  * @param o_pData .data of the program.
  * @return 0 if succeeds, anything else for a compilation error.
  */
-int assembler_compile(const FILE* pAssemblyFile,
+int assembler_compile(FILE* pAssemblyFile,
 					  symbol_table_arr_t *o_pSymbols,
-					  code_segment_arr_t *o_pCode,
-					  data_segment_arr_t *o_pData);
+					  code_section_t *o_pCode,
+					  data_section_t *o_pData);
 
 #endif /* ASSEMBLER_H_ */
