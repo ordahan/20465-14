@@ -13,6 +13,8 @@
 #ifndef PARSER_H_
 #define PARSER_H_
 
+#include "instruction.h"
+
 #define MAX_LINE_LENGTH 80
 
 /* A line that contains only a label and ':'
@@ -31,7 +33,9 @@ typedef enum
 	STATEMENT_TYPE_EMPTY,
 	STATEMENT_TYPE_COMMENT,
 	STATEMENT_TYPE_DIRECTIVE,
-	STATEMENT_TYPE_INSTRUCION
+	STATEMENT_TYPE_INSTRUCION,
+
+	STATEMENT_TYPE_ERROR
 }statement_type_t;
 
 typedef enum
@@ -40,17 +44,42 @@ typedef enum
 	DIRECTIVE_STRING,
 	DIRECTIVE_ENTRY,
 	DIRECTIVE_EXTERN
-}directive_t;
+}directive_type_t;
+
+typedef struct
+{
+	opcode_t	name;
+	const char* modifiers;
+	const char* operands;
+}instruction_statement_t;
+
+typedef struct
+{
+	directive_type_t name;
+	const char*		 value;
+}directive_statement_t;
 
 typedef struct
 {
 	statement_type_t type;
-	char szContent[MAX_LINE_LENGTH];
+
 	char* pLabel;			/* NULL if there is no label */
 	unsigned int lenbLabel;	/* Length of the label in bytes,
 							 * 0 if there is no label */
+	union
+	{
+		directive_statement_t 	directive;
+		instruction_statement_t instruction;
+	}info;
+
+	char szContent[MAX_LINE_LENGTH]; /* Original line */
 }statement_t;
 
-int parser_translate_to_statements(const FILE* flProgram);
+/**
+ * Parses a line of assembly code into its different fields.
+ * @param io_pLine Statement to parse (content only is pre-filled)
+ * @return One of the different statement types.
+ */
+statement_type_t parser_get_statement(statement_t* io_pLine);
 
 #endif /* PARSER_H_ */
