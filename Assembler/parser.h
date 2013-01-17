@@ -21,7 +21,7 @@
  * A line that contains only a label and ':'
  * is considered legal(?), and it might take the entire line
  */
-#define MAX_LABEL_LENGTH (31)
+#define MAX_LABEL_LENGTH (30)
 
 /* todo: decide on a good number.. maybe use some other #define
  * for memory size etc?
@@ -84,8 +84,8 @@ typedef struct
  * (number of operands, register names or even syntax of memory addressing etc),
  * only makes sure the command exists in the language.
  *
- * @param io_pLine Statement to parse (content field is 'input only',
- * 				   is pre-filled and guaranteed not to change)
+ * @param io_pLine Statement to parse - szContent should be filled with the
+ * string that represents the line.
  * @return 0 if valid statement, any other val otherwise.
  */
 int parser_get_statement(statement_t* io_pLine);
