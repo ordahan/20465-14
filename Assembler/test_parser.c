@@ -254,7 +254,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "rts/0");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(RTS == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(NULL == stResult.szOperationData);
@@ -267,7 +267,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "clr/0 r2");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(CLR == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
@@ -280,7 +280,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "mov/0 A,r1");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
@@ -293,7 +293,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "MOFO:mov/0 A,r1");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[9] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[11] == stResult.szOperationData);
@@ -306,7 +306,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "mov/1/0/1 A,r1");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[4] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[10] == stResult.szOperationData);
@@ -319,7 +319,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "MOFO:mov/1/0/1 A,r1");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[9] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
@@ -333,7 +333,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "MOFO:mov/1/0/1 A,r1, x5");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[9] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[15] == stResult.szOperationData);
@@ -346,7 +346,7 @@ int test_get_statement()
 	memset(&stResult, 0, sizeof(stResult));
 	strcpy(stResult.szContent, "MOFO:      mov/1/0/1 		A,		r1	");
 	assert(0 == parser_get_statement(&stResult));
-	assert(STATEMENT_TYPE_INSTRUCION == stResult.type);
+	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[15] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[23] == stResult.szOperationData);

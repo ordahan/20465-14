@@ -174,7 +174,7 @@ int parser_get_statement(statement_t* io_pLine)
 
 		/* Check modifiers and operands in evaluation,
 		 * this is valid enough for this stage */
-		io_pLine->type = STATEMENT_TYPE_INSTRUCION;
+		io_pLine->type = STATEMENT_TYPE_INSTRUCTION;
 		return 0;
 	}
 

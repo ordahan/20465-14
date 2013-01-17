@@ -110,15 +110,34 @@ int first_pass(FILE* flProgram,
 		if (pCurrStatement->type == STATEMENT_TYPE_DIRECTIVE)
 		{
 			/* Handle data/string directive */
-
-			/* Handle extern */
-
-			/* Label */
+			switch(pCurrStatement->info.directive.name)
+			{
+				case (DIRECTIVE_DATA):
+				case (DIRECTIVE_STRING):
+				{
+					if (directive_compile_dummy_instruction(
+											pCurrStatement->info.directive.name,
+											pCurrStatement->szOperationData,
+											pCurrStatement->szLabel,
+											o_pData,
+											o_pSymbols) != 0)
+						nErrorCode = -1;
+					break;
+				}
+				case (DIRECTIVE_EXTERN):
+				{
+					/* todo: Externals */
+					/* fixme: can symbol be .extern'ed twice? */
+					break;
+				}
+				default:
+					break;
+			}
 		}
 		/* An instruction */
-		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCION)
+		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
 		{
-			/* Handle instruction */
+			/* todo: Handle instruction */
 
 			/* Label */
 		}
