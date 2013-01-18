@@ -345,91 +345,105 @@ int parser_check_label_syntax(const char* szLabel)
 	return nLabelLength;
 }
 
-/* fixme: strtok seems to cumbersome.. work this thing differently */
-int parser_get_items_from_list(const char* szList,
-							   const char** o_arrItems,
+typedef enum
+{
+	PARSER_LIST_STATE_INIT,
+	PARSER_LIST_STATE_IN_ITEM,
+	PARSER_LIST_STATE_AFTER_ITEM,
+	PARSER_LIST_STATE_AFTER_DELIMITER
+}parser_list_state_t;
+int parser_get_items_from_list(char* szList,
+							   char** o_arrItems,
 							   size_t nListSize)
 {
-	static char szLocalList[MAX_LIST_LENGTH];
-	char *szCurrToken = NULL;
 	size_t nCurrItem = 0;
-
-	/* Copy the list locally to work on it */
-	strcpy(szLocalList, szList);
+	size_t nCurrCharIdx = 0;
+	parser_list_state_t state = PARSER_LIST_STATE_INIT;
 
 	/* Empty list expected */
 	if (nListSize == 0)
 	{
 		/* Really is empty */
-		if (parser_is_string_empty(szLocalList) == 1)
+		if (parser_is_string_empty(szList) == 1)
 			return 0;
 		/* Garbage found */
 		else
 			return -1;
 	}
 
-	/* Make sure no consecutive delimiters
-	 * appear
-	 */
-	/* fixme: delimiter reuse */
-	if (strstr(szLocalList, ",,") != NULL)
+	/* fixme: null-termination define */
+	for (nCurrCharIdx = 0; szList[nCurrCharIdx] != '\0'; ++nCurrCharIdx)
 	{
-		return -1;
-	}
-	/* Last char can't be a delimiter either */
-	/*fixme: reuse delimiter*/
-	else if(szLocalList[strlen(szLocalList)-1] == ',')
-	{
-		return -1;
-	}
-
-	/* Try filling the array of items */
-	for (nCurrItem = 0; nCurrItem < nListSize; ++nCurrItem)
-	{
-		size_t nItemOffsetInString;
-
-		/* Split the list to its different tokens */
-		if (nCurrItem == 0)
+		/* In the middle of an item */
+		if (state == PARSER_LIST_STATE_IN_ITEM)
 		{
-			char* pFirstDelimiter = strchr(szLocalList, ',');
-
-			/* fixme: delimiters reuse */
-			szCurrToken = strtok(szLocalList, ", \t");
-
-			/* Make sure there is valid content before
-			 * the first delimiter (if exists)
-			 */
-			if (pFirstDelimiter != NULL &&
-				pFirstDelimiter < szCurrToken)
+			/* Whitespace */
+			if (isspace(szList[nCurrCharIdx]) != 0)
 			{
-				return -1;
+				state = PARSER_LIST_STATE_AFTER_ITEM;
 			}
+			/* Delimiter */
+			else if (szList[nCurrCharIdx] == ',')/* fixme: delimiter */
+			{
+				state = PARSER_LIST_STATE_AFTER_DELIMITER;
+			}
+			/* else, keep advancing in the item */
 		}
+		/* Not inside an item */
 		else
 		{
-			/* Get the next item */
-			szCurrToken = strtok(NULL, ", \t");
+			/* Delimiter found */
+			if (szList[nCurrCharIdx] == ',') /* fixme: delimiter */
+			{
+				/* Invalid location */
+				if (state == PARSER_LIST_STATE_AFTER_DELIMITER ||
+					state == PARSER_LIST_STATE_INIT)
+					return -1;
+
+				state = PARSER_LIST_STATE_AFTER_DELIMITER;
+			}
+			/* Started a new item */
+			else if (isspace(szList[nCurrCharIdx]) == 0)
+			{
+				/* Make sure this is either the first one,
+				 * or there is a delimiter preceding us
+				 */
+				if (state != PARSER_LIST_STATE_INIT &&
+					state != PARSER_LIST_STATE_AFTER_DELIMITER)
+					return -1;
+
+				/* Save the item, make sure not to
+				 * go out of bounds */
+				if (nCurrItem >= nListSize)
+					return -1;
+				o_arrItems[nCurrItem] = &szList[nCurrCharIdx];
+				nCurrItem++;
+
+				/* Signal we started parsing a new item */
+				state = PARSER_LIST_STATE_IN_ITEM;
+			}
+			/* else, just a whitespace.. doesn't change anything */
 		}
-
-		/* Make sure that there is an item */
-		if (szCurrToken == NULL ||
-			parser_is_string_empty(szCurrToken) == 1)
-			return -1;
-
-		/* Calculate the offset of the item from
-		 * the start of the local list copy */
-		nItemOffsetInString = szCurrToken - szLocalList;
-
-		/* Locate the item in the original list given */
-		o_arrItems[nCurrItem] = szList + nItemOffsetInString;
 	}
 
-	/* Are there more items than anticipated? */
-	szCurrToken = strtok(NULL, BLANKS);
-	if (szCurrToken != NULL)
+	/* The list must end with either a whitespace,
+	 * an item or nothing at all if nothing is supposed
+	 * to be found.
+	 * Also, Make sure we got the number of items
+	 * we were looking for
+	 */
+	if ((state == PARSER_LIST_STATE_AFTER_ITEM ||
+		 state == PARSER_LIST_STATE_IN_ITEM ||
+		(state == PARSER_LIST_STATE_INIT &&
+		 nListSize == 0)) &&
+		nListSize == nCurrItem)
+	{
+		return 0;
+	}
+	else
+	{
 		return -1;
-
-	return 0;
+	}
 }
 
 int parser_is_string_empty(const char* szString)

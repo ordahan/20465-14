@@ -92,8 +92,8 @@ int parser_get_statement(statement_t* io_pLine);
  * @param nListSize Number of items that should be on the list.
  * @return 0 for success, anything else on error.
  */
-int parser_get_items_from_list(const char* szList,
-							   const char** o_arrItems,
+int parser_get_items_from_list(char* szList,
+							   char** o_arrItems,
 							   size_t nListSize);
 
 #endif /* PARSER_H_ */

@@ -370,7 +370,7 @@ int test_get_statement()
 #define MAX_NUM_ITEMS 5
 int test_get_items_from_list()
 {
-	const char* arrItems[MAX_NUM_ITEMS];
+	char* arrItems[MAX_NUM_ITEMS];
 	char szList[MAX_LIST_LENGTH];
 
 	/**********************************************/
