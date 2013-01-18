@@ -18,6 +18,7 @@
 #define BLANKS "\t "
 #define LABEL_SEPARATOR ':'
 #define INSTRUCTION_MODIFIER_SEPARATOR "/"
+#define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
 
 /* fixme: A line that contains only a label and ':'
  * is considered legal(?), and it might take the entire line
@@ -336,17 +337,60 @@ int parser_check_label_syntax(const char* szLabel)
 	return nLabelLength;
 }
 
-int parser_get_items_from_list(char* szList,
-							   char** o_arrItems,
+int parser_get_items_from_list(const char* szList,
+							   const char** o_arrItems,
 							   size_t nListSize)
 {
-	/* Split the list to its different tokens */
+	static char szLocalList[MAX_LIST_LENGTH];
+	char *szCurrToken = NULL;
+	size_t nCurrItem = 0;
 
-	/* Clean the current item's whitespaces */
+	/* Copy the list locally to work on it */
+	strcpy(szLocalList, szList);
 
-	/* Place the current item in the array (make sure not to
-	 * go out of bounds)
-	 */
+	/* Empty list expected */
+	if (nListSize == 0)
+	{
+		/* Really is empty */
+		if (strtok(szLocalList, BLANKS) == NULL)
+			return 0;
+		/* Garbage found */
+		else
+			return -1;
+	}
 
-	return -1;
+	/* Try filling the array of items */
+	for (nCurrItem = 0; nCurrItem < nListSize; ++nCurrItem)
+	{
+		size_t nItemOffsetInString;
+
+		/* Split the list to its different tokens */
+		if (nCurrItem == 0)
+		{
+			szCurrToken = strtok(szLocalList, ", \t");
+		}
+		else
+		{
+			/* Get the next item */
+			szCurrToken = strtok(NULL, ", \t");
+		}
+
+		/* Make sure that there is an item */
+		if (szCurrToken == NULL)
+			return -1;
+
+		/* Calculate the offset of the item from
+		 * the start of the local list copy */
+		nItemOffsetInString = szCurrToken - szLocalList;
+
+		/* Locate the item in the original list given */
+		o_arrItems[nCurrItem] = szList + nItemOffsetInString;
+	}
+
+	/* Are there more items than anticipated? */
+	szCurrToken = strtok(NULL, BLANKS);
+	if (szCurrToken != NULL)
+		return -1;
+
+	return 0;
 }
