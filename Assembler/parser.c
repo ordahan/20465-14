@@ -69,6 +69,15 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
  */
 int parser_check_label_syntax(const char* szLabel);
 
+/* Internal definitions */
+typedef enum
+{
+	PARSER_LIST_STATE_INIT,
+	PARSER_LIST_STATE_IN_ITEM,
+	PARSER_LIST_STATE_AFTER_ITEM,
+	PARSER_LIST_STATE_AFTER_DELIMITER
+}parser_list_state_t;
+
 /* Implementations */
 /* fixme: shorter this one */
 int parser_get_statement(statement_t* io_pLine)
@@ -337,13 +346,6 @@ int parser_check_label_syntax(const char* szLabel)
 	return nLabelLength;
 }
 
-typedef enum
-{
-	PARSER_LIST_STATE_INIT,
-	PARSER_LIST_STATE_IN_ITEM,
-	PARSER_LIST_STATE_AFTER_ITEM,
-	PARSER_LIST_STATE_AFTER_DELIMITER
-}parser_list_state_t;
 int parser_get_items_from_list(char* szList,
 							   char** o_arrItems,
 							   size_t nListSize)
