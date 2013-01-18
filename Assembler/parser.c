@@ -69,6 +69,14 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
  */
 int parser_check_label_syntax(const char* szLabel);
 
+/**
+ * Checks whether or not the given string is comprised
+ * of only 0 or more whitespaces
+ * @param szString String to check if empty
+ * @return 1 if empty, 0 if not
+ */
+int parser_is_string_empty(const char* szString);
+
 /* Implementations */
 /* fixme: shorter this one */
 int parser_get_statement(statement_t* io_pLine)
@@ -337,6 +345,7 @@ int parser_check_label_syntax(const char* szLabel)
 	return nLabelLength;
 }
 
+/* fixme: strtok seems to cumbersome.. work this thing differently */
 int parser_get_items_from_list(const char* szList,
 							   const char** o_arrItems,
 							   size_t nListSize)
@@ -352,11 +361,26 @@ int parser_get_items_from_list(const char* szList,
 	if (nListSize == 0)
 	{
 		/* Really is empty */
-		if (strtok(szLocalList, BLANKS) == NULL)
+		if (parser_is_string_empty(szLocalList) == 1)
 			return 0;
 		/* Garbage found */
 		else
 			return -1;
+	}
+
+	/* Make sure no consecutive delimiters
+	 * appear
+	 */
+	/* fixme: delimiter reuse */
+	if (strstr(szLocalList, ",,") != NULL)
+	{
+		return -1;
+	}
+	/* Last char can't be a delimiter either */
+	/*fixme: reuse delimiter*/
+	else if(szLocalList[strlen(szLocalList)-1] == ',')
+	{
+		return -1;
 	}
 
 	/* Try filling the array of items */
@@ -367,7 +391,19 @@ int parser_get_items_from_list(const char* szList,
 		/* Split the list to its different tokens */
 		if (nCurrItem == 0)
 		{
+			char* pFirstDelimiter = strchr(szLocalList, ',');
+
+			/* fixme: delimiters reuse */
 			szCurrToken = strtok(szLocalList, ", \t");
+
+			/* Make sure there is valid content before
+			 * the first delimiter (if exists)
+			 */
+			if (pFirstDelimiter != NULL &&
+				pFirstDelimiter < szCurrToken)
+			{
+				return -1;
+			}
 		}
 		else
 		{
@@ -376,7 +412,8 @@ int parser_get_items_from_list(const char* szList,
 		}
 
 		/* Make sure that there is an item */
-		if (szCurrToken == NULL)
+		if (szCurrToken == NULL ||
+			parser_is_string_empty(szCurrToken) == 1)
 			return -1;
 
 		/* Calculate the offset of the item from
@@ -393,4 +430,23 @@ int parser_get_items_from_list(const char* szList,
 		return -1;
 
 	return 0;
+}
+
+int parser_is_string_empty(const char* szString)
+{
+	size_t nCurrChar = 0;
+	int fNonWhiteFound = 1;
+
+	/* Look char by char */
+	while (szString[nCurrChar] != '\0' &&
+		   fNonWhiteFound == 1)
+	{
+		/* Is this non space? */
+		if (isspace(szString[nCurrChar]) == 0)
+			fNonWhiteFound = 0;
+
+		nCurrChar++;
+	}
+
+	return fNonWhiteFound;
 }

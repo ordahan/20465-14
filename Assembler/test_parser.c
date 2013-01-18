@@ -370,7 +370,7 @@ int test_get_statement()
 #define MAX_NUM_ITEMS 5
 int test_get_items_from_list()
 {
-	char* arrItems[MAX_NUM_ITEMS];
+	const char* arrItems[MAX_NUM_ITEMS];
 	char szList[MAX_LIST_LENGTH];
 
 	/**********************************************/
@@ -487,7 +487,7 @@ int test_get_items_from_list()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Two items in list:");
+	printf("	Two itemin list:");
 	strcpy(szList, "hello,love");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
@@ -702,6 +702,67 @@ int test_get_items_from_list()
 	printf("PASSED.\n");
 	/**********************************************/
 
+	/**********************************************/
+	printf("	Empty in start with spaces:");
+	strcpy(szList, " 	,hello,love,nice,to,meet");
+	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Empty in middle with spaces:");
+	strcpy(szList, "hello,love, 	,nice,to,meet");
+	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* Might consider equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   7));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Empty in end with spaces:");
+	strcpy(szList, "hello,love,nice,to,meet, 	");
+	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
+	/* Less */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   3));
+	/* Equal */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   5));
+	/* More */
+	assert(0 != parser_get_items_from_list(szList,
+										   arrItems,
+										   6));
+	printf("PASSED.\n");
+	/**********************************************/
+
 	/* todo: test list parsing
 	 * For each test, expect less,equal,more than list size
 	 * #Empty list (no less)
@@ -720,6 +781,9 @@ int test_get_items_from_list()
 	 * #Empty item in start of list
 	 * #Empty item in middle of list
 	 * #Empty item in end of list
+	 * #Empty item in start of list with spaces
+	 * #Empty item in middle of list with spaces
+	 * #Empty item in end of list with spaces
 	 */
 
 	return 0;
