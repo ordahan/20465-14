@@ -69,14 +69,6 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
  */
 int parser_check_label_syntax(const char* szLabel);
 
-/**
- * Checks whether or not the given string is comprised
- * of only 0 or more whitespaces
- * @param szString String to check if empty
- * @return 1 if empty, 0 if not
- */
-int parser_is_string_empty(const char* szString);
-
 /* Implementations */
 /* fixme: shorter this one */
 int parser_get_statement(statement_t* io_pLine)
@@ -360,17 +352,6 @@ int parser_get_items_from_list(char* szList,
 	size_t nCurrCharIdx = 0;
 	parser_list_state_t state = PARSER_LIST_STATE_INIT;
 
-	/* Empty list expected */
-	if (nListSize == 0)
-	{
-		/* Really is empty */
-		if (parser_is_string_empty(szList) == 1)
-			return 0;
-		/* Garbage found */
-		else
-			return -1;
-	}
-
 	/* fixme: null-termination define */
 	for (nCurrCharIdx = 0; szList[nCurrCharIdx] != '\0'; ++nCurrCharIdx)
 	{
@@ -444,23 +425,4 @@ int parser_get_items_from_list(char* szList,
 	{
 		return -1;
 	}
-}
-
-int parser_is_string_empty(const char* szString)
-{
-	size_t nCurrChar = 0;
-	int fNonWhiteFound = 1;
-
-	/* Look char by char */
-	while (szString[nCurrChar] != '\0' &&
-		   fNonWhiteFound == 1)
-	{
-		/* Is this non space? */
-		if (isspace(szString[nCurrChar]) == 0)
-			fNonWhiteFound = 0;
-
-		nCurrChar++;
-	}
-
-	return fNonWhiteFound;
 }
