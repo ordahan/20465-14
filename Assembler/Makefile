@@ -9,11 +9,22 @@ EXECUTABLE=assembler
 
 all: $(SOURCES) $(EXECUTABLE)
 	
-$(EXECUTABLE): $(OBJECTS) 
+$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-.cpp.o:
+.c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-clean: 
-	rm -f $(EXECUTABLE) $(OBJECTS)
+clean:
+	rm -f $(EXECUTABLE) *.o
+	
+# This is done only for my own testing,
+# should not be executed
+TEST_EXECUTALBE=test_$(EXECUTABLE)
+TEST_SOURCES=test_main.c
+TEST_OBJECTS=$(TEST_SOURCES:.c=.o)
+
+test: $(TEST_SOURCES) $(SOURCES) $(TEST_EXECUTALBE)
+
+$(TEST_EXECUTALBE): $(TEST_OBJECTS) $(OBJECTS)
+	$(CC) $(LDFLAGS) -etest_main $(TEST_OBJECTS) $(OBJECTS) -o $@
