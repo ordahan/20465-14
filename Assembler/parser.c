@@ -59,13 +59,6 @@ opcode_t parser_string_to_instruction_type(const char* szInstruction);
  */
 machine_registers_t parser_string_to_register_type(const char* szRegister);
 
-/**
- * Makes sure that the given label is valid.
- * @param szLabel Label to check
- * @return Length of the label, 0 if label have any syntax errors
- */
-int parser_check_symbol_syntax(const char* szSymbol);
-
 /* Internal definitions */
 typedef enum
 {

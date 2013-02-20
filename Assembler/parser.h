@@ -55,5 +55,11 @@ int parser_get_statement(statement_t* io_pLine);
 int parser_get_items_from_list(char* szList,
 							   char** o_arrItems,
 							   size_t nListSize);
+/**
+ * Makes sure that the given label is valid.
+ * @param szLabel Label to check
+ * @return Length of the label, 0 if label have any syntax errors
+ */
+int parser_check_symbol_syntax(const char* szSymbol);
 
 #endif /* PARSER_H_ */

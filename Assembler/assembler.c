@@ -35,27 +35,27 @@ int first_pass(FILE* flProgram,
 			   statement_t *o_arrStatements,
 			   size_t nMaxNumOfStatements,
 			   size_t *o_pNumStatements,
-			   symbol_table_arr_t *o_pSymbols,
-			   data_section_t *o_pData);
+			   symbol_table_arr_t o_arrSymbols,
+			   data_section_t *o_pData,
+			   code_section_t *o_pCode);
 
 /**
- * Creates the code section from the instruction statements,
- * adds entry symbols to the table, and finalizes any
+ * Adds entry symbols to the table, and finalizes any
  * addressing issues.
  * @param arrStatements Statements that comprise the program.
  * @param nNumOfStatements Num of statements given.
  * @param io_pSymbols Symbol table for the program.
- * @param o_pCode Code section for the program.
+ * @param io_pCode Code section for the program.
  * @return 0 on success, anything else on any error.
  */
 int second_pass(const statement_t *arrStatements,
 				size_t nNumOfStatements,
-				symbol_table_arr_t *io_pSymbols,
-				code_section_t *o_pCode);
+				symbol_table_arr_t io_arrSymbols,
+				code_section_t *io_pCode);
 
 /* Function Implementation */
 int assembler_compile(FILE* flProgram,
-					  symbol_table_arr_t *o_pSymbols,
+					  symbol_table_arr_t o_arrSymbols,
 					  code_section_t *o_pCode,
 					  data_section_t *o_pData)
 {
@@ -64,7 +64,7 @@ int assembler_compile(FILE* flProgram,
 	size_t	nNumOfStatements = 0;
 
 	/* First of all, init the given output-bound array types */
-	memset(*o_pSymbols, 0, sizeof(*o_pSymbols));
+	memset(o_arrSymbols, 0, sizeof(o_arrSymbols));
 	memset(o_pCode, 0, sizeof(*o_pCode));
 	memset(o_pData, 0, sizeof(*o_pData));
 
@@ -76,14 +76,15 @@ int assembler_compile(FILE* flProgram,
 				   arrProgramStatements,
 				   sizeof(arrProgramStatements) / sizeof(arrProgramStatements[0]),
 				   &nNumOfStatements,
-				   o_pSymbols,
-				   o_pData) != 0)
-		return -1; /* fixme: errors in initial parsing lead to abortion of 2nd pass? */
+				   o_arrSymbols,
+				   o_pData,
+				   o_pCode) != 0)
+		return -1;
 
-	/* First pass completed, resolve addresses and code section */
+	/* First pass completed, resolve addresses */
 	if (second_pass(arrProgramStatements,
 					nNumOfStatements,
-					o_pSymbols,
+					o_arrSymbols,
 					o_pCode) != 0)
 		return -2;
 
@@ -94,8 +95,9 @@ int first_pass(FILE* flProgram,
 			   statement_t *o_arrStatements,
 			   size_t nMaxNumOfStatements,
 			   size_t *o_pNumStatements,
-			   symbol_table_arr_t *o_pSymbols,
-			   data_section_t *o_pData)
+			   symbol_table_arr_t o_arrSymbols,
+			   data_section_t *o_pData,
+			   code_section_t *o_pCode)
 {
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
@@ -105,8 +107,9 @@ int first_pass(FILE* flProgram,
 	if (flProgram == NULL ||
 		o_arrStatements == NULL ||
 		o_pNumStatements == NULL ||
-		o_pSymbols == NULL ||
-		o_pData == NULL)
+		o_arrSymbols == NULL ||
+		o_pData == NULL ||
+		o_pCode == NULL)
 		return -1;
 
 	/* Read each line from the input file */
@@ -140,14 +143,14 @@ int first_pass(FILE* flProgram,
 				{
 					if (directive_compile_dummy_instruction(pCurrStatement,
 															o_pData,
-															o_pSymbols) != 0)
+															o_arrSymbols) != 0)
 						nErrorCode = -1;
 					break;
 				}
 				case (DIRECTIVE_EXTERN):
 				{
 					if (directive_compile_extern(pCurrStatement,
-												 o_pSymbols) != 0)
+												 o_arrSymbols) != 0)
 						nErrorCode = -1;
 					break;
 				}
@@ -177,17 +180,17 @@ int first_pass(FILE* flProgram,
 
 int second_pass(const statement_t *arrStatements,
 				size_t nNumOfStatements,
-				symbol_table_arr_t *io_pSymbols,
-				code_section_t *o_pCode)
+				symbol_table_arr_t io_arrSymbols,
+				code_section_t *io_pCode)
 {
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
-	statement_t* pCurrStatement = NULL;
+	const statement_t* pCurrStatement = NULL;
 
 	/* Making sure ptrs valid */
 	if (arrStatements == NULL ||
-		io_pSymbols == NULL ||
-		o_pCode == NULL)
+		io_arrSymbols == NULL ||
+		io_pCode == NULL)
 		return -1;
 
 	/* Read each line from the input file */
@@ -204,7 +207,7 @@ int second_pass(const statement_t *arrStatements,
 				case (DIRECTIVE_ENTRY):
 				{
 					if (directive_compile_entry(pCurrStatement,
-												*io_pSymbols) != 0)
+												io_arrSymbols) != 0)
 						return -2;
 					break;
 				}
@@ -221,6 +224,10 @@ int second_pass(const statement_t *arrStatements,
 			/* todo: Handle instruction */
 
 			/* Label */
+		}
+		else
+		{
+			/* Assume everything else is already dealt with */
 		}
 	}
 

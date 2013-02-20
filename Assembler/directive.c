@@ -9,6 +9,7 @@
 #include "directive.h"
 #include "symbol.h"
 #include "parser.h"
+#include <string.h>
 
 int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 									    data_section_t* io_pData,
@@ -22,7 +23,7 @@ int directive_compile_extern(const statement_t *pExtern,
 {
 	symbol_t symbol;
 	symbol.address = ADDR_EXTERNAL;
-	const char *pName;
+	char *pName;
 
 	if (pExtern == NULL ||
 		io_pSymbols == NULL)
@@ -48,7 +49,7 @@ int directive_compile_extern(const statement_t *pExtern,
 int directive_compile_entry(const statement_t *pEntry,
 							symbol_table_arr_t io_pSymbols)
 {
-	const char *pName = NULL;
+	char *pName = NULL;
 	symbol_t *pSymbol = NULL;
 
 	if (pEntry == NULL ||

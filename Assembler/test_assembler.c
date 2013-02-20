@@ -159,7 +159,7 @@ int test_assembler_compile(const char* szTestFile,
 
 	/* Compile it */
 	compile_res = assembler_compile(fd,
-									 &symbols,
+									 symbols,
 									 &code,
 									 &data);
 	if (compile_res != 0)

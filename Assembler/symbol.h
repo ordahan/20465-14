@@ -50,7 +50,7 @@ int symbol_add_to_table(symbol_table_arr_t table,
  * @param szName Symbol name to look for.
  * @return NULL if not found, the symbol requested otherwise.
  */
-symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
-											  const char* szName);
+symbol_t* symbol_get_from_table_by_name(symbol_table_arr_t table,
+										const char* szName);
 
 #endif /* SYMBOL_H_ */

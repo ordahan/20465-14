@@ -9,6 +9,8 @@
 #define INSTRUCTION_H_
 
 #include "machine.h"
+#include "statement.h"
+#include "assembler.h"
 
 /* Typedefs */
 typedef enum
@@ -51,10 +53,8 @@ typedef enum
 	JSR,
 	RTS,
 	STOP,
-
-	/* This must be last */
-	ILLEGAL
 }opcode_t;
+#define ILLEGAL (STOP+1)
 
 typedef struct
 {
@@ -67,5 +67,15 @@ typedef struct
 	instruction_type_t	 type			: 1;
 	unsigned char		 rfu			: 3;
 }instruction_t;
+
+/**
+ * Compile the instruction statement into an actual instruction.
+ * Leave all the addresses unresolved.
+ * @param pInstruction Statement to compile.
+ * @param io_pCode Code section to put the compiled result into.
+ * @return 0 on success, anything else on error.
+ */
+int instruction_compile(const statement_t *pInstruction,
+						code_section_t* io_pCode);
 
 #endif /* INSTRUCTION_H_ */

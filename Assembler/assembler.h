@@ -45,7 +45,7 @@ typedef struct
  * @return 0 if succeeds, anything else for a compilation error.
  */
 int assembler_compile(FILE* pAssemblyFile,
-					  symbol_table_arr_t *o_pSymbols,
+					  symbol_table_arr_t o_arrSymbols,
 					  code_section_t *o_pCode,
 					  data_section_t *o_pData);
 

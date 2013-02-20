@@ -22,10 +22,8 @@ typedef enum
 	R4,
 	R5,
 	R6,
-	R7,
-
-	/* This val must be LAST! */
-	REGISTERS_LAST
+	R7
 }machine_registers_t;
+#define REGISTERS_LAST (R7+1)
 
 #endif /* DATATYPES_H_ */

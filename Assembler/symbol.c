@@ -9,6 +9,7 @@
 #include "symbol.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 int symbol_add_to_table(symbol_table_arr_t table,
 						const symbol_t *symbol)
@@ -45,8 +46,8 @@ int symbol_add_to_table(symbol_table_arr_t table,
 	return -3;
 }
 
-symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
-											  const char* szName)
+symbol_t* symbol_get_from_table_by_name(symbol_table_arr_t table,
+										const char* szName)
 {
 	int i;
 
