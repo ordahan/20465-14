@@ -48,4 +48,17 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 int directive_compile_extern(const statement_t *pExtern,
 							 symbol_table_arr_t io_pSymbols);
 
+/**
+ * Compiles the given entry directive, modifies a symbols
+ * addressing type in the symbol table if needed.
+ * In case the symbol doesn't exist in the given table,
+ * this will cause an error.
+ *
+ * @param pExtern Entry statement
+ * @param io_pSymbols Symbol table to search the symbol in.
+ * @return 0 if successful, any other value on error.
+ */
+int directive_compile_entry(const statement_t *pEntry,
+							symbol_table_arr_t io_pSymbols);
+
 #endif /* DIRECTIVE_H_ */

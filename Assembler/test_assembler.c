@@ -81,9 +81,8 @@ int test_assembler()
 								&code_expected,
 								&data_expected);
 
-	/* todo: is entry relocatable or absolute? */
 	pSymbol = &symbols_expected[0];
-	pSymbol->address = ADDR_RELOCATABLE;
+	pSymbol->address = ADDR_ENTRY;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
 
 	printf("	File only with entry: ");

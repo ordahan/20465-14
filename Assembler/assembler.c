@@ -29,7 +29,7 @@
  * @param o_pSymbols Symbol table to store the found symbols so far.
  * @param o_pData Data section of the program, here the data
  * will be stored.
- * @return -1 if any error happened during the parsing, 0 otherwise.
+ * @return 0 on success, anything else on any error.
  */
 int first_pass(FILE* flProgram,
 			   statement_t *o_arrStatements,
@@ -38,7 +38,20 @@ int first_pass(FILE* flProgram,
 			   symbol_table_arr_t *o_pSymbols,
 			   data_section_t *o_pData);
 
-int second_pass();
+/**
+ * Creates the code section from the instruction statements,
+ * adds entry symbols to the table, and finalizes any
+ * addressing issues.
+ * @param arrStatements Statements that comprise the program.
+ * @param nNumOfStatements Num of statements given.
+ * @param io_pSymbols Symbol table for the program.
+ * @param o_pCode Code section for the program.
+ * @return 0 on success, anything else on any error.
+ */
+int second_pass(const statement_t *arrStatements,
+				size_t nNumOfStatements,
+				symbol_table_arr_t *io_pSymbols,
+				code_section_t *o_pCode);
 
 /* Function Implementation */
 int assembler_compile(FILE* flProgram,
@@ -66,6 +79,13 @@ int assembler_compile(FILE* flProgram,
 				   o_pSymbols,
 				   o_pData) != 0)
 		return -1; /* fixme: errors in initial parsing lead to abortion of 2nd pass? */
+
+	/* First pass completed, resolve addresses and code section */
+	if (second_pass(arrProgramStatements,
+					nNumOfStatements,
+					o_pSymbols,
+					o_pCode) != 0)
+		return -2;
 
 	return 0;
 }
@@ -144,9 +164,65 @@ int first_pass(FILE* flProgram,
 
 			/* Label */
 		}
+		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
+		{
+			/*todo: Handle error */
+		}
 	}
 
 	*o_pNumStatements = nCurrLine;
+
+	return nErrorCode;
+}
+
+int second_pass(const statement_t *arrStatements,
+				size_t nNumOfStatements,
+				symbol_table_arr_t *io_pSymbols,
+				code_section_t *o_pCode)
+{
+	size_t nCurrLine = 0;
+	int nErrorCode = 0;
+	statement_t* pCurrStatement = NULL;
+
+	/* Making sure ptrs valid */
+	if (arrStatements == NULL ||
+		io_pSymbols == NULL ||
+		o_pCode == NULL)
+		return -1;
+
+	/* Read each line from the input file */
+	for (nCurrLine = 0; nCurrLine < nNumOfStatements; ++nCurrLine)
+	{
+		pCurrStatement = &arrStatements[nCurrLine];
+
+		/* Some kind of directive */
+		if (pCurrStatement->type == STATEMENT_TYPE_DIRECTIVE)
+		{
+			/* Handle data/string directive */
+			switch(pCurrStatement->info.directive.name)
+			{
+				case (DIRECTIVE_ENTRY):
+				{
+					if (directive_compile_entry(pCurrStatement,
+												*io_pSymbols) != 0)
+						return -2;
+					break;
+				}
+				/* Already dealt with */
+				case (DIRECTIVE_DATA):
+				case (DIRECTIVE_STRING):
+				default:
+					break;
+			}
+		}
+		/* An instruction */
+		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
+		{
+			/* todo: Handle instruction */
+
+			/* Label */
+		}
+	}
 
 	return nErrorCode;
 }

@@ -21,7 +21,11 @@ int symbol_add_to_table(symbol_table_arr_t table,
 
 	/* Check if the symbol exists already */
 	if (symbol_get_from_table_by_name(table, symbol->name) != NULL)
+	{
+		printf("Error! symbol %s already exists in symbol table", symbol->name);
 		return -1;
+	}
+
 
 	/* Go symbol-by-symbol until we either find the first empty spot
 	 * or we reached the end of the table
@@ -41,7 +45,7 @@ int symbol_add_to_table(symbol_table_arr_t table,
 	return -3;
 }
 
-const symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
+symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
 											  const char* szName)
 {
 	int i;

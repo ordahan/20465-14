@@ -22,7 +22,8 @@ typedef enum
 	ADDR_INVALID = 0,
 	ADDR_ABSOLUTE,
 	ADDR_RELOCATABLE,
-	ADDR_EXTERNAL
+	ADDR_EXTERNAL,
+	ADDR_ENTRY /*todo: is this true? whats going on with these..*/
 }address_locality_t;
 
 typedef struct
@@ -49,7 +50,7 @@ int symbol_add_to_table(symbol_table_arr_t table,
  * @param szName Symbol name to look for.
  * @return NULL if not found, the symbol requested otherwise.
  */
-const symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
+symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
 											  const char* szName);
 
 #endif /* SYMBOL_H_ */
