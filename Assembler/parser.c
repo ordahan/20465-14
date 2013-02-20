@@ -18,7 +18,7 @@
 #include "symbol.h"
 
 /* Defines */
-#define BLANKS "\t "
+#define BLANKS "\t \n\r"
 #define LABEL_SEPARATOR ':'
 #define INSTRUCTION_MODIFIER_SEPARATOR "/"
 #define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
@@ -99,9 +99,6 @@ int parser_get_statement(statement_t* io_pLine)
 		return 0;
 	}
 
-	/* fixme: can there be a label before a comment line?,
-	 * 		  in an empty line?
-	 */
 	/* Is there a label in the line? */
 	pLabelEnd = strchr(io_pLine->szContent, LABEL_SEPARATOR);
 	if (pLabelEnd != NULL)

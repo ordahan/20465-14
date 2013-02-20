@@ -91,8 +91,9 @@ int first_pass(FILE* flProgram,
 
 	/* Read each line from the input file */
 	while (fgets(pCurrStatement->szContent,
-				 sizeof(pCurrStatement->szContent),
-				 flProgram))
+			 sizeof(pCurrStatement->szContent),
+			 flProgram) != NULL &&
+			 feof(flProgram) == 0)
 	{
 		/* Count the line as read */
 		nCurrLine++;
@@ -125,10 +126,13 @@ int first_pass(FILE* flProgram,
 				}
 				case (DIRECTIVE_EXTERN):
 				{
-					/* todo: Externals */
-
+					if (directive_compile_extern(pCurrStatement,
+												 o_pSymbols) != 0)
+						nErrorCode = -1;
 					break;
 				}
+				/* Ignore these for now, 2nd pass will handle it */
+				case (DIRECTIVE_ENTRY):
 				default:
 					break;
 			}
