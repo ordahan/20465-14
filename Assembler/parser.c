@@ -64,7 +64,7 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
  * @param szLabel Label to check
  * @return Length of the label, 0 if label have any syntax errors
  */
-int parser_check_label_syntax(const char* szLabel);
+int parser_check_symbol_syntax(const char* szSymbol);
 
 /* Internal definitions */
 typedef enum
@@ -114,7 +114,7 @@ int parser_get_statement(statement_t* io_pLine)
 		/* Essentialy we have split the content into 2 parts */
 		io_pLine->szLabel = io_pLine->szContent;
 
-		nLabelSectionLength = parser_check_label_syntax(io_pLine->szLabel);
+		nLabelSectionLength = parser_check_symbol_syntax(io_pLine->szLabel);
 
 		/* Make sure the label is valid */
 		if (nLabelSectionLength == 0)
@@ -290,57 +290,57 @@ machine_registers_t parser_string_to_register_type(const char* szRegister)
 	return REGISTERS_LAST;
 }
 
-int parser_check_label_syntax(const char* szLabel)
+int parser_check_symbol_syntax(const char* szSymbol)
 {
-	size_t nLabelLength = 0;
+	size_t nSymbolLength = 0;
 
-	if (szLabel == NULL)
+	if (szSymbol == NULL)
 		return 0;
 
 	/* Must begin with a lower / upper case letter */
-	if (isalpha(szLabel[0]) == 0)
+	if (isalpha(szSymbol[0]) == 0)
 	{
-		printf("Error! label '%s' doesn't begin with a letter.\n",
-				szLabel);
+		printf("Error! symbol '%s' doesn't begin with a letter.\n",
+				szSymbol);
 		return 0;
 	}
 
 	/* Must not be too long */
-	nLabelLength = strlen(szLabel);
-	if (nLabelLength == 0)
+	nSymbolLength = strlen(szSymbol);
+	if (nSymbolLength == 0)
 	{
-		printf("Error! label must contain at least 1 character.\n");
+		printf("Error! symbol must contain at least 1 character.\n");
 		return 0;
 	}
 	else
 	{
-		if (nLabelLength > MAX_LABEL_LENGTH)
+		if (nSymbolLength > MAX_LABEL_LENGTH)
 		{
-			printf("Error! label '%s' is %u characters long, max length is %u.\n",
-					szLabel,
-					nLabelLength,
+			printf("Error! symbol '%s' is %u characters long, max length is %u.\n",
+					szSymbol,
+					nSymbolLength,
 					MAX_LABEL_LENGTH);
 			return 0;
 		}
 	}
 
 	/* Make sure it's not an instruction name */
-	if (parser_string_to_instruction_type(szLabel) != ILLEGAL)
+	if (parser_string_to_instruction_type(szSymbol) != ILLEGAL)
 	{
-		printf("Error! name '%s' is an instruction name, cannot be a label.\n",
-				szLabel);
+		printf("Error! name '%s' is an instruction name, cannot be a symbol.\n",
+				szSymbol);
 		return 0;
 	}
 
 	/* Make sure its not a register name */
-	if (parser_string_to_register_type(szLabel) != REGISTERS_LAST)
+	if (parser_string_to_register_type(szSymbol) != REGISTERS_LAST)
 	{
-		printf("Error! name '%s' is a register name, cannot be a label.\n",
-				szLabel);
+		printf("Error! name '%s' is a register name, cannot be a symbol.\n",
+				szSymbol);
 		return 0;
 	}
 
-	return nLabelLength;
+	return nSymbolLength;
 }
 
 int parser_get_items_from_list(char* szList,
@@ -350,6 +350,10 @@ int parser_get_items_from_list(char* szList,
 	size_t nCurrItem = 0;
 	size_t nCurrCharIdx = 0;
 	parser_list_state_t state = PARSER_LIST_STATE_INIT;
+
+	if (szList == NULL ||
+		o_arrItems == NULL)
+		return -1;
 
 	/* fixme: null-termination define */
 	for (nCurrCharIdx = 0; szList[nCurrCharIdx] != '\0'; ++nCurrCharIdx)

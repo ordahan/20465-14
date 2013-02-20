@@ -34,6 +34,10 @@ int directive_compile_extern(const statement_t *pExtern,
 								   1) != 0)
 		return -2;
 
+	/* Make sure the label is valid */
+	if (parser_check_symbol_syntax(pName) == 0)
+		return -3;
+
 	/* Copy the content of the label */
 	strncpy(symbol.name, pName, sizeof(symbol.name));
 

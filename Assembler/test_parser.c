@@ -365,6 +365,7 @@ int test_get_statement()
 	printf("PASSED.\n");
 	/**********************************************/
 
+	printf ("PASSED.\n");
 	return 0;
 }
 
@@ -392,6 +393,7 @@ int test_get_items_from_list()
 	 * #Empty item in start of list with spaces
 	 * #Empty item in middle of list with spaces
 	 * #Empty item in end of list with spaces
+	 * Null ptrs
 	 */
 	char* arrItems[MAX_NUM_ITEMS];
 	char szList[MAX_LIST_LENGTH];
@@ -786,5 +788,17 @@ int test_get_items_from_list()
 	printf("PASSED.\n");
 	/**********************************************/
 
+	/**********************************************/
+	printf("	Null ptrs:");
+	assert(0 != parser_get_items_from_list(NULL,
+										   arrItems,
+										   3));
+	assert(0 != parser_get_items_from_list(szList,
+										   NULL,
+										   3));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	printf ("PASSED.\n");
 	return 0;
 }
