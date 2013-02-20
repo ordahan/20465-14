@@ -37,7 +37,6 @@ int test_get_statement()
 	printf("PASSED.\n");
 	/**********************************************/
 
-	/* todo: Can a comment appear only in a line by itself? */
 	/**********************************************/
 	printf("	Commented line: ");
 	memset(&stResult, 0, sizeof(stResult));
