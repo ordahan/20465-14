@@ -11,6 +11,8 @@
 #include <memory.h>
 
 #include "parser.h"
+#include "directive.h"
+#include "instruction.h"
 
 int test_get_statement();
 int test_get_items_from_list();
@@ -369,6 +371,28 @@ int test_get_statement()
 #define MAX_NUM_ITEMS 5
 int test_get_items_from_list()
 {
+	/*
+	 * For each test, expect less,equal,more than list size
+	 * #Empty list (no less)
+	 * #Empty list with whitespaces
+	 * #Only delimiter
+	 * #Delimiter and whitespaces
+	 * #One value
+	 * #Two values
+	 * #N values
+	 * #Whitespaces inside list
+	 * #Leading whitespaces before list
+	 * #Trailing whitespaces after list
+	 * #Items separated by illegal delimiter
+	 * #Item contains whitespaces
+	 * #Items separated by illegal delimiter with whitespaces
+	 * #Empty item in start of list
+	 * #Empty item in middle of list
+	 * #Empty item in end of list
+	 * #Empty item in start of list with spaces
+	 * #Empty item in middle of list with spaces
+	 * #Empty item in end of list with spaces
+	 */
 	char* arrItems[MAX_NUM_ITEMS];
 	char szList[MAX_LIST_LENGTH];
 
@@ -761,29 +785,6 @@ int test_get_items_from_list()
 										   6));
 	printf("PASSED.\n");
 	/**********************************************/
-
-	/* todo: test list parsing
-	 * For each test, expect less,equal,more than list size
-	 * #Empty list (no less)
-	 * #Empty list with whitespaces
-	 * #Only delimiter
-	 * #Delimiter and whitespaces
-	 * #One value
-	 * #Two values
-	 * #N values
-	 * #Whitespaces inside list
-	 * #Leading whitespaces before list
-	 * #Trailing whitespaces after list
-	 * #Items separated by illegal delimiter
-	 * #Item contains whitespaces
-	 * #Items separated by illegal delimiter with whitespaces
-	 * #Empty item in start of list
-	 * #Empty item in middle of list
-	 * #Empty item in end of list
-	 * #Empty item in start of list with spaces
-	 * #Empty item in middle of list with spaces
-	 * #Empty item in end of list with spaces
-	 */
 
 	return 0;
 }

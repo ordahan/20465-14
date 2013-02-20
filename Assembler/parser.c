@@ -13,18 +13,15 @@
 #include <ctype.h>
 
 #include "machine.h"
+#include "instruction.h"
+#include "directive.h"
+#include "symbol.h"
 
 /* Defines */
 #define BLANKS "\t "
 #define LABEL_SEPARATOR ':'
 #define INSTRUCTION_MODIFIER_SEPARATOR "/"
 #define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
-
-/* fixme: A line that contains only a label and ':'
- * is considered legal(?), and it might take the entire line
- */
-/* fixme: 30 chars .. or 31? not sure */
-#define MAX_LABEL_LENGTH ((unsigned int)30)
 
 /* Internal functions declarations */
 /**

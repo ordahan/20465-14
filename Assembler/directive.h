@@ -9,6 +9,7 @@
 #define DIRECTIVE_H_
 
 #include "assembler.h"
+#include "statement.h"
 
 typedef enum
 {
@@ -25,16 +26,12 @@ typedef enum
  * Compiles the given 'dummy instruction' directive statement and
  * adds it to the given data section (and symbol table if needed)
  *
- * @param type Directive type
- * @param szValue Value of the directive (string, list of nums etc)
- * @param szLabel Label for the directive (if exists)
+ * @param pDummyInst Dummy instruction statement
  * @param io_pData Data section to place the result it
  * @param io_pSymbols Symbol table to hold the directive's label if exists
  * @return 0 on successful compilation, any other value on error.
  */
-int directive_compile_dummy_instruction(directive_type_t type,
-										char* szValue,
-										const char* szLabel,
+int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 									    data_section_t* io_pData,
 									    symbol_table_arr_t io_pSymbols);
 
@@ -44,11 +41,11 @@ int directive_compile_dummy_instruction(directive_type_t type,
  * In case the symbol already exists in the given table,
  * this will cause an error.
  *
- * @param szValue Value to be extern'ed (symbol name)
+ * @param pExtern Extern statement
  * @param io_pSymbols Symbol table to add to
  * @return 0 if successful, any other value on error.
  */
-int directive_compile_extern(char* szValue,
+int directive_compile_extern(const statement_t *pExtern,
 							 symbol_table_arr_t io_pSymbols);
 
 #endif /* DIRECTIVE_H_ */

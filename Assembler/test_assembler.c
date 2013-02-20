@@ -66,7 +66,7 @@ int test_assembler()
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->address = ADDR_EXTERNAL;
-	pSymbol->name = "ThisIsMySymbol!";
+	strcpy(pSymbol->name, "ThisIsMySymbol!");
 
 	printf("	File only with extern: ");
 	assert(0 == test_assembler_compile("tests/extern.as",
@@ -84,7 +84,7 @@ int test_assembler()
 	/* todo: is entry relocatable or absolute? */
 	pSymbol = &symbols_expected[0];
 	pSymbol->address = ADDR_RELOCATABLE;
-	pSymbol->name = "ThisIsMySymbol!";
+	strcpy(pSymbol->name, "ThisIsMySymbol!");
 
 	printf("	File only with entry: ");
 	assert(0 == test_assembler_compile("tests/entry.as",
