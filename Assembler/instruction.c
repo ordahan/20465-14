@@ -10,6 +10,7 @@
 #include "parser.h"
 
 #include <stdio.h>
+#include <memory.h>
 
 /* fixme: warning regarding size..*/
 instruction_syntax_t g_arrInstructionSyntax[ILLEGAL] =
@@ -36,6 +37,9 @@ instruction_syntax_t g_arrInstructionSyntax[ILLEGAL] =
 /**
  * Tests if the given addressing types are valid
  * for the opcode.
+ * If there is no need to check one of the addressing types,
+ * mark the type by giving it a value of "OPERAND_ADDR_NUM".
+ *
  * @param opcode Opcode to test according to.
  * @param src Addressing type for the src operand.
  * @param dest Addressing type for the dest operand.
@@ -43,8 +47,7 @@ instruction_syntax_t g_arrInstructionSyntax[ILLEGAL] =
  */
 unsigned int is_addressing_valid_for_opcode(opcode_t opcode,
 								   operand_addressing_t src,
-								   operand_addressing_t dest,
-								   unsigned char fCheckSrc);
+								   operand_addressing_t dest);
 
 /**
  *
@@ -56,59 +59,53 @@ int get_num_operands_for_opcode(opcode_t opcode);
 
 /**
  * Retrieves the operands for the instruction from the given
- * list of operands.
+ * list of operands. The resulting operand data is saved
+ * within the given instruction and the number of extra
+ * data cells used is updated as well as well as the
+ * address locality for each data cell.
  *
  * @param pInstruction The instruction that the operands belong to.
  * @param arrOperands List of operand strings (code).
  * @param nOperands Number of operands in the list.
- * @param io_pCode Code segment to place the found operands values (if needed)
  * @return 0 on success, anything else on failure
  */
-int retrieve_operands(instruction_t* pInstruction,
+int retrieve_operands(instruction_with_operands_t* pInstruction,
 					  char** arrOperands,
-					  unsigned int nOperands,
-					  code_section_t* io_pCode);
+					  unsigned int nOperands);
 /* fixme: const char**?*/
 
-/**
- * Retrieve the given operand (type and places data in the given
- * code section).
- * @param io_pCode Where to place the extra data that the operand takes
- * @return Addressing type for the operand.
- */
-operand_addressing_t retrieve_operand(char* szOperand,
-									  code_section_t* io_pCode);
-
 /* Implementation */
-int instruction_compile(const statement_t *pInstruction,
+int instruction_compile(const statement_t *pInstructionStatement,
 						code_section_t* io_pCode)
 {
 	char* arrOperands[MAX_NUM_OPERANDS];
 	unsigned int type,comb;
 	int nOperands;
-	instruction_t* pCompiledInstruction;
+	instruction_with_operands_t complete_instruction;
+	instruction_t* pInst = &complete_instruction.instruction;
 
-	if (pInstruction == NULL ||
+	if (pInstructionStatement == NULL ||
 		io_pCode == NULL)
 		return -1;
 
-	/* Point to the result area */
-	pCompiledInstruction = (instruction_t*)&io_pCode->content[io_pCode->IC];
-	io_pCode->localities[io_pCode->IC] = ADDR_RELOCATABLE;
-	io_pCode->IC++;
+	/* Set the locality for the instruction code itself */
+	memset(complete_instruction.localities,
+			0,
+			sizeof(complete_instruction.localities));
+	complete_instruction.localities[0] = ADDR_ABSOLUTE;
 
 	/* Set the opcode */
-	pCompiledInstruction->opcode = pInstruction->info.instruction.name;
+	pInst->opcode = pInstructionStatement->info.instruction.name;
 
 	/* Retrieve opcode's configuration */
-	nOperands = get_num_operands_for_opcode(pCompiledInstruction->opcode);
+	nOperands = get_num_operands_for_opcode(pInst->opcode);
 
 	/* Must be a valid number */
 	if (nOperands < 0)
 		return -1;
 
 	/* Set the type */
-	type = parser_get_instruction_type(pInstruction->info.instruction.modifiers);
+	type = parser_get_instruction_type(pInstructionStatement->info.instruction.modifiers);
 	if (type == INVALID_TYPE)
 	{
 		printf("Error! Invalid type: ");
@@ -116,12 +113,12 @@ int instruction_compile(const statement_t *pInstruction,
 	}
 	else
 	{
-		pCompiledInstruction->type = type;
+		pInst->type = type;
 	}
 
 	/* Set the comb */
-	pCompiledInstruction->comb = INST_COMB_MSB_MSB;
-	comb = parser_get_instruction_comb(pInstruction->info.instruction.modifiers);
+	pInst->comb = INST_COMB_MSB_MSB;
+	comb = parser_get_instruction_comb(pInstructionStatement->info.instruction.modifiers);
 	if (comb == INVALID_COMB)
 	{
 		printf("Error! Invalid comb: ");
@@ -139,12 +136,12 @@ int instruction_compile(const statement_t *pInstruction,
 	}
 	else
 	{
-		pCompiledInstruction->comb = comb;
+		pInst->comb = comb;
 	}
 
-	/* Get the operands themselves */
+	/* Get the operands strings */
 	if (parser_get_items_from_list(
-			pInstruction->szOperationData,
+			pInstructionStatement->szOperationData,
 		    arrOperands,
 		    nOperands) != 0)
     {
@@ -152,26 +149,38 @@ int instruction_compile(const statement_t *pInstruction,
 		return -1;
     }
 
-	/* Retrieve the operands associated with this instruction */
-	if (retrieve_operands(pCompiledInstruction,
+	/* Retrieve the operands from their respective strings */
+	if (retrieve_operands(&complete_instruction,
 						  arrOperands,
-						  nOperands,
-						  io_pCode) != 0)
+						  nOperands) != 0)
 	{
 		/* todo: any error msg? */
 		return -1;
 	}
 
+	/* fixme: make this more elegant */
 	/* Update the code section with the compiled data */
-
+	memcpy(&io_pCode->content[io_pCode->IC],
+		   pInst,
+		   sizeof(io_pCode->content[io_pCode->IC]));
+	io_pCode->localities[io_pCode->IC] = complete_instruction.localities[0];
+	io_pCode->IC++;
+	memcpy(&io_pCode->content[io_pCode->IC],
+		   complete_instruction.extra_data,
+		   complete_instruction.num_extra_data *
+		   sizeof(io_pCode->content[io_pCode->IC]));
+	memcpy(&io_pCode->localities[io_pCode->IC],
+		   &complete_instruction.localities[1],
+		   complete_instruction.num_extra_data *
+		   sizeof(io_pCode->localities[io_pCode->IC]));
+	io_pCode->IC += complete_instruction.num_extra_data;
 
 	return 0;
 }
 
 unsigned int is_addressing_valid_for_opcode(opcode_t opcode,
 								   operand_addressing_t src,
-								   operand_addressing_t dest,
-								   unsigned char fCheckSrc)
+								   operand_addressing_t dest)
 {
 	unsigned int i;
 
@@ -180,10 +189,12 @@ unsigned int is_addressing_valid_for_opcode(opcode_t opcode,
 	{
 		if (g_arrInstructionSyntax[i].opcode == opcode)
 		{
-			/* Check that both types for src and dest are mared
-			 * as valid */
-			if  ((g_arrInstructionSyntax[i].src.types[src] == 1) &&
-				 (g_arrInstructionSyntax[i].dest.types[dest] == 1))
+			/* Check that both types for src and dest are marked
+			 * as valid (if there are any types specified for either)*/
+			if  (((OPERAND_ADDR_NUM == src) ||
+				  (g_arrInstructionSyntax[i].src.types[src] == 1)) &&
+				 ((OPERAND_ADDR_NUM == dest) ||
+				  (g_arrInstructionSyntax[i].dest.types[dest] == 1)))
 			{
 				return 1;
 			}
@@ -213,50 +224,40 @@ int get_num_operands_for_opcode(opcode_t opcode)
 	return -1;
 }
 
-int retrieve_operands(instruction_t* pInstruction,
+int retrieve_operands(instruction_with_operands_t* pInstruction,
 					  char** arrOperands,
-					  unsigned int nOperands,
-					  code_section_t* io_pCode)
+					  unsigned int nOperands)
 {
-	unsigned char fValidAddressing = 1;
+	operand_addressing_t src, dest;
+	src = dest = OPERAND_ADDR_NUM;
 
 	/* Binary operation */
 	if (nOperands == 2)
 	{
-		pInstruction->src_addressing = retrieve_operand(arrOperands[0],
-														io_pCode);
-		pInstruction->dest_addressing = retrieve_operand(arrOperands[1],
-														 io_pCode);
-		fValidAddressing = is_addressing_valid_for_opcode(
-							   pInstruction->opcode,
-							   pInstruction->src_addressing,
-							   pInstruction->dest_addressing,
-							   1);
+		src = parser_get_operand(arrOperands[0],
+							   pInstruction);
+		dest = parser_get_operand(arrOperands[1],
+								pInstruction);
 	}
 	/* Unary operation */
 	else if(nOperands == 1)
 	{
-		pInstruction->dest_addressing = retrieve_operand(arrOperands[1],
-														 io_pCode);
-		fValidAddressing = is_addressing_valid_for_opcode(
-							   pInstruction->opcode,
-							   pInstruction->src_addressing,
-							   pInstruction->dest_addressing,
-							   0);
+		dest = parser_get_operand(arrOperands[0],
+								pInstruction);
 	}
 
 	/* Test addressing types for the opcode */
-	if (0 == fValidAddressing)
+	if (0 == is_addressing_valid_for_opcode(
+							   pInstruction->instruction.opcode,
+							   src,
+							   dest))
 	{
 		printf("Error! Operands addressing is invalid for instruction: ");
 		return -1;
 	}
 
-	return 0;
-}
+	pInstruction->instruction.src_addressing = src;
+	pInstruction->instruction.dest_addressing = dest;
 
-operand_addressing_t retrieve_operand(char* szOperand,
-									  code_section_t* io_pCode)
-{
-	return OPERAND_ADDR_NUM;
+	return 0;
 }

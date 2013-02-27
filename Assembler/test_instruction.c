@@ -38,16 +38,13 @@ int run_test_compile_instruction(const char		*line,
 	/* Check the IC */
 	assert(expected->IC == code->IC);
 
-	/* Check the statement's memory size */
-	assert((expected->IC - original_IC) ==
-			statement.info.instruction.memory_size);
-
 	/* Check the code generated */
 	for (i = 0; i < expected->IC; ++i)
 	{
 		assert(0 == memcmp(&expected->content[i],
 						   &code->content[i],
 						   sizeof(expected->content[0])));
+		assert(expected->localities[i] == code->localities[i]);
 	}
 
 	printf("PASSED.\n");
@@ -93,10 +90,12 @@ int test_compile_instruction()
 											 &code,
 											 &expected,
 											 1));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("stop/0 r0",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("stop/0 r0,r1",
 											 &code,
 											 &expected,
@@ -117,10 +116,12 @@ int test_compile_instruction()
 											 &code,
 											 &expected,
 											 1));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("inc/0 r7,r0",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("inc/0",
 											 &code,
 											 &expected,
@@ -142,14 +143,17 @@ int test_compile_instruction()
 											 &code,
 											 &expected,
 											 1));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1,r2",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0",
 											 &code,
 											 &expected,

@@ -14,6 +14,7 @@
 
 /* Defines */
 #define MAX_NUM_OPERANDS (2)
+#define MAX_INSTRUCTION_EXTRA_DATA_CELLS (4)
 
 /* Typedefs */
 typedef enum
@@ -90,6 +91,19 @@ typedef struct
 	instruction_type_t	 type			: 1;
 	unsigned char		 rfu			: 3;
 }instruction_t;
+
+typedef struct
+{
+	/* How many actual extra data does the instruction have */
+	unsigned char		 num_extra_data;
+
+	/* Memory cells for the entire instruction */
+	instruction_t		 instruction;
+	machine_cell_t		 extra_data[MAX_INSTRUCTION_EXTRA_DATA_CELLS];
+
+	/* Extra first locality is reserved for the instruction itself */
+	address_locality_t   localities[MAX_INSTRUCTION_EXTRA_DATA_CELLS + 1];
+}instruction_with_operands_t;
 
 /* Externals */
 extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];

@@ -486,3 +486,9 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 		return (instruction_comb_t)(comb1 << 2 | comb2);
 	}
 }
+
+operand_addressing_t parser_get_operand(const char* szOperand,
+										instruction_with_operands_t* pInstruction)
+{
+	return OPERAND_ADDR_NUM;
+}

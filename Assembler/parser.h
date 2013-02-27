@@ -84,4 +84,16 @@ instruction_type_t parser_get_instruction_type(const char* szModifiers);
  */
 instruction_comb_t parser_get_instruction_comb(const char* szModifiers);
 
+/**
+ * Parses the given operand (both gets the addressing type and
+ * places data in the given instruction while updating the number of
+ * extra cells used).
+ *
+ * @param szOperand string representing the operand value.
+ * @param pInstruction Where to place the extra data that the operand takes.
+ * @return Addressing type for the operand.
+ */
+operand_addressing_t parser_get_operand(const char* szOperand,
+										instruction_with_operands_t* pInstruction);
+
 #endif /* PARSER_H_ */

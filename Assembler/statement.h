@@ -25,7 +25,6 @@ typedef struct
 {
 	int			name;
 	char*       modifiers;
-	unsigned 	memory_size;
 }instruction_statement_t;
 
 typedef struct
