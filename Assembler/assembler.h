@@ -23,14 +23,15 @@
 /* Typedefs */
 typedef struct
 {
-	machine_cell_t content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-	size_t		   length;
+	machine_cell_t 	content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+	address_locality_t localities[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+	unsigned	   IC;
 }code_section_t;
 
 typedef struct
 {
 	machine_cell_t content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-	size_t		   length;
+	unsigned	   DC;
 }data_section_t;
 
 /* todo: Add tests for the lengths of the given sections */

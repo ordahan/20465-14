@@ -12,9 +12,11 @@
 extern int test_assembler();
 extern int test_parser();
 extern int test_directive();
+extern int test_instruction();
 
 int test_main()
 {
+	assert(test_instruction() == 0);
 	assert(test_directive() == 0);
 	assert(test_parser() == 0);
 	assert(test_assembler() == 0);

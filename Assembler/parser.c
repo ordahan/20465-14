@@ -20,8 +20,10 @@
 /* Defines */
 #define BLANKS "\t \n\r"
 #define LABEL_SEPARATOR ':'
-#define INSTRUCTION_MODIFIER_SEPARATOR "/"
+#define INSTRUCTION_MODIFIER_SEPARATOR '/'
 #define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
+#define NUMBERS_BASE	(10)
+#define NULL_TERMINATOR '\0'
 
 /* Internal functions declarations */
 /**
@@ -99,7 +101,7 @@ int parser_get_statement(statement_t* io_pLine)
 		/* Replace the end separator with \0,
 		 * like strtok would.
 		 */
-		*pLabelEnd = '\0';
+		*pLabelEnd = NULL_TERMINATOR;
 
 		/* Essentialy we have split the content into 2 parts */
 		io_pLine->szLabel = io_pLine->szContent;
@@ -155,11 +157,24 @@ int parser_get_statement(statement_t* io_pLine)
 
 		/* The operation must be some sort of instruction then */
 
-		/* Split instruction to 'type' and 'name' */
-		szOperation = strtok(szOperation, INSTRUCTION_MODIFIER_SEPARATOR);
+		/* Assert where the modifiers begin */
 		io_pLine->info.instruction.modifiers =
-				strtok(NULL, INSTRUCTION_MODIFIER_SEPARATOR);
+				strchr(szOperation, INSTRUCTION_MODIFIER_SEPARATOR);
 
+		/* Make sure there are modifiers */
+		if (io_pLine->info.instruction.modifiers == NULL)
+		{
+			printf("Error! Instruction doesn't have a valid modifier: %s\n",
+					szOperation);
+			return -5;
+		}
+
+		/* Split instruction from modifiers by chopping
+		 * out the separator */
+		io_pLine->info.instruction.modifiers[0] = NULL_TERMINATOR;
+		io_pLine->info.instruction.modifiers++;
+
+		/* Shallow-parsing of the instruction */
 		io_pLine->info.instruction.name =
 				parser_string_to_instruction_type(szOperation);
 		if (io_pLine->info.instruction.name == ILLEGAL)
@@ -178,14 +193,14 @@ int parser_get_statement(statement_t* io_pLine)
 	return -1;
 }
 
-/* fixme: make this more elegant */
+/* fixme: make this more elegant - like instruction */
 directive_type_t parser_string_to_directive_type(const char* szDirective)
 {
 	if (szDirective == NULL)
 		return DIRECTIVE_ILLEGAL;
 
-	/* fixme: Is this case sensitive? */
-	/* Match to a directive */
+	/* Match to a directive,
+	 * assume case sensitive */
 	if (strcmp("data", szDirective) == 0)
 	{
 		return DIRECTIVE_DATA;
@@ -210,37 +225,19 @@ directive_type_t parser_string_to_directive_type(const char* szDirective)
 
 opcode_t parser_string_to_instruction_type(const char* szInstruction)
 {
-	static const char* arrInstructionNames[ILLEGAL] =
-		{"mov",
-		 "cmp",
-		 "add",
-		 "sub",
-		 "not",
-		 "clr",
-		 "lea",
-		 "inc",
-		 "dec",
-		 "jmp",
-		 "bne",
-		 "red",
-		 "prn",
-		 "jsr",
-		 "rts",
-		 "stop"
-		};
-
-	opcode_t currOpcode;
+	unsigned i;
 
 	if (szInstruction == NULL)
 		return ILLEGAL;
 
-	/* fixme: Is this case sensitive? */
-	/* Match to an instruction */
-	for (currOpcode = (opcode_t)0; currOpcode < ILLEGAL; currOpcode++)
+	/* Match to an instruction, assume it is case
+	 * sensitive */
+	for (i = 0; i < ILLEGAL; i++)
 	{
-		if (strcmp(szInstruction, arrInstructionNames[currOpcode]) == 0)
+		if (strcmp(szInstruction,
+				   g_arrInstructionSyntax[i].name) == 0)
 		{
-			return currOpcode;
+			return g_arrInstructionSyntax[i].opcode;
 		}
 	}
 
@@ -341,12 +338,17 @@ int parser_get_items_from_list(char* szList,
 	size_t nCurrCharIdx = 0;
 	parser_list_state_t state = PARSER_LIST_STATE_INIT;
 
+	/* Special case - empty list */
+	if (szList == NULL && nListSize == 0)
+	{
+		return 0;
+	}
+
 	if (szList == NULL ||
 		o_arrItems == NULL)
 		return -1;
 
-	/* fixme: null-termination define */
-	for (nCurrCharIdx = 0; szList[nCurrCharIdx] != '\0'; ++nCurrCharIdx)
+	for (nCurrCharIdx = 0; szList[nCurrCharIdx] != NULL_TERMINATOR; ++nCurrCharIdx)
 	{
 		/* In the middle of an item */
 		if (state == PARSER_LIST_STATE_IN_ITEM)
@@ -417,5 +419,70 @@ int parser_get_items_from_list(char* szList,
 	else
 	{
 		return -1;
+	}
+}
+
+instruction_type_t parser_get_instruction_type(const char* szModifiers)
+{
+	unsigned long type;
+	char * pEnd;
+
+	/* The first character in the modifiers string is the type */
+	type = strtol(szModifiers, &pEnd, NUMBERS_BASE);
+
+	/* Nothing was parsed, error */
+	if (pEnd == szModifiers)
+	{
+		return INVALID_TYPE;
+	}
+	else
+	{
+		return (instruction_type_t)type;
+	}
+}
+
+/* todo: test this separately */
+/* fixme: magic numbers */
+instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
+{
+	unsigned long comb1, comb2;
+	char *pEnd1, *pEnd2;
+
+	/* Should there be any comb at all? */
+	if (szModifiers[1] == NULL_TERMINATOR)
+	{
+		/* Default value */
+		return NO_COMB;
+	}
+
+	/* Make sure proper delimiters were placed */
+	if (szModifiers[1] != INSTRUCTION_MODIFIER_SEPARATOR ||
+		szModifiers[3] != INSTRUCTION_MODIFIER_SEPARATOR)
+	{
+		return -1;
+	}
+
+	/* Make sure the comb ends after its second part,
+	 * 5 chars max should make up the modifiers string */
+	if (strlen(szModifiers) > 5)
+		return -2;
+
+	/* Get the combination parts */
+	comb1 = strtol(&szModifiers[2], &pEnd1, NUMBERS_BASE);
+	comb2 = strtol(&szModifiers[4], &pEnd2, NUMBERS_BASE);
+
+	/* Nothing was parsed, error */
+	if (pEnd1 == szModifiers || pEnd2 == szModifiers)
+	{
+		return INVALID_COMB;
+	}
+	else
+	{
+		/* Make sure they are valid in their range */
+		if (comb1 > 1 || comb2 > 1)
+			return -3;
+
+		/* Left bit is comb1, right bit is comb2 */
+		return (instruction_comb_t)(comb1 << 2 | comb2);
 	}
 }

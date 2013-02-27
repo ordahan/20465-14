@@ -127,7 +127,7 @@ int test_compile_extern()
 
 int test_compile_entry()
 {
-	/* todo: test entry
+	/*
 	 * #Entry for existing symbol
 	 * #Entry for external
 	 * Entry for non-existing symbol

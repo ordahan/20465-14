@@ -24,7 +24,8 @@ typedef enum
 typedef struct
 {
 	int			name;
-	const char* modifiers;
+	char*       modifiers;
+	unsigned 	memory_size;
 }instruction_statement_t;
 
 typedef struct

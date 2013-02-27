@@ -14,6 +14,7 @@
 #define PARSER_H_
 
 #include "statement.h"
+#include "instruction.h"
 #include <stdlib.h>
 
 #define MAX_LIST_LENGTH MAX_LINE_LENGTH
@@ -45,6 +46,8 @@ int parser_get_statement(statement_t* io_pLine);
  * of items, an error occurs.
  * The cells in the array of items will be filled in the range
  * of [0,nListSize) (when of-course [0,0) is an empty group of cells)
+ * If the number of expected elements is 0, szList must be NULL
+ * in order to succeed.
  * @param szList String containing a comma-separated items.
  * @param o_arrItems Items found on the list (each item will be a
  * null-terminated string and any leading or trailing whitespaces
@@ -61,5 +64,24 @@ int parser_get_items_from_list(char* szList,
  * @return Length of the label, 0 if label have any syntax errors
  */
 int parser_check_symbol_syntax(const char* szSymbol);
+
+/**
+ * Gets the type of the given modifiers string.
+ * @param szModifiers Modifiers of the instruction.
+ * @return What type (if legal) is the instruction,
+ * or INVALID_TYPE if its invalid.
+ */
+instruction_type_t parser_get_instruction_type(const char* szModifiers);
+
+/**
+ * Gets the comb value of the given modifiers string,
+ * if there is any.
+ *
+ * @param szModifiers Modifiers of the instruction.
+ * @return NO_COMB if no comb exists,
+ * otherwise: what comb (if legal) is the instruction,
+ * or INVALID_COMB if its invalid.
+ */
+instruction_comb_t parser_get_instruction_comb(const char* szModifiers);
 
 #endif /* PARSER_H_ */
