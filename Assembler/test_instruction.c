@@ -23,7 +23,6 @@ int run_test_compile_instruction(const char		*line,
 {
 	unsigned i;
 	statement_t statement;
-	unsigned original_IC = code->IC;
 
 	/* Retrieve the line to compile */
 	strcpy(statement.szContent, line);
@@ -107,7 +106,6 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
-	pExpectedInstruction->comb = INST_COMB_MSB_LSB;
 	pExpectedInstruction->dest_reg = R7;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = INC;
@@ -233,7 +231,7 @@ int test_compile_instruction()
 	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
-	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX_IMMEDIATE;
+	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
 	expected.localities[1] = ADDR_RELOCATABLE;
 	expected.content[1].val = 0;
@@ -254,8 +252,8 @@ int test_compile_instruction()
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
-	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX_IMMEDIATE;
-	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX_DIRECT;
+	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX;
+	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
 	expected.localities[0] = ADDR_RELOCATABLE;
 	expected.content[1].val = 0;

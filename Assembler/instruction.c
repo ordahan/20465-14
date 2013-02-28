@@ -228,36 +228,46 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 					  char** arrOperands,
 					  unsigned int nOperands)
 {
-	operand_addressing_t src, dest;
-	src = dest = OPERAND_ADDR_NUM;
+	operand_addressing_t addresingSrc, addressingDest;
+	addresingSrc = addressingDest = OPERAND_ADDR_NUM;
 
 	/* Binary operation */
 	if (nOperands == 2)
 	{
-		src = parser_get_operand(arrOperands[0],
+		/* fixme: is the first always src ? */
+		/* Get the source operand */
+		addresingSrc = parser_get_operand(arrOperands[0],
 							   pInstruction);
-		dest = parser_get_operand(arrOperands[1],
+		/* If it was a register, it was stored in the dest.
+		 * Copy it to the src.
+		 * If it wasn't, it won't matter anyway.
+		 */
+		pInstruction->instruction.src_reg = pInstruction->instruction.dest_reg;
+
+		/* Get the destination operand */
+		addressingDest = parser_get_operand(arrOperands[1],
 								pInstruction);
 	}
 	/* Unary operation */
 	else if(nOperands == 1)
 	{
-		dest = parser_get_operand(arrOperands[0],
+		/* Get the destination operand */
+		addressingDest = parser_get_operand(arrOperands[0],
 								pInstruction);
 	}
 
 	/* Test addressing types for the opcode */
 	if (0 == is_addressing_valid_for_opcode(
 							   pInstruction->instruction.opcode,
-							   src,
-							   dest))
+							   addresingSrc,
+							   addressingDest))
 	{
 		printf("Error! Operands addressing is invalid for instruction: ");
 		return -1;
 	}
 
-	pInstruction->instruction.src_addressing = src;
-	pInstruction->instruction.dest_addressing = dest;
+	pInstruction->instruction.src_addressing = addresingSrc;
+	pInstruction->instruction.dest_addressing = addressingDest;
 
 	return 0;
 }

@@ -38,11 +38,9 @@ typedef enum
 {
 	OPERAND_ADDR_IMMEDIATE = 0,
 	OPERAND_ADDR_DIRECT = 1,
-	OPERAND_ADDR_INDEX_IMMEDIATE = 2,
-	OPERAND_ADDR_INDEX_DIRECT = 2,
-	OPERAND_ADDR_INDEX_REGISTER = 2,
+	OPERAND_ADDR_INDEX = 2,
 	OPERAND_ADDR_REGISTER  = 3
-}operand_addressing_t;/* fixme: remove sub types for index */
+}operand_addressing_t;
 #define OPERAND_ADDR_NUM (OPERAND_ADDR_REGISTER+1)
 
 typedef enum
@@ -103,7 +101,7 @@ typedef struct
 
 	/* Extra first locality is reserved for the instruction itself */
 	address_locality_t   localities[MAX_INSTRUCTION_EXTRA_DATA_CELLS + 1];
-}instruction_with_operands_t;
+}instruction_with_operands_t; /* todo: add api for this data structure */
 
 /* Externals */
 extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];

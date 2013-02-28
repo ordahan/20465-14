@@ -369,6 +369,16 @@ int test_get_statement()
 	return 0;
 }
 
+int run_get_items_from_list(char* szList, char** arrItems, unsigned int nListSize)
+{
+	char szCurrTestCase[MAX_LIST_LENGTH];
+
+	strcpy(szCurrTestCase, szList);
+
+	return parser_get_items_from_list(szCurrTestCase,
+									  arrItems,
+									  nListSize);
+}
 #define MAX_NUM_ITEMS 5
 int test_get_items_from_list()
 {
@@ -402,11 +412,11 @@ int test_get_items_from_list()
 	printf("	Empty list:");
 	strcpy(szList, "");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
-	assert(0 == parser_get_items_from_list(szList,
-										   arrItems,
-										   0));
+	assert(0 == run_get_items_from_list(szList,
+										arrItems,
+										0));
 	assert(arrItems[0] == NULL);
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   1));
 	printf("PASSED.\n");
@@ -416,11 +426,11 @@ int test_get_items_from_list()
 	printf("	Empty list with whitespaces:");
 	strcpy(szList, "   		 	");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   0));
 	assert(arrItems[0] == NULL);
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   1));
 	printf("PASSED.\n");
@@ -430,13 +440,13 @@ int test_get_items_from_list()
 	printf("	Only delimiter:");
 	strcpy(szList, ",");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   0));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   1));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   2));
 	printf("PASSED.\n");
@@ -446,13 +456,13 @@ int test_get_items_from_list()
 	printf("	Delimiter with whitespaces before:");
 	strcpy(szList, "   	,");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   0));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   1));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   2));
 	printf("PASSED.\n");
@@ -462,13 +472,13 @@ int test_get_items_from_list()
 	printf("	Delimiter with whitespaces after:");
 	strcpy(szList, ", 	");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   0));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   1));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   2));
 	printf("PASSED.\n");
@@ -478,13 +488,13 @@ int test_get_items_from_list()
 	printf("	Delimiter with whitespaces both sides:");
 	strcpy(szList, "   	, 	");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   0));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   1));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   2));
 	printf("PASSED.\n");
@@ -496,37 +506,38 @@ int test_get_items_from_list()
 	strcpy(szList, "hello");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   0));
 	/* Equal */
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   1));
-	assert(arrItems[0] == &szList[0]);
+	assert(0 == strcmp(arrItems[0],"hello"));
+
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   2));
 	printf("PASSED.\n");
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Two itemin list:");
+	printf("	Two item in list:");
 	strcpy(szList, "hello,love");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   0));
 	/* Equal */
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   2));
-	assert(arrItems[0] == &szList[0]);
-	assert(arrItems[1] == &szList[6]);
+	assert(0 == strcmp(arrItems[0], "hello"));
+	assert(0 == strcmp(arrItems[1], "love"));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	printf("PASSED.\n");
@@ -537,20 +548,20 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love,nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   5));
-	assert(arrItems[0] == &szList[0]);
-	assert(arrItems[1] == &szList[6]);
-	assert(arrItems[2] == &szList[11]);
-	assert(arrItems[3] == &szList[16]);
-	assert(arrItems[4] == &szList[19]);
+	assert(0 == strcmp(arrItems[0], "hello"));
+	assert(0 == strcmp(arrItems[1], "love"));
+	assert(0 == strcmp(arrItems[2], "nice"));
+	assert(0 == strcmp(arrItems[3], "to"));
+	assert(0 == strcmp(arrItems[4], "meet"));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -561,20 +572,20 @@ int test_get_items_from_list()
 	strcpy(szList, "hello ,love	,nice,  	to, meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   5));
-	assert(arrItems[0] == &szList[0]);
-	assert(arrItems[1] == &szList[7]);
-	assert(arrItems[2] == &szList[13]);
-	assert(arrItems[3] == &szList[21]);
-	assert(arrItems[4] == &szList[25]);
+	assert(0 == strcmp(arrItems[0], "hello"));
+	assert(0 == strcmp(arrItems[1], "love"));
+	assert(0 == strcmp(arrItems[2], "nice"));
+	assert(0 == strcmp(arrItems[3], "to"));
+	assert(0 == strcmp(arrItems[4], "meet"));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -585,20 +596,21 @@ int test_get_items_from_list()
 	strcpy(szList, " hello,love,nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   5));
-	assert(arrItems[0] == &szList[1]);
-	assert(arrItems[1] == &szList[7]);
-	assert(arrItems[2] == &szList[12]);
-	assert(arrItems[3] == &szList[17]);
-	assert(arrItems[4] == &szList[20]);
+	assert(0 == strcmp(arrItems[0], "hello"));
+	assert(0 == strcmp(arrItems[1], "love"));
+	assert(0 == strcmp(arrItems[2], "nice"));
+	assert(0 == strcmp(arrItems[3], "to"));
+	assert(0 == strcmp(arrItems[4], "meet"));
+
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -609,20 +621,21 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love,nice,to,meet	");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 == parser_get_items_from_list(szList,
+	assert(0 == run_get_items_from_list(szList,
 										   arrItems,
 										   5));
-	assert(arrItems[0] == &szList[0]);
-	assert(arrItems[1] == &szList[6]);
-	assert(arrItems[2] == &szList[11]);
-	assert(arrItems[3] == &szList[16]);
-	assert(arrItems[4] == &szList[19]);
+	assert(0 == strcmp(arrItems[0], "hello"));
+	assert(0 == strcmp(arrItems[1], "love"));
+	assert(0 == strcmp(arrItems[2], "nice"));
+	assert(0 == strcmp(arrItems[3], "to"));
+	assert(0 == strcmp(arrItems[4], "meet"));
+
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -633,15 +646,15 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love;nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -652,15 +665,15 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   4));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -671,15 +684,15 @@ int test_get_items_from_list()
 	strcpy(szList, ",hello,love,nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -690,19 +703,19 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love,,nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* Might consider equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   7));
 	printf("PASSED.\n");
@@ -713,15 +726,15 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love,nice,to,meet,");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -732,15 +745,15 @@ int test_get_items_from_list()
 	strcpy(szList, " 	,hello,love,nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -751,19 +764,19 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love, 	,nice,to,meet");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* Might consider equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   7));
 	printf("PASSED.\n");
@@ -774,15 +787,15 @@ int test_get_items_from_list()
 	strcpy(szList, "hello,love,nice,to,meet, 	");
 	memset(arrItems, 0, sizeof(arrItems) / sizeof(arrItems[0]));
 	/* Less */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   3));
 	/* Equal */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   5));
 	/* More */
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   arrItems,
 										   6));
 	printf("PASSED.\n");
@@ -793,7 +806,7 @@ int test_get_items_from_list()
 	assert(0 != parser_get_items_from_list(NULL,
 										   arrItems,
 										   3));
-	assert(0 != parser_get_items_from_list(szList,
+	assert(0 != run_get_items_from_list(szList,
 										   NULL,
 										   3));
 	printf("PASSED.\n");

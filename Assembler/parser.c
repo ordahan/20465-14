@@ -24,6 +24,7 @@
 #define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
 #define NUMBERS_BASE	(10)
 #define NULL_TERMINATOR '\0'
+#define IMMEDIATE_PREFIX '#'
 
 /* Internal functions declarations */
 /**
@@ -60,6 +61,18 @@ opcode_t parser_string_to_instruction_type(const char* szInstruction);
  * the given string isn't legal.
  */
 machine_registers_t parser_string_to_register_type(const char* szRegister);
+
+/**
+ * If there label given has an index offset to it, retrieves a ptr
+ * to the index. Any syntax-used separator for the index are replaced
+ * with a null-termination character (thus practically "splitting" the
+ * label from it's index).
+ *
+ * @param szLabel Label that might contain an index offset.
+ * @return szLabel if there is no index, NULL for any error with
+ * the index.
+ */
+char* parser_get_index_from_label(char* szLabel);
 
 /* Internal definitions */
 typedef enum
@@ -246,7 +259,7 @@ opcode_t parser_string_to_instruction_type(const char* szInstruction)
 
 machine_registers_t parser_string_to_register_type(const char* szRegister)
 {
-	static const char* arrRegisterNames[REGISTERS_LAST] =
+	static const char* arrRegisterNames[REGISTER_INVALID] =
 		{
 		"r0",
 		"r1",
@@ -265,7 +278,7 @@ machine_registers_t parser_string_to_register_type(const char* szRegister)
 	/* fixme: Is this case sensitive? */
 	/* Match to an instruction */
 	for (currRegister = (opcode_t)0;
-		 currRegister < REGISTERS_LAST;
+		 currRegister < REGISTER_INVALID;
 		 currRegister++)
 	{
 		if (strcmp(szRegister, arrRegisterNames[currRegister]) == 0)
@@ -274,7 +287,7 @@ machine_registers_t parser_string_to_register_type(const char* szRegister)
 		}
 	}
 
-	return REGISTERS_LAST;
+	return REGISTER_INVALID;
 }
 
 int parser_check_symbol_syntax(const char* szSymbol)
@@ -320,7 +333,7 @@ int parser_check_symbol_syntax(const char* szSymbol)
 	}
 
 	/* Make sure its not a register name */
-	if (parser_string_to_register_type(szSymbol) != REGISTERS_LAST)
+	if (parser_string_to_register_type(szSymbol) != REGISTER_INVALID)
 	{
 		printf("Error! name '%s' is a register name, cannot be a symbol.\n",
 				szSymbol);
@@ -400,6 +413,11 @@ int parser_get_items_from_list(char* szList,
 			}
 			/* else, just a whitespace.. doesn't change anything */
 		}
+
+		/* Found a delimiter or whitespace, remove it */
+		if (state == PARSER_LIST_STATE_AFTER_DELIMITER ||
+			state == PARSER_LIST_STATE_AFTER_ITEM)
+			szList[nCurrCharIdx] = NULL_TERMINATOR;
 	}
 
 	/* The list must end with either a whitespace,
@@ -422,6 +440,7 @@ int parser_get_items_from_list(char* szList,
 	}
 }
 
+/* todo: test this separately */
 instruction_type_t parser_get_instruction_type(const char* szModifiers)
 {
 	unsigned long type;
@@ -487,8 +506,103 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 	}
 }
 
-operand_addressing_t parser_get_operand(const char* szOperand,
+/* todo: test this separately */
+operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction)
 {
+	machine_registers_t reg = parser_string_to_register_type(szOperand);
+
+	/* Immediate value */
+	if (szOperand[0] == IMMEDIATE_PREFIX)
+	{
+		char* pEnd;
+		long int val;
+
+		/* Parse number starting from the prefix */
+		val = strtol(&szOperand[1], &pEnd, NUMBERS_BASE);
+
+		/* Check that there aren't any 'leftovers' */
+		if (pEnd == strchr(szOperand, NULL_TERMINATOR))
+		{
+			/* Place the value as an extra data */
+			pInstruction->extra_data[pInstruction->num_extra_data].val = val;
+			pInstruction->localities[pInstruction->num_extra_data] = ADDR_ABSOLUTE;
+			pInstruction->num_extra_data++;
+			return OPERAND_ADDR_IMMEDIATE;
+		}
+		else
+		{
+			printf("Error! Invalid immediate value: %s\n", szOperand);
+			return OPERAND_ADDR_NUM;
+		}
+	}
+	/* Register */
+	else if (reg != REGISTER_INVALID)
+	{
+		/* Temporarily place the register in the
+		 * destination register
+		 */
+		pInstruction->instruction.dest_reg = reg;
+		return OPERAND_ADDR_REGISTER;
+	}
+	/* Must be some sort of label */
+	else
+	{
+		/* Split the index from the label, if there is any index */
+		const char* szIndexValue = parser_get_index_from_label(szOperand);
+
+		/* The label must be valid anyway */
+		if (parser_check_symbol_syntax(szOperand) == 0)
+		{
+			printf("Error! Label %s has syntax errors.\n",
+					szOperand);
+			return OPERAND_ADDR_NUM;
+		}
+
+		/* Save room for the label, resolve addressing later */
+		pInstruction->extra_data[pInstruction->num_extra_data].val = 0;
+		pInstruction->num_extra_data++;
+
+		/* Does it have an index? */
+		if (szIndexValue == szOperand)
+		{
+			long int index;
+			char* pEnd;
+
+			/* Might be a number */
+			/* todo: a negative index is possible? */
+			index = strtol(szIndexValue, &pEnd, NUMBERS_BASE);
+
+			/* Might be a register */ /* fixme: register index is just reg num? */
+			reg = parser_string_to_register_type(szIndexValue);
+
+			/* Index is a register */
+			if (reg != REGISTER_INVALID)
+			{
+				index = reg;
+			}
+			/* Index is an immediate number or a label.
+			 * if it wasn't a number, its already zero'ed out.
+			 * Anyway, 'index' has the correct value we want.
+			 * */
+
+			/* Save the index value as well */
+			pInstruction->extra_data[pInstruction->num_extra_data].val = index;
+			pInstruction->num_extra_data++;
+
+			return OPERAND_ADDR_INDEX;
+		}
+		/* No index, plain old label */
+		else
+		{
+			return OPERAND_ADDR_DIRECT;
+		}
+	}
+
 	return OPERAND_ADDR_NUM;
+}
+
+char* parser_get_index_from_label(char* szLabel)
+{
+	return NULL;
 }

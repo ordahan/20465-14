@@ -48,6 +48,9 @@ int parser_get_statement(statement_t* io_pLine);
  * of [0,nListSize) (when of-course [0,0) is an empty group of cells)
  * If the number of expected elements is 0, szList must be NULL
  * in order to succeed.
+ * Each separator in the list is replaced with the null-termination
+ * char (thus splitting the given list to all of its members.
+ *
  * @param szList String containing a comma-separated items.
  * @param o_arrItems Items found on the list (each item will be a
  * null-terminated string and any leading or trailing whitespaces
@@ -55,6 +58,7 @@ int parser_get_statement(statement_t* io_pLine);
  * @param nListSize Number of items that should be on the list.
  * @return 0 for success, anything else on error.
  */
+/* todo: add more tests for null-termination */
 int parser_get_items_from_list(char* szList,
 							   char** o_arrItems,
 							   size_t nListSize);
@@ -87,13 +91,16 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers);
 /**
  * Parses the given operand (both gets the addressing type and
  * places data in the given instruction while updating the number of
- * extra cells used).
+ * extra cells used). If the operand is a register, the value of the
+ * register is temporarily placed in the "dest" register.
+ * This function might change the value of the string szOperand!
+ * do not rely on its value after running the function.
  *
  * @param szOperand string representing the operand value.
  * @param pInstruction Where to place the extra data that the operand takes.
  * @return Addressing type for the operand.
  */
-operand_addressing_t parser_get_operand(const char* szOperand,
+operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction);
 
 #endif /* PARSER_H_ */

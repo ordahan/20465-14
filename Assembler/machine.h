@@ -24,6 +24,6 @@ typedef enum
 	R6,
 	R7
 }machine_registers_t;
-#define REGISTERS_LAST (R7+1)
+#define REGISTER_INVALID (R7+1)
 
 #endif /* DATATYPES_H_ */
