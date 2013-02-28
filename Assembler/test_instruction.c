@@ -60,7 +60,7 @@ int test_instruction()
 int test_compile_instruction()
 {
 	code_section_t code,expected;
-	instruction_t *pExpectedInstruction = (instruction_t*)&expected.content[0];
+	instruction_t * const pExpectedInstruction = (instruction_t*)&expected.content[0];
 
 	/*
 	 * #No operands
@@ -174,10 +174,9 @@ int test_compile_instruction()
 											 &expected,
 											 1));
 	expected.localities[1] = ADDR_ABSOLUTE;
-	pExpectedInstruction = (instruction_t*)&expected.content[1];
-	pExpectedInstruction->dest_reg = R0;
-	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
-	pExpectedInstruction->opcode = INC;
+	((instruction_t*)&expected.content[1])->dest_reg = R0;
+	((instruction_t*)&expected.content[1])->dest_addressing = OPERAND_ADDR_REGISTER;
+	((instruction_t*)&expected.content[1])->opcode = INC;
 	expected.IC = 2;
 	assert(0 == run_test_compile_instruction("inc/0 r0",
 											 &code,
@@ -209,7 +208,6 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
-	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
 	pExpectedInstruction->opcode = MOV;
@@ -218,7 +216,7 @@ int test_compile_instruction()
 	expected.localities[2] = ADDR_RELOCATABLE;
 	expected.content[2].val = 0;
 	expected.IC = 3;
-	assert(0 == run_test_compile_instruction("mov/0 3,y",
+	assert(0 == run_test_compile_instruction("mov/0 #3,y",
 											 &code,
 											 &expected,
 											 1));

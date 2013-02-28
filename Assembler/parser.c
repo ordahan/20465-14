@@ -507,6 +507,7 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 }
 
 /* todo: test this separately */
+/* todo: split code to more funcs */
 operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction)
 {
@@ -526,8 +527,8 @@ operand_addressing_t parser_get_operand(char* szOperand,
 		{
 			/* Place the value as an extra data */
 			pInstruction->extra_data[pInstruction->num_extra_data].val = val;
-			pInstruction->localities[pInstruction->num_extra_data] = ADDR_ABSOLUTE;
 			pInstruction->num_extra_data++;
+			pInstruction->localities[pInstruction->num_extra_data] = ADDR_ABSOLUTE;
 			return OPERAND_ADDR_IMMEDIATE;
 		}
 		else
@@ -562,12 +563,14 @@ operand_addressing_t parser_get_operand(char* szOperand,
 		/* Save room for the label, resolve addressing later */
 		pInstruction->extra_data[pInstruction->num_extra_data].val = 0;
 		pInstruction->num_extra_data++;
+		pInstruction->localities[pInstruction->num_extra_data] = ADDR_RELOCATABLE;
 
 		/* Does it have an index? */
 		if (szIndexValue == szOperand)
 		{
 			long int index;
 			char* pEnd;
+			address_locality_t locality_for_index = ADDR_ABSOLUTE;
 
 			/* Might be a number */
 			/* todo: a negative index is possible? */
@@ -581,14 +584,25 @@ operand_addressing_t parser_get_operand(char* szOperand,
 			{
 				index = reg;
 			}
-			/* Index is an immediate number or a label.
-			 * if it wasn't a number, its already zero'ed out.
-			 * Anyway, 'index' has the correct value we want.
-			 * */
+			/* Not an immediate number, must be a label */
+			else if (pEnd != strchr(szIndexValue, NULL_TERMINATOR))
+			{
+				/* Must be a valid label */
+				if (parser_check_symbol_syntax(szIndexValue) == 0)
+				{
+					printf("Error! Index %s has syntax errors.\n",
+							szIndexValue);
+					return OPERAND_ADDR_NUM;
+				}
+
+				locality_for_index = ADDR_RELOCATABLE;
+			}
+			/* A number */
 
 			/* Save the index value as well */
 			pInstruction->extra_data[pInstruction->num_extra_data].val = index;
 			pInstruction->num_extra_data++;
+			pInstruction->localities[pInstruction->num_extra_data] = ADDR_RELOCATABLE;
 
 			return OPERAND_ADDR_INDEX;
 		}

@@ -10,7 +10,7 @@
 
 typedef struct
 {
-	unsigned int val : 20;
+	unsigned int val;
 }machine_cell_t;
 
 typedef enum

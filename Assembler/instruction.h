@@ -88,6 +88,7 @@ typedef struct
 	opcode_t 			 opcode 		: 4;
 	instruction_type_t	 type			: 1;
 	unsigned char		 rfu			: 3;
+	unsigned int 		 pad			: 12;
 }instruction_t;
 
 typedef struct
