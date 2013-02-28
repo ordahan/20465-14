@@ -25,6 +25,8 @@
 #define NUMBERS_BASE	(10)
 #define NULL_TERMINATOR '\0'
 #define IMMEDIATE_PREFIX '#'
+#define INDEX_OFFSET_OPEN_DELIMITER "{"
+#define INDEX_OFFSET_CLOSE_DELIMITER "}"
 
 /* Internal functions declarations */
 /**
@@ -69,8 +71,9 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
  * label from it's index).
  *
  * @param szLabel Label that might contain an index offset.
+ *
  * @return szLabel if there is no index, NULL for any error with
- * the index.
+ * the index, index string if its ok.
  */
 char* parser_get_index_from_label(char* szLabel);
 
@@ -566,7 +569,8 @@ operand_addressing_t parser_get_operand(char* szOperand,
 		pInstruction->localities[pInstruction->num_extra_data] = ADDR_RELOCATABLE;
 
 		/* Does it have an index? */
-		if (szIndexValue == szOperand)
+		if (szIndexValue != szOperand &&
+			szIndexValue != NULL)
 		{
 			long int index;
 			char* pEnd;
@@ -602,7 +606,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 			/* Save the index value as well */
 			pInstruction->extra_data[pInstruction->num_extra_data].val = index;
 			pInstruction->num_extra_data++;
-			pInstruction->localities[pInstruction->num_extra_data] = ADDR_RELOCATABLE;
+			pInstruction->localities[pInstruction->num_extra_data] = locality_for_index;
 
 			return OPERAND_ADDR_INDEX;
 		}
@@ -616,7 +620,39 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	return OPERAND_ADDR_NUM;
 }
 
+/* fixme: test me!!! */
 char* parser_get_index_from_label(char* szLabel)
 {
-	return NULL;
+	char* szStartingDelim = strstr(szLabel, INDEX_OFFSET_OPEN_DELIMITER);
+
+	/* Index found */
+	if (szStartingDelim != NULL)
+	{
+		char* szClosingDelim = NULL;
+
+		/* Look for the closing delimiter */
+		szClosingDelim = strstr(szStartingDelim, INDEX_OFFSET_CLOSE_DELIMITER);
+
+		/* Make sure its closed ok */
+		if (szClosingDelim != NULL &&
+			(szClosingDelim[1]) == NULL_TERMINATOR)
+		{
+			/* Remove delimiters */
+			szStartingDelim[0] = NULL_TERMINATOR;
+			szClosingDelim[0] = NULL_TERMINATOR;
+
+			/* Index starts right after starting delimiter */
+			return szStartingDelim+1;
+		}
+		else
+		{
+			printf("Error! Index syntax isn't valid: %s.\n", szStartingDelim);
+			return NULL;
+		}
+	}
+	/* No index */
+	else
+	{
+		return szLabel;
+	}
 }

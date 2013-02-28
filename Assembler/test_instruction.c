@@ -227,7 +227,6 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
-	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
@@ -249,17 +248,16 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
-	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
-	expected.localities[0] = ADDR_RELOCATABLE;
+	expected.localities[1] = ADDR_RELOCATABLE;
 	expected.content[1].val = 0;
-	expected.localities[0] = ADDR_ABSOLUTE;
+	expected.localities[2] = ADDR_ABSOLUTE;
 	expected.content[2].val = 5;
-	expected.localities[0] = ADDR_RELOCATABLE;
+	expected.localities[3] = ADDR_RELOCATABLE;
 	expected.content[3].val = 0;
-	expected.localities[0] = ADDR_RELOCATABLE;
+	expected.localities[4] = ADDR_RELOCATABLE;
 	expected.content[4].val = 0;
 	expected.IC = 5;
 	assert(0 == run_test_compile_instruction("mov/0 x{5},y{z}",
