@@ -267,16 +267,18 @@ int test_compile_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Invalid addressing: ");
+	printf("	Invalid addressing:\n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
-	expected.IC = 1;
-	assert(0 == run_test_compile_instruction("mov/0 r0,0",
+	expected.IC = 0;
+	printf("\t\t");
+	assert(0 == run_test_compile_instruction("mov/0 r0,#0",
 											 &code,
 											 &expected,
 											 0));
-	assert(0 == run_test_compile_instruction("jsr/0 31",
+	printf("\t\t");
+	assert(0 == run_test_compile_instruction("jsr/0 #31",
 											 &code,
 											 &expected,
 											 0));
