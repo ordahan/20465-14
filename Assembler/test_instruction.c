@@ -302,27 +302,32 @@ int test_compile_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Invalid type'd instruction: ");
+	printf("	Invalid type'd instruction:\n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
-	expected.IC = 1;
+	expected.IC = 0;
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/1 r0,r1",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0/1/1 r0,r1",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/1/2/1 r0,r1",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/2/0/1 r0,r1",
 											 &code,
 											 &expected,
 											 0));
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/3 r0,r1",
 											 &code,
 											 &expected,

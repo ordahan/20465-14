@@ -124,18 +124,26 @@ int instruction_compile(const statement_t *pInstructionStatement,
 		printf("Error! Invalid comb: ");
 		return -1;
 	}
-	else if (type == INST_TYPE_20_BIT)
+	else if (comb == NO_COMB)
 	{
-		/* Shouldn't have any comb set */
-		if (comb != NO_COMB)
+		/* Must have comb.. */
+		if (type == INST_TYPE_10_BIT)
 		{
-			printf("Error! type is %d, there should be no comb: ",
-					INST_TYPE_20_BIT);
+			printf("Error! type is %d, there must comb set: ",
+					type);
 			return -1;
 		}
 	}
 	else
 	{
+		/* Shouldn't have any comb set */
+		if (type == INST_TYPE_20_BIT)
+		{
+			printf("Error! type is %d, there should be no comb: ",
+					type);
+			return -1;
+		}
+
 		pInst->comb = comb;
 	}
 

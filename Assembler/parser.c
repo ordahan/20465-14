@@ -457,6 +457,11 @@ instruction_type_t parser_get_instruction_type(const char* szModifiers)
 	{
 		return INVALID_TYPE;
 	}
+	/* Type isn't right */
+	else if (type >= INVALID_TYPE)
+	{
+		return INVALID_TYPE;
+	}
 	else
 	{
 		return (instruction_type_t)type;
@@ -481,13 +486,13 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 	if (szModifiers[1] != INSTRUCTION_MODIFIER_SEPARATOR ||
 		szModifiers[3] != INSTRUCTION_MODIFIER_SEPARATOR)
 	{
-		return -1;
+		return INVALID_COMB;
 	}
 
 	/* Make sure the comb ends after its second part,
 	 * 5 chars max should make up the modifiers string */
 	if (strlen(szModifiers) > 5)
-		return -2;
+		return INVALID_COMB;
 
 	/* Get the combination parts */
 	comb1 = strtol(&szModifiers[2], &pEnd1, NUMBERS_BASE);
@@ -502,10 +507,10 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 	{
 		/* Make sure they are valid in their range */
 		if (comb1 > 1 || comb2 > 1)
-			return -3;
+			return INVALID_COMB;
 
 		/* Left bit is comb1, right bit is comb2 */
-		return (instruction_comb_t)(comb1 << 2 | comb2);
+		return (instruction_comb_t)(comb1 << 1 | comb2);
 	}
 }
 
