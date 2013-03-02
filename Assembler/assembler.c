@@ -177,6 +177,11 @@ int first_pass(FILE* flProgram,
 		{
 			/*todo: Handle error */
 		}
+
+		/* Set the curr statement ptr to the next one
+		 * on the list.
+		 */
+		pCurrStatement = &o_arrStatements[nCurrLine];
 	}
 
 	*o_pNumStatements = nCurrLine;

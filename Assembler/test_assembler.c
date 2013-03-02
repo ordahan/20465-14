@@ -84,6 +84,18 @@ int test_assembler()
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_ENTRY;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
+	code_expected.IC = 2;
+	code_expected.localities[0] = ADDR_ABSOLUTE;
+	code_expected.localities[1] = ADDR_ABSOLUTE;
+	/*mov/0 #3,r1*/
+	instruction_t* pInst = (instruction_t*)&code_expected.content[0].val;
+	pInst->comb = INST_COMB_MSB_MSB;
+	pInst->type = INST_TYPE_20_BIT;
+	pInst->dest_addressing = OPERAND_ADDR_REGISTER;
+	pInst->dest_reg = R1;
+	pInst->opcode = MOV;
+	pInst->src_addressing = OPERAND_ADDR_IMMEDIATE;
+	code_expected.content[1].val = 3;
 
 	printf("	File only with entry: ");
 	assert(0 == test_assembler_compile("tests/entry.as",
