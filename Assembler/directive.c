@@ -36,10 +36,6 @@ int directive_compile_extern(const statement_t *pExtern,
 								   1) != 0)
 		return -2;
 
-	/* Make sure the label is valid */
-	if (parser_check_symbol_syntax(pName) == 0)
-		return -3;
-
 	/* Copy the content of the label */
 	strncpy(symbol.name, pName, sizeof(symbol.name));
 
@@ -62,10 +58,6 @@ int directive_compile_entry(const statement_t *pEntry,
 								   &pName,
 								   1) != 0)
 		return -2;
-
-	/* Make sure the label is valid */
-	if (parser_check_symbol_syntax(pName) == 0)
-		return -3;
 
 	/* Look for the label in the symbol table */
 	pSymbol = symbol_get_from_table_by_name(io_pSymbols, pName);

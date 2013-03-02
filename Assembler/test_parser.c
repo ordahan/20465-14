@@ -33,9 +33,11 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Empty line: ");
 	memset(&stResult, 0, sizeof(stResult));
+	stResult.szLabel = "lalala";
 	strcpy(stResult.szContent, "   				");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_EMPTY == stResult.type);
+	assert(stResult.szLabel == NULL);
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -235,7 +237,6 @@ int test_get_statement()
 	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELLO: .extern foo");
 	assert(0 == parser_get_statement(&stResult));
 	memset(&stResult, 0, sizeof(stResult));
-	/* fixme: 30 chars .. or 31? not sure */
 	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELL31: .extern foo");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");

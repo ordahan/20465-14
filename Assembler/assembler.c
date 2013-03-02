@@ -163,9 +163,15 @@ int first_pass(FILE* flProgram,
 		/* An instruction */
 		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
 		{
-			/* todo: Handle instruction */
-
-			/* Label */
+			/* Compile the instruction itself and put it in
+			 * the code section
+			 */
+			if (instruction_compile(pCurrStatement,
+									o_pCode,
+									o_arrSymbols) != 0)
+			{
+				nErrorCode = -1;
+			}
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{

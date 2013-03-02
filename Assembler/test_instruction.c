@@ -23,6 +23,9 @@ int run_test_compile_instruction(const char		*line,
 {
 	unsigned i;
 	statement_t statement;
+	symbol_table_arr_t symbols;
+
+	memset(symbols, 0, sizeof(symbols));
 
 	/* Retrieve the line to compile */
 	strcpy(statement.szContent, line);
@@ -31,11 +34,19 @@ int run_test_compile_instruction(const char		*line,
 	assert(0 == parser_get_statement(&statement));
 
 	/* Check that the compilation returns as expected */
-	assert(!((0 == instruction_compile(&statement, code)) ^
+	assert(!((0 == instruction_compile(&statement, code, symbols)) ^
 			 fShouldSucceed));
 
 	/* Check the IC */
 	assert(expected->IC == code->IC);
+
+	/* Check the label if exists */
+	if (statement.szLabel != NULL)
+	{
+		assert(0 == strcmp(statement.szLabel, symbols[0].name));
+		assert(code->IC == symbols[0].address);
+		assert(ADDR_ABSOLUTE == symbols[0].locality);
+	}
 
 	/* Check the code generated */
 	for (i = 0; i < expected->IC; ++i)
@@ -67,6 +78,7 @@ int test_compile_instruction()
 	 * #One operand
 	 * #Two operands
 	 * #Consecutive instructions
+	 * Label
 	 * #One extra data
 	 * #Two extra data
 	 * #Three extra data
@@ -160,6 +172,33 @@ int test_compile_instruction()
 
 	/**********************************************/
 	printf("	Consecutive instructions: ");
+	memset(&code, 0, sizeof(code));
+	memset(&expected, 0, sizeof(expected));
+	expected.localities[0] = ADDR_ABSOLUTE;
+	pExpectedInstruction->dest_reg = R1;
+	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
+	pExpectedInstruction->src_reg = R0;
+	pExpectedInstruction->src_addressing = OPERAND_ADDR_REGISTER;
+	pExpectedInstruction->opcode = MOV;
+	expected.IC = 1;
+	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
+											 &code,
+											 &expected,
+											 1));
+	expected.localities[1] = ADDR_ABSOLUTE;
+	((instruction_t*)&expected.content[1])->dest_reg = R0;
+	((instruction_t*)&expected.content[1])->dest_addressing = OPERAND_ADDR_REGISTER;
+	((instruction_t*)&expected.content[1])->opcode = INC;
+	expected.IC = 2;
+	assert(0 == run_test_compile_instruction("inc/0 r0",
+											 &code,
+											 &expected,
+											 1));
+
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Label: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;

@@ -76,7 +76,8 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 
 /* Implementation */
 int instruction_compile(const statement_t *pInstructionStatement,
-						code_section_t* io_pCode)
+						code_section_t* io_pCode,
+						symbol_table_arr_t io_pSymbols)
 {
 	char* arrOperands[MAX_NUM_OPERANDS];
 	unsigned int type,comb;
@@ -167,6 +168,23 @@ int instruction_compile(const statement_t *pInstructionStatement,
 	}
 
 	/* fixme: make this more elegant */
+
+	/* Add the instruction's label if exists */
+	if (pInstructionStatement->szLabel != NULL)
+	{
+		/* Save the label for the instruction,
+		 * its address is the IC before the instruction
+		 */
+		symbol_t label;
+		label.locality = ADDR_ABSOLUTE;
+		label.address = io_pCode->IC;
+		strncpy(label.name, pInstructionStatement->szLabel, sizeof(label.name));
+		if (symbol_add_to_table(io_pSymbols, &label) != 0)
+		{
+			return -1;
+		}
+	}
+
 	/* Update the code section with the compiled data */
 	memcpy(&io_pCode->content[io_pCode->IC],
 		   pInst,

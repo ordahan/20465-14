@@ -133,6 +133,7 @@ extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];
  * @return 0 on success, anything else on error.
  */
 int instruction_compile(const statement_t *pInstruction,
-						code_section_t* io_pCode);
+						code_section_t* io_pCode,
+						symbol_table_arr_t io_pSymbols);
 
 #endif /* INSTRUCTION_H_ */

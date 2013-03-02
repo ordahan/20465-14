@@ -13,7 +13,8 @@
 /* fixme: A line that contains only a label and ':'
  * is considered legal(?), and it might take the entire line
  */
-/* fixme: 30 chars .. or 31? not sure */
+/* Assume label's total length is 30 (instructions not exactly
+ * clear wether its 30 or 31) */
 #define MAX_LABEL_LENGTH ((unsigned int)30)
 
 /* Typedefs */

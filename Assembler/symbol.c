@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "parser.h"
 
 int symbol_add_to_table(symbol_table_arr_t table,
 						const symbol_t *symbol)
@@ -27,6 +28,9 @@ int symbol_add_to_table(symbol_table_arr_t table,
 		return -1;
 	}
 
+	/* Make sure the name is valid */
+	if (parser_check_symbol_syntax(symbol->name) == 0)
+		return -3;
 
 	/* Go symbol-by-symbol until we either find the first empty spot
 	 * or we reached the end of the table

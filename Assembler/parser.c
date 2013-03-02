@@ -111,6 +111,7 @@ int parser_get_statement(statement_t* io_pLine)
 	}
 
 	/* Is there a label in the line? */
+	io_pLine->szLabel = NULL;
 	pLabelEnd = strchr(io_pLine->szContent, LABEL_SEPARATOR);
 	if (pLabelEnd != NULL)
 	{
@@ -119,7 +120,7 @@ int parser_get_statement(statement_t* io_pLine)
 		 */
 		*pLabelEnd = NULL_TERMINATOR;
 
-		/* Essentialy we have split the content into 2 parts */
+		/* Essentially we have split the content into 2 parts */
 		io_pLine->szLabel = io_pLine->szContent;
 
 		nLabelSectionLength = parser_check_symbol_syntax(io_pLine->szLabel);
@@ -293,6 +294,10 @@ machine_registers_t parser_string_to_register_type(const char* szRegister)
 	return REGISTER_INVALID;
 }
 
+/* fixme: belongs to symbol.h only? check validity only there...
+ * even in index addressing etc we don't care.. address resolution
+ * process will not be able to find the symbol anyway (because it wasn't
+ * legal and didn't get into the symbol table) */
 int parser_check_symbol_syntax(const char* szSymbol)
 {
 	size_t nSymbolLength = 0;
@@ -582,7 +587,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 			address_locality_t locality_for_index = ADDR_ABSOLUTE;
 
 			/* Might be a number */
-			/* todo: a negative index is possible? */
+			/* fixme: a negative index is possible? */
 			index = strtol(szIndexValue, &pEnd, NUMBERS_BASE);
 
 			/* Might be a register */ /* fixme: register index is just reg num? */
