@@ -16,9 +16,9 @@ extern int test_instruction();
 
 int test_main()
 {
+	assert(test_assembler() == 0);
 	assert(test_parser() == 0);
 	assert(test_directive() == 0);
 	assert(test_instruction() == 0);
-	assert(test_assembler() == 0);
 	return 0;
 }

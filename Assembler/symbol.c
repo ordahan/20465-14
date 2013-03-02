@@ -24,7 +24,7 @@ int symbol_add_to_table(symbol_table_arr_t table,
 	/* Check if the symbol exists already */
 	if (symbol_get_from_table_by_name(table, symbol->name) != NULL)
 	{
-		printf("Error! symbol %s already exists in symbol table", symbol->name);
+		printf("Error! symbol %s already exists in symbol table.\n", symbol->name);
 		return -1;
 	}
 

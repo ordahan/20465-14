@@ -16,7 +16,8 @@
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t *symbol_expected,
 						   code_section_t *code_expected,
-						   data_section_t *data_expected);
+						   data_section_t *data_expected,
+						   int expected_result);
 
 void init_test_assembler_compile(symbol_table_arr_t *symbol_expected,
 						   	   	 code_section_t *code_expected,
@@ -42,7 +43,8 @@ int test_assembler()
 	assert(0 == test_assembler_compile("tests/empty.as",
 									   &symbols_expected,
 									   &code_expected,
-									   &data_expected));
+									   &data_expected,
+									   0));
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -55,7 +57,8 @@ int test_assembler()
 	assert(0 == test_assembler_compile("tests/comments.as",
 										&symbols_expected,
 										&code_expected,
-										&data_expected));
+										&data_expected,
+										   0));
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -72,7 +75,8 @@ int test_assembler()
 	assert(0 == test_assembler_compile("tests/extern.as",
 										&symbols_expected,
 										&code_expected,
-										&data_expected));
+										&data_expected,
+										   0));
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -88,20 +92,21 @@ int test_assembler()
 	code_expected.localities[0] = ADDR_ABSOLUTE;
 	code_expected.localities[1] = ADDR_ABSOLUTE;
 	/*mov/0 #3,r1*/
-	instruction_t* pInst = (instruction_t*)&code_expected.content[0].val;
-	pInst->comb = INST_COMB_MSB_MSB;
-	pInst->type = INST_TYPE_20_BIT;
-	pInst->dest_addressing = OPERAND_ADDR_REGISTER;
-	pInst->dest_reg = R1;
-	pInst->opcode = MOV;
-	pInst->src_addressing = OPERAND_ADDR_IMMEDIATE;
+	pInstruction = (instruction_t*)&code_expected.content[0].val;
+	pInstruction->comb = INST_COMB_MSB_MSB;
+	pInstruction->type = INST_TYPE_20_BIT;
+	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
+	pInstruction->dest_reg = R1;
+	pInstruction->opcode = MOV;
+	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
 	code_expected.content[1].val = 3;
 
-	printf("	File only with entry: ");
+	printf("	File with entry and instruction: ");
 	assert(0 == test_assembler_compile("tests/entry.as",
 										&symbols_expected,
 										&code_expected,
-										&data_expected));
+										&data_expected,
+										   0));
 	printf("PASSED.\n");
 	/**********************************************/
 
@@ -110,32 +115,51 @@ int test_assembler()
 								&code_expected,
 								&data_expected);
 
-	pInstruction = (instruction_t*)&code_expected.content[0];
-	pInstruction->comb = 0;
-	pInstruction->dest_reg = R1;
-	pInstruction->dest_addressing =  OPERAND_ADDR_REGISTER;
-	pInstruction->src_reg = R0; /* NOT REFERENCED, CONVENTION */
-	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-	pInstruction->opcode = MOV;
-	pInstruction->type = 0;
-	pInstruction->rfu = 0; /* NOT REFERENCED, CONVENTION */
-	code_expected.content[1].val = 3;
-
-	printf("	File only with one instruction: ");
-	assert(0 == test_assembler_compile("tests/instruction.as",
+	printf("	Syntax error: ");
+	assert(1 == test_assembler_compile("tests/syntax_err.as",
 										&symbols_expected,
 										&code_expected,
-										&data_expected));
+										&data_expected,
+										-1));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	printf("	Invalid extern: ");
+	assert(1 == test_assembler_compile("tests/invalid_extern.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected,
+										-1));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	printf("	Invalid entry: ");
+	assert(1 == test_assembler_compile("tests/invalid_entry.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected,
+										-1));
 	printf("PASSED.\n");
 	/**********************************************/
 
 	/* todo: test cases for the assembler
-	 * instruction with label
-	 * .data
-	 * .string
+	 * #syntax error
+	 * #invalid extern
+	 * #invalid entry
 	 * .data + .string
-	 * instruction + .data
-	 * mix n' match (appropriate program)
+	 * .data error
+	 * .string error
+	 * instruction + .data (data after text)
 	 */
 	return 0;
 }
@@ -153,7 +177,8 @@ void init_test_assembler_compile(symbol_table_arr_t *symbol_expected,
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t *symbol_expected,
 						   code_section_t *code_expected,
-						   data_section_t *data_expected)
+						   data_section_t *data_expected,
+						   int expected_result)
 {
 	static symbol_table_arr_t symbols;
 	static code_section_t code;
@@ -174,9 +199,21 @@ int test_assembler_compile(const char* szTestFile,
 									 symbols,
 									 &code,
 									 &data);
-	if (compile_res != 0)
+	if (expected_result == 0)
 	{
-		return -2;
+		if (compile_res != 0)
+		{
+			return -2;
+		}
+	}
+	else
+	{
+		if (compile_res == 0)
+		{
+			return -2;
+		}
+
+		return 1;
 	}
 
 	/* Don't forget to close the test file */

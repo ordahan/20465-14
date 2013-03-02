@@ -1,0 +1,2 @@
+.extern Hallo
+.entry Hallo
