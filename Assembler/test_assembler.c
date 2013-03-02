@@ -152,6 +152,32 @@ int test_assembler()
 	printf("PASSED.\n");
 	/**********************************************/
 
+	/**********************************************/
+	init_test_assembler_compile(&symbols_expected,
+								&code_expected,
+								&data_expected);
+
+	pSymbol = &symbols_expected[0];
+	pSymbol->locality = ADDR_RELOCATABLE;
+	strcpy(pSymbol->name, "ThisIsMySymbol!");
+	pSymbol = &symbols_expected[1];
+	pSymbol->locality = ADDR_ENTRY;
+	strcpy(pSymbol->name, "ThisIsMySymbol!");
+
+	code_expected.IC = 2;
+	code_expected.localities[0] = ADDR_ABSOLUTE;
+	code_expected.localities[1] = ADDR_ABSOLUTE;
+	code_expected.content[1].val = 3;
+
+	printf("	.data and .string: ");
+	assert(0 == test_assembler_compile("tests/data_and_string.as",
+										&symbols_expected,
+										&code_expected,
+										&data_expected,
+										   0));
+	printf("PASSED.\n");
+	/**********************************************/
+
 	/* todo: test cases for the assembler
 	 * #syntax error
 	 * #invalid extern
