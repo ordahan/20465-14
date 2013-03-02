@@ -34,11 +34,10 @@ int symbol_add_to_table(symbol_table_arr_t table,
 	for (i = 0; i < sizeof(table); ++i)
 	{
 		/* Is this a free spot? */
-		if (table[i].address == ADDR_INVALID)
+		if (table[i].locality == ADDR_INVALID)
 		{
 			/* Add to the table */
-			table[i].address = symbol->address;
-			strncpy(table[i].name, symbol->name, sizeof(table[i].name));
+			memcpy(&table[i], symbol, sizeof(table[i]));
 			return 0;
 		}
 	}
@@ -61,7 +60,7 @@ symbol_t* symbol_get_from_table_by_name(symbol_table_arr_t table,
 	for (i = 0; i < sizeof(table); ++i)
 	{
 		/* Is this a valid symbol? */
-		if (table[i].address != ADDR_INVALID)
+		if (table[i].locality != ADDR_INVALID)
 		{
 			/* Check if it matches the requested one */
 			if (strcmp(szName, table[i].name) == 0)

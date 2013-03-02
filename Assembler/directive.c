@@ -21,9 +21,10 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 int directive_compile_extern(const statement_t *pExtern,
 							 symbol_table_arr_t io_pSymbols)
 {
-	symbol_t symbol;
-	symbol.address = ADDR_EXTERNAL;
 	char *pName;
+	symbol_t symbol;
+	symbol.address = 0;
+	symbol.locality = ADDR_EXTERNAL;
 
 	if (pExtern == NULL ||
 		io_pSymbols == NULL)
@@ -75,14 +76,14 @@ int directive_compile_entry(const statement_t *pEntry,
 		return -4;
 	}
 	/* Check if its already an entry */
-	else if (pSymbol->address == ADDR_ENTRY)
+	else if (pSymbol->locality == ADDR_ENTRY)
 	{
 		printf("Error! %s is already an entry point!\n",
 				pName);
 		return -5;
 	}
 	/* Check if its an external symbol */
-	else if (pSymbol->address == ADDR_EXTERNAL)
+	else if (pSymbol->locality == ADDR_EXTERNAL)
 	{
 		printf("Error! cannot set %s as an entry point, it's an external symbol!\n",
 				pName);
@@ -91,7 +92,7 @@ int directive_compile_entry(const statement_t *pEntry,
 	else
 	{
 		/* Make it an entry */
-		pSymbol->address = ADDR_ENTRY;
+		pSymbol->locality = ADDR_ENTRY;
 	}
 
 	return 0;

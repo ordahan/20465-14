@@ -28,8 +28,9 @@ typedef enum
 
 typedef struct
 {
-	address_locality_t 	address;
+	address_locality_t 	locality;
 	char			  	name[MAX_LABEL_LENGTH + 1];
+	unsigned long		address;
 }symbol_t;
 
 typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];

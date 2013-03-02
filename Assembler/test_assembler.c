@@ -65,7 +65,7 @@ int test_assembler()
 								&data_expected);
 
 	pSymbol = &symbols_expected[0];
-	pSymbol->address = ADDR_EXTERNAL;
+	pSymbol->locality = ADDR_EXTERNAL;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
 
 	printf("	File only with extern: ");
@@ -82,7 +82,7 @@ int test_assembler()
 								&data_expected);
 
 	pSymbol = &symbols_expected[0];
-	pSymbol->address = ADDR_ENTRY;
+	pSymbol->locality = ADDR_ENTRY;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
 
 	printf("	File only with entry: ");
