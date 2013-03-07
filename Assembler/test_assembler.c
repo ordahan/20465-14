@@ -159,107 +159,18 @@ int test_assembler()
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_RELOCATABLE;
-	strcpy(pSymbol->name, "LOL");
-	pSymbol = &symbols_expected[1];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	strcpy(pSymbol->name, "rofl");
-
-	data_expected.DC = 11;
-	data_expected.content[0].val = -5;
-	data_expected.content[1].val = 1;
-	data_expected.content[2].val = 3;
-	data_expected.content[3].val = 14;
-	data_expected.content[4].val = 100;
-	data_expected.content[5].val = 'H';
-	data_expected.content[6].val = 'e';
-	data_expected.content[7].val = 'l';
-	data_expected.content[8].val = 'l';
-	data_expected.content[9].val = 'o';
-	data_expected.content[10].val = '\0';
-
-	printf("	.data and .string: ");
-	assert(0 == test_assembler_compile("tests/data_and_string.as",
-										&symbols_expected,
-										&code_expected,
-										&data_expected,
-										   0));
-	printf("PASSED.\n");
-	/**********************************************/
-
-	/**********************************************/
-	init_test_assembler_compile(&symbols_expected,
-								&code_expected,
-								&data_expected);
-
-	printf("	.data error ");
-	assert(0 == test_assembler_compile("tests/data_error.as",
-										&symbols_expected,
-										&code_expected,
-										&data_expected,
-										-1));
-	printf("PASSED.\n");
-	/**********************************************/
-
-	/**********************************************/
-	init_test_assembler_compile(&symbols_expected,
-								&code_expected,
-								&data_expected);
-
-	printf("	.string error ");
-	assert(0 == test_assembler_compile("tests/string_error.as",
-										&symbols_expected,
-										&code_expected,
-										&data_expected,
-										-1));
-	printf("PASSED.\n");
-	/**********************************************/
-
-	/**********************************************/
-	init_test_assembler_compile(&symbols_expected,
-								&code_expected,
-								&data_expected);
-
-	pSymbol = &symbols_expected[2];
-	pSymbol->locality = ADDR_ABSOLUTE;
-	pSymbol->address = 0;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
+	pSymbol = &symbols_expected[1];
+	pSymbol->locality = ADDR_ENTRY;
+	strcpy(pSymbol->name, "ThisIsMySymbol!");
+
 	code_expected.IC = 2;
 	code_expected.localities[0] = ADDR_ABSOLUTE;
 	code_expected.localities[1] = ADDR_ABSOLUTE;
-	/*mov/0 #3,r1*/
-	pInstruction = (instruction_t*)&code_expected.content[0].val;
-	pInstruction->comb = INST_COMB_MSB_MSB;
-	pInstruction->type = INST_TYPE_20_BIT;
-	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
-	pInstruction->dest_reg = R1;
-	pInstruction->opcode = MOV;
-	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
 	code_expected.content[1].val = 3;
 
-	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 2;
-	strcpy(pSymbol->name, "LOL");
-	pSymbol = &symbols_expected[1];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 7;
-	strcpy(pSymbol->name, "rofl");
-
-	data_expected.DC = 11;
-	data_expected.content[0].val = -5;
-	data_expected.content[1].val = 1;
-	data_expected.content[2].val = 3;
-	data_expected.content[3].val = 14;
-	data_expected.content[4].val = 100;
-	data_expected.content[5].val = 'H';
-	data_expected.content[6].val = 'e';
-	data_expected.content[7].val = 'l';
-	data_expected.content[8].val = 'l';
-	data_expected.content[9].val = 'o';
-	data_expected.content[10].val = '\0';
-
-	printf("	instruction and data: ");
-	assert(0 == test_assembler_compile("tests/instruction_and_data.as",
+	printf("	.data and .string: ");
+	assert(0 == test_assembler_compile("tests/data_and_string.as",
 										&symbols_expected,
 										&code_expected,
 										&data_expected,
@@ -271,10 +182,10 @@ int test_assembler()
 	 * #syntax error
 	 * #invalid extern
 	 * #invalid entry
-	 * #.data + .string
-	 * #.data error
-	 * #.string error
-	 * #instruction + .data (data after text)
+	 * .data + .string
+	 * .data error
+	 * .string error
+	 * instruction + .data (data after text)
 	 */
 	return 0;
 }
