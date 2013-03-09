@@ -159,6 +159,13 @@ int retrieve_data_fields(data_section_t* io_pData,
 	/* Go over the list and retrieve the numbers from it */
 	for (i = 0; i < nFields; ++i)
 	{
+		/* fixme: add this test to instructions as well */
+		/* Make sure we don't have too much data already */
+		if (io_pData->DC >=  ASSEMBLER_DATA_MAX_SIZE_CELLS)
+		{
+			return -2;
+		}
+
 		if (0 == parser_get_number(arrFields[i],
 						  	  	   &io_pData->content[io_pData->DC].val))
 		{

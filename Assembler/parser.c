@@ -16,6 +16,7 @@
 #include "instruction.h"
 #include "directive.h"
 #include "symbol.h"
+#include "errno.h"
 
 /* Defines */
 #define BLANKS "\t \n\r"
@@ -725,9 +726,12 @@ unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum)
 	/* Try getting the number */
 	*o_pNum = strtol(szNumber, &pEnd, NUMBERS_BASE);
 
-	/* Nothing was parsed, error */
-	if (pEnd == szNumber)
+	/* The entire string must represent the number,
+	 * make sure its also not out of bounds */
+	if (pEnd != strchr(szNumber, NULL_TERMINATOR) ||
+		errno == ERANGE)
 	{
+		errno = 0;
 		return 0;
 	}
 
