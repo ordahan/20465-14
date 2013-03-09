@@ -103,11 +103,22 @@ int test_compile_dummy_instruction()
 	 * string too long (null-terminator out of bounds, more than 1 out of bounds)
 	 * another field before/after the string
 	 */
-	symbol_table_arr_t arrSymbols;
 	data_section_t     data, data_expected;
 
 	printf("Testing compiling dummy directives:\n");
 
+	/**********************************************/
+	printf("	one data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	data_expected.DC = 1;
+	data_expected.content[0].val = 13;
+	assert(0 == test_dummy_instruction_compile(".data 13",
+											   &data,
+											   &data_expected,
+											   1));
+	printf("PASSED.\n");
+	/**********************************************/
+	return 0;
 	printf("	two data: ");
 	printf("	N data: ");
 	printf("	no data: ");
@@ -123,21 +134,6 @@ int test_compile_dummy_instruction()
 	printf("	no '\"' at start / end / both: ");
 	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): ");
 	printf("	another field before/after the string: ");
-
-	/**********************************************/
-	printf("	one data: ");
-	init_object_blocks(&arrSymbols, NULL, &data);
-	init_object_blocks(NULL, NULL, &data_expected);
-	data_expected.DC = 1;
-	data_expected.content[0].val = 13;
-	assert(0 == test_dummy_instruction_compile(".data 13",
-											   &data,
-											   &data_expected,
-											   0));
-	assert(ADDR_RELOCATABLE == arrSymbols[0].locality);
-	assert(0 == arrSymbols[0].address);
-	printf("PASSED.\n");
-	/**********************************************/
 
 	return 0;
 }

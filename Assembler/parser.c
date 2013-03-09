@@ -21,12 +21,12 @@
 #define BLANKS "\t \n\r"
 #define LABEL_SEPARATOR ':'
 #define INSTRUCTION_MODIFIER_SEPARATOR '/'
-#define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
 #define NUMBERS_BASE	(10)
 #define NULL_TERMINATOR '\0'
 #define IMMEDIATE_PREFIX '#'
 #define INDEX_OFFSET_OPEN_DELIMITER "{"
 #define INDEX_OFFSET_CLOSE_DELIMITER "}"
+#define LIST_DELIMITER ','
 
 /* Internal functions declarations */
 /**
@@ -380,7 +380,7 @@ int parser_get_items_from_list(char* szList,
 				state = PARSER_LIST_STATE_AFTER_ITEM;
 			}
 			/* Delimiter */
-			else if (szList[nCurrCharIdx] == ',')/* fixme: delimiter */
+			else if (szList[nCurrCharIdx] == LIST_DELIMITER)
 			{
 				state = PARSER_LIST_STATE_AFTER_DELIMITER;
 			}
@@ -390,7 +390,7 @@ int parser_get_items_from_list(char* szList,
 		else
 		{
 			/* Delimiter found */
-			if (szList[nCurrCharIdx] == ',') /* fixme: delimiter */
+			if (szList[nCurrCharIdx] == LIST_DELIMITER)
 			{
 				/* Invalid location */
 				if (state == PARSER_LIST_STATE_AFTER_DELIMITER ||
@@ -665,4 +665,58 @@ char* parser_get_index_from_label(char* szLabel)
 	{
 		return szLabel;
 	}
+}
+
+unsigned int parser_get_num_items_in_list(char* szList)
+{
+	unsigned int nDelimitersFound = 0;
+	unsigned int i;
+
+	/* Count the number of delimiters */
+	for (i = 0; szList[i] != NULL_TERMINATOR; ++i)
+	{
+		if (szList[i] == LIST_DELIMITER)
+			nDelimitersFound++;
+	}
+
+	/* No delimiters */
+	if (nDelimitersFound == 0)
+	{
+		unsigned char fEmpty = 1;
+
+		/* Is there anything at all on the list? */
+		for (i = 0; szList[i] != NULL_TERMINATOR; ++i)
+		{
+			/* At least one non-blank char */
+			if (strchr(BLANKS, szList[i]) == NULL)
+			{
+				fEmpty = 0;
+				break;
+			}
+		}
+
+		/* Not even a single item */
+		if (fEmpty)
+			return 0;
+	}
+
+	/* 1 Or more items found */
+	return nDelimitersFound + 1;
+}
+
+/* fixme: all the number retrievals change to this func */
+unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum)
+{
+	char * pEnd;
+
+	/* Try getting the number */
+	*o_pNum = strtol(szNumber, &pEnd, NUMBERS_BASE);
+
+	/* Nothing was parsed, error */
+	if (pEnd == szNumber)
+	{
+		return 0;
+	}
+
+	return 1;
 }
