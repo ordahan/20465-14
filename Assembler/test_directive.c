@@ -18,17 +18,128 @@ int test_compile_dummy_instruction();
 int test_compile_extern();
 int test_compile_entry();
 
+void init_object_blocks(symbol_table_arr_t *symbol_expected,
+					code_section_t *code_expected,
+					data_section_t *data_expected)
+{
+	if (symbol_expected != NULL)
+		memset(*symbol_expected, 0, sizeof(*symbol_expected));
+	if (code_expected != NULL)
+		memset(code_expected, 0, sizeof(*code_expected));
+	if (data_expected != NULL)
+		memset(data_expected, 0, sizeof(*data_expected));
+}
+
 int test_directive()
 {
+	assert(test_compile_dummy_instruction() == 0);
 	assert(test_compile_extern() == 0);
 	assert(test_compile_entry() == 0);
 
 	return 0;
 }
 
+int test_dummy_instruction_compile(const char		*line,
+						   data_section_t *data,
+						   const data_section_t *expected,
+						   char fShouldSucceed)
+{
+	unsigned i;
+	statement_t statement;
+	symbol_table_arr_t symbols;
+
+	memset(symbols, 0, sizeof(symbols));
+
+	/* Retrieve the line to compile */
+	strcpy(statement.szContent, line);
+
+	/* Create a statement from the given line */
+	assert(0 == parser_get_statement(&statement));
+
+	/* Check that the compilation returns as expected */
+	assert(!((0 == directive_compile_dummy_instruction(&statement, data, symbols)) ^
+			 fShouldSucceed));
+
+	/* Check the IC */
+	assert(expected->DC == data->DC);
+
+	/* Check the label if exists */
+	if (statement.szLabel != NULL)
+	{
+		assert(0 == strcmp(statement.szLabel, symbols[0].name));
+		assert(data->DC == symbols[0].address);
+		assert(ADDR_RELOCATABLE == symbols[0].locality);
+	}
+
+	/* Check the data generated */
+	for (i = 0; i < expected->DC; ++i)
+	{
+		assert(0 == memcmp(&expected->content[i],
+						   &data->content[i],
+						   sizeof(expected->content[0])));
+	}
+
+	printf("PASSED.\n");
+	return 0;
+}
+
 int test_compile_dummy_instruction()
 {
-	return -1;
+	/*todo:
+	 * one data
+	 * two data
+	 * N data
+	 * no data
+	 * too much data (no more room)
+	 * element is not a valid number
+	 * number out of range
+	 * list not separated properly
+	 * label for data
+	 * multiple data parts
+	 * no chars in string
+	 * one char string
+	 * N chars string
+	 * no '"' at start / end / both
+	 * string too long (null-terminator out of bounds, more than 1 out of bounds)
+	 * another field before/after the string
+	 */
+	symbol_table_arr_t arrSymbols;
+	data_section_t     data, data_expected;
+
+	printf("Testing compiling dummy directives:\n");
+
+	printf("	two data: ");
+	printf("	N data: ");
+	printf("	no data: ");
+	printf("	too much data (no more room): ");
+	printf("	element is not a valid number: ");
+	printf("	number out of range: ");
+	printf("	list not separated properly: ");
+	printf("	label for data: ");
+	printf("	multiple data parts: ");
+	printf("	no chars in string: ");
+	printf("	one char string: ");
+	printf("	N chars string: ");
+	printf("	no '\"' at start / end / both: ");
+	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): ");
+	printf("	another field before/after the string: ");
+
+	/**********************************************/
+	printf("	one data: ");
+	init_object_blocks(&arrSymbols, NULL, &data);
+	init_object_blocks(NULL, NULL, &data_expected);
+	data_expected.DC = 1;
+	data_expected.content[0].val = 13;
+	assert(0 == test_dummy_instruction_compile(".data 13",
+											   &data,
+											   &data_expected,
+											   0));
+	assert(ADDR_RELOCATABLE == arrSymbols[0].locality);
+	assert(0 == arrSymbols[0].address);
+	printf("PASSED.\n");
+	/**********************************************/
+
+	return 0;
 }
 
 int test_compile_extern()

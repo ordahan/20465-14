@@ -10,12 +10,52 @@
 #include "symbol.h"
 #include "parser.h"
 #include <string.h>
+#include "assembler.h"
+
+// Internal functions
+int retrieve_data_fields(data_section_t* io_pData,
+					  	 char** arrFields,
+					  	 unsigned int nFields);
 
 int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 									    data_section_t* io_pData,
 									    symbol_table_arr_t io_pSymbols)
 {
-	return -1;
+	char *arrDataFields[ASSEMBLER_DATA_MAX_SIZE_CELLS];
+	unsigned int nNumDataFields = 0;
+
+	if (pDummyInst == NULL ||
+		io_pSymbols == NULL ||
+		io_pData)
+		return -1;
+
+	/* Add the instruction's label if exists */
+	if (pDummyInst->szLabel != NULL)
+	{
+		/* Save the label for the instruction,
+		 * its address is the DC before the instruction
+		 */
+		symbol_t label;
+		label.locality = ADDR_RELOCATABLE;
+		label.address = io_pData->DC;
+		strncpy(label.name, pDummyInst->szLabel, sizeof(label.name));
+		if (symbol_add_to_table(io_pSymbols, &label) != 0)
+		{
+			return -1;
+		}
+	}
+
+	/* Get the number of expected data fields */
+
+	/* Get the data field to add */
+	if (parser_get_items_from_list(pDummyInst->szOperationData,
+								   arrDataFields,
+								   nNumDataFields) != 0)
+		return -2;
+
+	/* Add the data fields to the data section */
+
+	return 0;
 }
 
 int directive_compile_extern(const statement_t *pExtern,
