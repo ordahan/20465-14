@@ -681,6 +681,10 @@ unsigned int parser_get_num_items_in_list(char* szList)
 	unsigned int nDelimitersFound = 0;
 	unsigned int i;
 
+	/* Is the list valid? */
+	if (szList == NULL)
+		return 0;
+
 	/* Count the number of delimiters */
 	for (i = 0; szList[i] != NULL_TERMINATOR; ++i)
 	{

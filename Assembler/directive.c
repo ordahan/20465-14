@@ -57,10 +57,10 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 
 	/* Get the number of expected data fields */
 	nNumDataFields = parser_get_num_items_in_list(pDummyInst->szOperationData);
-	if (nNumDataFields < 0)
+	if (nNumDataFields == 0)
 	{
-		printf("Error! invalid list syntax: %s",
-			   pDummyInst->szOperationData);
+		printf("Error! data directive must contain at least one element.");
+		return -2;
 	}
 
 	/* Get the data field to add */

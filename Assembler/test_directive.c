@@ -155,7 +155,7 @@ int test_compile_dummy_instruction()
 	printf("	no data: ");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	assert(0 == test_dummy_instruction_compile(".data 13",
+	assert(0 == test_dummy_instruction_compile(".data ",
 											   &data,
 											   &data_expected,
 											   0));
