@@ -92,6 +92,7 @@ int parser_get_statement(statement_t* io_pLine)
 {
 	char* szOperation = NULL;
 	char* pLabelEnd = NULL;
+	char* pContentEnd = NULL;
 	size_t nLabelSectionLength = 0;
 
 	/* Don't crash the program if we aren't given a
@@ -99,6 +100,9 @@ int parser_get_statement(statement_t* io_pLine)
 	 */
 	if (io_pLine == NULL)
 		return 1;
+
+	/* Save the end of the actual content */
+	pContentEnd = strchr(io_pLine->szContent, NULL_TERMINATOR);
 
 	/* Assume we didn't find anything */
 	io_pLine->type = STATEMENT_TYPE_ERROR;
@@ -137,7 +141,7 @@ int parser_get_statement(statement_t* io_pLine)
 		nLabelSectionLength++;
 	}
 
-	/* Split the line according to whitespaces, fetch the first
+	/* Split the operation from its data according to whitespaces, fetch the first
 	 * word after the label (if exists) */
 	szOperation = strtok(io_pLine->szContent + nLabelSectionLength, BLANKS);
 
@@ -152,7 +156,12 @@ int parser_get_statement(statement_t* io_pLine)
 		/* fixme: directive / instruction must appear right after label
 		 * or can there be any whitespaces separating them?
 		 */
-		io_pLine->szOperationData = strtok(NULL, BLANKS);
+		/* The data for the operation starts right after the operation itself ends */
+		io_pLine->szOperationData = strchr(szOperation, NULL_TERMINATOR) + 1;
+
+		/* Make sure the data is real */
+		if (io_pLine->szOperationData >= pContentEnd)
+			io_pLine->szOperationData = NULL;
 
 		/* Check if the operation is a directive */
 		if (szOperation[0] == '.')

@@ -60,6 +60,9 @@ int test_dummy_instruction_compile(const char		*line,
 	assert(!((0 == directive_compile_dummy_instruction(&statement, data, symbols)) ^
 			 fShouldSucceed));
 
+	if (fShouldSucceed == 0)
+		return 0;
+
 	/* Check the IC */
 	assert(expected->DC == data->DC);
 
@@ -110,18 +113,53 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 	printf("	one data: ");
 	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
 	data_expected.DC = 1;
 	data_expected.content[0].val = 13;
 	assert(0 == test_dummy_instruction_compile(".data 13",
 											   &data,
 											   &data_expected,
 											   1));
-	printf("PASSED.\n");
 	/**********************************************/
-	return 0;
+
+	/**********************************************/
 	printf("	two data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 2;
+	data_expected.content[0].val = 13;
+	data_expected.content[1].val = -3;
+	assert(0 == test_dummy_instruction_compile(".data 13, -3",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
 	printf("	N data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 5;
+	data_expected.content[0].val = 13;
+	data_expected.content[1].val = 0;
+	data_expected.content[2].val = -4;
+	data_expected.content[3].val = 100000;
+	data_expected.content[4].val = -1000000;
+	assert(0 == test_dummy_instruction_compile(".data 13, 0, -4, 100000, -1000000",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
 	printf("	no data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	assert(0 == test_dummy_instruction_compile(".data 13",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
 	printf("	too much data (no more room): ");
 	printf("	element is not a valid number: ");
 	printf("	number out of range: ");
@@ -135,6 +173,7 @@ int test_compile_dummy_instruction()
 	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): ");
 	printf("	another field before/after the string: ");
 
+	printf("PASSED.\n");
 	return 0;
 }
 

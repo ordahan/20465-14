@@ -110,6 +110,7 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
+	assert(17 == strlen(stResult.szOperationData));
 	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
@@ -183,7 +184,7 @@ int test_get_statement()
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
-	assert(&stResult.szContent[18] == stResult.szOperationData);
+	assert(&stResult.szContent[11] == stResult.szOperationData);
 	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
@@ -353,7 +354,8 @@ int test_get_statement()
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[15] == stResult.info.instruction.modifiers);
-	assert(&stResult.szContent[23] == stResult.szOperationData);
+	assert(&stResult.szContent[21] == stResult.szOperationData);
+	assert(9 == strlen(stResult.szOperationData));
 	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
