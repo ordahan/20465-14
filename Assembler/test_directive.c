@@ -121,7 +121,7 @@ int test_compile_dummy_instruction()
 	printf("Testing compiling dummy directives:\n");
 
 	/**********************************************/
-	printf("	one data: ");
+	printf("	one data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	data_expected.DC = 1;
@@ -133,7 +133,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	two data: ");
+	printf("	two data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	data_expected.DC = 2;
@@ -146,7 +146,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	N data: ");
+	printf("	N data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	data_expected.DC = 5;
@@ -162,7 +162,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	no data: ");
+	printf("	no data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	assert(0 == test_dummy_instruction_compile(".data ",
@@ -172,7 +172,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	too much data (no more room): ");
+	printf("	too much data (no more room): \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
@@ -219,7 +219,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	number out of range: ");
+	printf("	number out of range: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	assert(0 == test_dummy_instruction_compile(".data 9999999999999999999999",
@@ -229,7 +229,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	list not separated properly: ");
+	printf("	list not separated properly: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	assert(0 == test_dummy_instruction_compile(".data 13 . 5",
@@ -255,7 +255,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	label for data: ");
+	printf("	label for data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	data_expected.DC = 1;
@@ -267,7 +267,7 @@ int test_compile_dummy_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	multiple data parts: ");
+	printf("	multiple data parts: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
 	data_expected.DC = 1;
@@ -283,12 +283,183 @@ int test_compile_dummy_instruction()
 											   &data_expected,
 											   1));
 	/**********************************************/
-	printf("	no chars in string: ");
-	printf("	one char string: ");
-	printf("	N chars string: ");
-	printf("	no '\"' at start / end / both: ");
-	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): ");
-	printf("	another field before/after the string: ");
+
+	/**********************************************/
+	printf("	no chars in string: \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 1;
+	data_expected.content[0].val = '\0';
+	assert(0 == test_dummy_instruction_compile(".string \"\"",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	one char string: \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 2;
+	data_expected.content[0].val = 'x';
+	data_expected.content[1].val = '\0';
+	assert(0 == test_dummy_instruction_compile(".string \"x\"",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	N chars string: \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 5;
+	data_expected.content[0].val = '1';
+	data_expected.content[1].val = '2';
+	data_expected.content[2].val = '3';
+	data_expected.content[3].val = '4';
+	data_expected.content[4].val = '\0';
+	assert(0 == test_dummy_instruction_compile(".string \"1234\"",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	no '\"' at start / end / both: \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	assert(0 == test_dummy_instruction_compile(".string hi\"",
+											   &data,
+											   &data_expected,
+											   0));
+	assert(0 == test_dummy_instruction_compile(".string \"hi",
+											   &data,
+											   &data_expected,
+											   0));
+	assert(0 == test_dummy_instruction_compile(".string hi",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Too many \": \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"hi\"\"",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \" \"hi\"",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"\"hi\"",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"hi\" \"",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Multiple strings \": \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	assert(0 == test_dummy_instruction_compile(".string \"hi\" \"lol\"",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-1;
+	assert(0 == test_dummy_instruction_compile(".string \"\"",
+											   &data,
+											   &data_expected,
+											   0));
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-2;
+	assert(0 == test_dummy_instruction_compile(".string \"a\"",
+											   &data,
+											   &data_expected,
+											   0));
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-1;
+	assert(0 == test_dummy_instruction_compile(".string \"a\"",
+											   &data,
+											   &data_expected,
+											   0));
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-2;
+	assert(0 == test_dummy_instruction_compile(".string \"abc\"",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	another field before/after the string: \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string h\"abc\"",
+												   &data,
+												   &data_expected,
+												   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string hi\"abc\"",
+												   &data,
+												   &data_expected,
+												   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string hi \"abc\"",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string hi,\"abc\"",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string hi, \"abc\"",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"abc\"a",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"abc\"aa",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"abc\",a",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"abc\", a",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"abc\" ,a",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
 
 	printf("PASSED.\n");
 	return 0;
@@ -310,7 +481,7 @@ int test_compile_extern()
 	printf("Testing compiling externals:\n");
 
 	/**********************************************/
-	printf("	Valid extern: ");
+	printf("	Valid extern: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].address = 1;
 	memset(&statement, 0, sizeof(statement));
@@ -324,7 +495,7 @@ int test_compile_extern()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Valid extern with label: ");
+	printf("	Valid extern with label: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	memset(&statement, 0, sizeof(statement));
 	strcpy(statement.szContent, "GREETINGS: .extern HelloMoto");
@@ -337,7 +508,7 @@ int test_compile_extern()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Extern without params: ");
+	printf("	Extern without params: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	memset(&statement, 0, sizeof(statement));
 	strcpy(statement.szContent, ".extern");
@@ -349,7 +520,7 @@ int test_compile_extern()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Extern existing: ");
+	printf("	Extern existing: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	memset(&statement, 0, sizeof(statement));
 	strcpy(statement.szContent, ".extern HelloMoto");
@@ -364,7 +535,7 @@ int test_compile_extern()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Extern with invalid syntax: ");
+	printf("	Extern with invalid syntax: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	memset(&statement, 0, sizeof(statement));
 	strcpy(statement.szContent, ".extern @elloMoto");
@@ -376,7 +547,7 @@ int test_compile_extern()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Extern long name: ");
+	printf("	Extern long name: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	memset(&statement, 0, sizeof(statement));
 	strcpy(statement.szContent, ".extern A23456789012345678901234567890");
@@ -409,7 +580,7 @@ int test_compile_entry()
 	printf("Testing compiling externals:\n");
 
 	/**********************************************/
-	printf("	Existing symbol entry: ");
+	printf("	Existing symbol entry: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].locality = ADDR_ABSOLUTE;
 	arrSymbols[0].address = 0;
@@ -425,7 +596,7 @@ int test_compile_entry()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Entry for external symbol: ");
+	printf("	Entry for external symbol: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].locality = ADDR_EXTERNAL;
 	arrSymbols[0].address = 0;
@@ -441,7 +612,7 @@ int test_compile_entry()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Entry for non existing symbol: ");
+	printf("	Entry for non existing symbol: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].locality = ADDR_EXTERNAL;
 	arrSymbols[0].address = 0;
@@ -455,7 +626,7 @@ int test_compile_entry()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Entry for already an entry symbol: ");
+	printf("	Entry for already an entry symbol: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].locality = ADDR_ABSOLUTE;
 	arrSymbols[0].address = 0;
