@@ -23,15 +23,28 @@ typedef enum
 	ADDR_INVALID = 0,
 	ADDR_ABSOLUTE,
 	ADDR_RELOCATABLE,
-	ADDR_EXTERNAL,
-	ADDR_ENTRY /*todo: is this true? whats going on with these..*/
+	ADDR_EXTERNAL
 }address_locality_t;
+
+typedef enum
+{
+	ADDR_ENTRY_STATUS_NON_ENTRY = 0,
+	ADDR_ENTRY_STATUS_ENTRY
+}address_entry_status_t;
+
+typedef enum
+{
+	ADDR_SECTION_CODE,
+	ADDR_SECTION_DATA
+}address_section_t;
 
 typedef struct
 {
 	address_locality_t 	locality;
 	char			  	name[MAX_LABEL_LENGTH + 1];
 	unsigned long		address;
+	address_entry_status_t 	entry;
+	address_section_t	section;
 }symbol_t;
 
 typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];
@@ -52,7 +65,17 @@ int symbol_add_to_table(symbol_table_arr_t table,
  * @param szName Symbol name to look for.
  * @return NULL if not found, the symbol requested otherwise.
  */
-symbol_t* symbol_get_from_table_by_name(symbol_table_arr_t table,
-										const char* szName);
+const symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
+											  const char* szName);
+
+/**
+ * Sets the given symbol as an entry.
+ * Fails if the given name doesn't exist or it is already
+ * an existing entry / external symbol.
+ * @param table Symbol table containing the given name.
+ * @param szName Symbol name
+ * @return 0 on success, anything else on error.
+ */
+int symbol_set_as_entry(symbol_table_arr_t table, const char* szName);
 
 #endif /* SYMBOL_H_ */

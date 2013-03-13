@@ -136,4 +136,14 @@ int instruction_compile(const statement_t *pInstruction,
  */
 int instruction_get_size(const statement_t *pInstructionStatement);
 
+/**
+ * Add an extra data cell to the given instruction.
+ * @param pInstruction Instruction to add to
+ * @param val Value of the data cell
+ * @param locality Locality of the data cell
+ */
+void instruction_add_data(instruction_with_operands_t* pInstruction,
+						  unsigned int val,
+						  address_locality_t locality);
+
 #endif /* INSTRUCTION_H_ */

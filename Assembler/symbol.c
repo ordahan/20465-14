@@ -12,6 +12,16 @@
 #include <stdio.h>
 #include "parser.h"
 
+/* Internal functions */
+/**
+ * Finds the index of the requested symbol if it exists.
+ * @param table Symbol table to look in
+ * @param szName Name of the requested symbol
+ * @return -1 if not found, its index otherwise.
+ */
+int find_symbol_index_by_name(const symbol_table_arr_t table,
+							  const char* szName);
+
 /* fixme: change the api to get the proper values and not just the type.. */
 int symbol_add_to_table(symbol_table_arr_t table,
 						const symbol_t *symbol)
@@ -50,14 +60,47 @@ int symbol_add_to_table(symbol_table_arr_t table,
 	return -3;
 }
 
-symbol_t* symbol_get_from_table_by_name(symbol_table_arr_t table,
-										const char* szName)
+const symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
+											 const char* szName)
 {
-	int i;
-
+	int index = -1;
 	if (table == NULL ||
 		szName == NULL)
 		return NULL;
+
+	index = find_symbol_index_by_name(table, szName);
+
+	if (index == -1)
+	{
+		return NULL;
+	}
+	else
+	{
+		return &table[index];
+	}
+}
+
+int symbol_set_as_entry(symbol_table_arr_t table, const char* szName)
+{
+	int index = find_symbol_index_by_name(table, szName);
+
+	if (index == -1 ||
+		table[index].entry == ADDR_ENTRY_STATUS_ENTRY ||
+		table[index].locality == ADDR_EXTERNAL)
+	{
+		return -1;
+	}
+	else
+	{
+		table[index].entry = ADDR_ENTRY_STATUS_ENTRY;
+		return 0;
+	}
+}
+
+int find_symbol_index_by_name(const symbol_table_arr_t table,
+							  const char* szName)
+{
+	int i;
 
 	/* Go symbol-by-symbol until we either find the requested
 	 * name or we reached the end of the table
@@ -70,10 +113,10 @@ symbol_t* symbol_get_from_table_by_name(symbol_table_arr_t table,
 			/* Check if it matches the requested one */
 			if (strcmp(szName, table[i].name) == 0)
 			{
-				return &table[i];
+				return i;
 			}
 		}
 	}
 
-	return NULL;
+	return -1;
 }

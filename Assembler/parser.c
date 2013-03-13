@@ -549,26 +549,20 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 /* todo: test this separately */
 /* todo: split code to more funcs */
 operand_addressing_t parser_get_operand(char* szOperand,
-										instruction_with_operands_t* pInstruction)
+										instruction_with_operands_t* pInstruction,
+										const symbol_table_arr_t arrSymbols)
 {
+	unsigned int val;
 	machine_registers_t reg = parser_string_to_register_type(szOperand);
 
 	/* Immediate value */
 	if (szOperand[0] == IMMEDIATE_PREFIX)
 	{
-		char* pEnd;
-		long int val;
-
 		/* Parse number starting from the prefix */
-		val = strtol(&szOperand[1], &pEnd, NUMBERS_BASE);
-
-		/* Check that there aren't any 'leftovers' */
-		if (pEnd == strchr(szOperand, NULL_TERMINATOR))
+		if (parser_get_number(&szOperand[1], &val) == 1)
 		{
 			/* Place the value as an extra data */
-			pInstruction->extra_data[pInstruction->num_extra_data].val = val;
-			pInstruction->num_extra_data++;
-			pInstruction->localities[pInstruction->num_extra_data] = ADDR_ABSOLUTE;
+			instruction_add_data(pInstruction, val, ADDR_ABSOLUTE);
 			return OPERAND_ADDR_IMMEDIATE;
 		}
 		else
@@ -581,7 +575,8 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	else if (reg != REGISTER_INVALID)
 	{
 		/* Temporarily place the register in the
-		 * destination register
+		 * destination register, the caller will
+		 * swap it to the src if needed.
 		 */
 		pInstruction->instruction.dest_reg = reg;
 		return OPERAND_ADDR_REGISTER;
@@ -589,36 +584,37 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	/* Must be some sort of label */
 	else
 	{
+		operand_addressing_t addressing = OPERAND_ADDR_DIRECT;
+		address_locality_t locality_for_index = ADDR_INVALID;
+		unsigned int index;
+
 		/* Split the index from the label, if there is any index */
 		char* pIndex = parser_get_index_from_label(szOperand);
-
-		/* The label must be valid anyway */
-		if (parser_check_symbol_syntax(szOperand) == 0)
-		{
-			printf("Error! Label %s has syntax errors.\n",
-					szOperand);
-			return OPERAND_ADDR_NUM;
-		}
-
-		/* Save room for the label, resolve addressing later */
-		pInstruction->extra_data[pInstruction->num_extra_data].val = 0;
-		pInstruction->num_extra_data++;
-		pInstruction->localities[pInstruction->num_extra_data] = ADDR_RELOCATABLE;
+		const symbol_t *pSymbol;
 
 		/* Does it have an index? */
 		if (pIndex != szOperand &&
 			pIndex != NULL)
 		{
-			unsigned int index;
 			int fIsNumber;
-			address_locality_t locality_for_index = ADDR_ABSOLUTE;
+			char* szIndex = pIndex;
 
-			/* Get the index value itself */
-			char* szIndex = strtok(pIndex, INDEX_OFFSET_DELIMITERS); /*fixme*/
+			/* Anyhow, the operand has an index */
+			addressing = OPERAND_ADDR_INDEX;
+
+			/* Assume its local */
+			locality_for_index = ADDR_ABSOLUTE;
+
+			/* Get the index value itself, splitting it from the label */
+			szIndex = strchr(szIndex, INDEX_OFFSET_OPEN_DELIMITER[0]);
+			szIndex[0] = NULL_TERMINATOR;
+			szIndex = strchr(szIndex + 1, INDEX_OFFSET_CLOSE_DELIMITER[0]);
+			szIndex[0] = NULL_TERMINATOR;
+			szIndex = pIndex + 1;
 
 			/* Might be a number */
 			/* fixme: a negative index is possible? */
-			fIsNumber = (parser_get_number(szIndex, &index) == 0);
+			fIsNumber = (parser_get_number(szIndex, &index) == 1);
 
 			/* Might be a register */ /* fixme: register index is just reg num? */
 			reg = parser_string_to_register_type(szIndex);
@@ -629,32 +625,41 @@ operand_addressing_t parser_get_operand(char* szOperand,
 				index = reg;
 			}
 			/* Not an immediate number, must be a label */
-			else if (fIsNumber)
+			else if (!fIsNumber)
 			{
-				/* Must be a valid label */
-				if (parser_check_symbol_syntax(szIndex) == 0)
+				/* Get the label for the index */
+				pSymbol = symbol_get_from_table_by_name(arrSymbols, szIndex);
+				if (pSymbol == NULL)
 				{
-					printf("Error! Index %s has syntax errors.\n",
-							szIndex);
+					printf("Error! symbol %s isn't defined anywhere.", szIndex);
 					return OPERAND_ADDR_NUM;
 				}
-
-				locality_for_index = ADDR_RELOCATABLE;
+				index = pSymbol->address;
+				locality_for_index = pSymbol->locality;
 			}
-			/* A number */
-
-			/* Save the index value as well */
-			pInstruction->extra_data[pInstruction->num_extra_data].val = index;
-			pInstruction->num_extra_data++;
-			pInstruction->localities[pInstruction->num_extra_data] = locality_for_index;
-
-			return OPERAND_ADDR_INDEX;
+			/* A number, already retrieved */
 		}
-		/* No index, plain old label */
-		else
+
+		/* Get the label (whether its only a label or it has an index)*/
+		pSymbol = symbol_get_from_table_by_name(arrSymbols, szOperand);
+		if (pSymbol == NULL)
 		{
-			return OPERAND_ADDR_DIRECT;
+			printf("Error! symbol %s isn't defined anywhere.", szOperand);
+			return OPERAND_ADDR_NUM;
 		}
+
+		/* Place the label in the extra data */
+		instruction_add_data(pInstruction,
+							pSymbol->address,
+							pSymbol->locality);
+
+		/* Save the index value as well */
+		if (locality_for_index != ADDR_INVALID)
+		instruction_add_data(pInstruction,
+							 index,
+							 locality_for_index);
+
+		return addressing;
 	}
 
 	return OPERAND_ADDR_NUM;
@@ -719,8 +724,7 @@ char* parser_get_index_from_label(char* szLabel)
 			szClosingDelim[0] = NULL_TERMINATOR;
 #endif /*fixme: hrmasmhpphphpfff*/
 
-			/* Index starts right after starting delimiter */
-			return szStartingDelim+1;
+			return szStartingDelim;
 		}
 		else
 		{

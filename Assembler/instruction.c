@@ -67,11 +67,13 @@ int get_num_operands_for_opcode(opcode_t opcode);
  * @param pInstruction The instruction that the operands belong to.
  * @param arrOperands List of operand strings (code).
  * @param nOperands Number of operands in the list.
+ * @param arrSymbols Where to retrieve addresses from
  * @return 0 on success, anything else on failure
  */
 int retrieve_operands(instruction_with_operands_t* pInstruction,
 					  char** arrOperands,
-					  unsigned int nOperands);
+					  unsigned int nOperands,
+					  const symbol_table_arr_t arrSymbols);
 /* fixme: const char**?*/
 
 /* Implementation */
@@ -200,7 +202,8 @@ int instruction_compile(const statement_t *pInstructionStatement,
 	/* Retrieve the operands from their respective strings */
 	if (retrieve_operands(&complete_instruction,
 						  arrOperands,
-						  nExpectedOperands) != 0)
+						  nExpectedOperands,
+						  io_pSymbols) != 0)
 	{
 		return -1;
 	}
@@ -273,7 +276,8 @@ int get_num_operands_for_opcode(opcode_t opcode)
 
 int retrieve_operands(instruction_with_operands_t* pInstruction,
 					  char** arrOperands,
-					  unsigned int nOperands)
+					  unsigned int nOperands,
+					  const symbol_table_arr_t arrSymbols)
 {
 	operand_addressing_t addresingSrc, addressingDest;
 	addresingSrc = addressingDest = OPERAND_ADDR_NUM;
@@ -284,7 +288,8 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 		/* fixme: is the first always src ? */
 		/* Get the source operand */
 		addresingSrc = parser_get_operand(arrOperands[0],
-							   pInstruction);
+							   	   	   	  pInstruction,
+							   	   	   	  arrSymbols);
 		/* If it was a register, it was stored in the dest.
 		 * Copy it to the src.
 		 * If it wasn't, it won't matter anyway.
@@ -293,14 +298,16 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 
 		/* Get the destination operand */
 		addressingDest = parser_get_operand(arrOperands[1],
-								pInstruction);
+								pInstruction,
+								arrSymbols);
 	}
 	/* Unary operation */
 	else if(nOperands == 1)
 	{
 		/* Get the destination operand */
 		addressingDest = parser_get_operand(arrOperands[0],
-								pInstruction);
+								pInstruction,
+								arrSymbols);
 	}
 
 	/* Test addressing types for the opcode */
@@ -317,4 +324,16 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 	pInstruction->instruction.dest_addressing = addressingDest;
 
 	return 0;
+}
+
+void instruction_add_data(instruction_with_operands_t* pInstruction,
+						  unsigned int val,
+						  address_locality_t locality)
+{
+	if (pInstruction == NULL)
+		return;
+
+	pInstruction->extra_data[pInstruction->num_extra_data].val = val;
+	pInstruction->num_extra_data++;
+	pInstruction->localities[pInstruction->num_extra_data] = locality;
 }

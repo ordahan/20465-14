@@ -19,13 +19,11 @@ int test_compile_instruction();
 int run_test_compile_instruction(const char		*line,
 								 code_section_t *code,
 								 const code_section_t *expected,
+								 symbol_table_arr_t symbols,
 								 char fShouldSucceed)
 {
 	unsigned i;
 	statement_t statement;
-	symbol_table_arr_t symbols;
-
-	memset(symbols, 0, sizeof(symbols));
 
 	/* Retrieve the line to compile */
 	strcpy(statement.szContent, line);
@@ -40,24 +38,27 @@ int run_test_compile_instruction(const char		*line,
 	assert(!((0 == instruction_compile(&statement, code, symbols)) ^
 			 fShouldSucceed));
 
-	/* Check the IC */
-	assert(expected->IC == code->IC);
-
-	/* Check the label if exists */
-	if (statement.szLabel != NULL)
+	if (fShouldSucceed == 1)
 	{
-		assert(0 == strcmp(statement.szLabel, symbols[0].name));
-		assert(code->IC == symbols[0].address);
-		assert(ADDR_ABSOLUTE == symbols[0].locality);
-	}
+		/* Check the IC */
+		assert(expected->IC == code->IC);
 
-	/* Check the code generated */
-	for (i = 0; i < expected->IC; ++i)
-	{
-		assert(0 == memcmp(&expected->content[i],
-						   &code->content[i],
-						   sizeof(expected->content[0])));
-		assert(expected->localities[i] == code->localities[i]);
+		/* Check the label if exists */
+		if (statement.szLabel != NULL)
+		{
+			assert(0 == strcmp(statement.szLabel, symbols[0].name));
+			assert(code->IC == symbols[0].address);
+			assert(ADDR_ABSOLUTE == symbols[0].locality);
+		}
+
+		/* Check the code generated */
+		for (i = 0; i < expected->IC; ++i)
+		{
+			assert(0 == memcmp(&expected->content[i],
+							   &code->content[i],
+							   sizeof(expected->content[0])));
+			assert(expected->localities[i] == code->localities[i]);
+		}
 	}
 
 	printf("PASSED.\n");
@@ -115,6 +116,7 @@ int test_instruction()
 int test_compile_instruction()
 {
 	code_section_t code,expected;
+	symbol_table_arr_t symbols;
 	instruction_t * const pExpectedInstruction = (instruction_t*)&expected.content[0];
 
 	/*
@@ -144,6 +146,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("stop/0",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -159,6 +162,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("inc/0 r7",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -177,18 +181,21 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	printf("\t\t");
 	memset(&code, 0, sizeof(code));
 	assert(0 == run_test_compile_instruction("mov/0 r0 ,r1",
 												 &code,
 												 &expected,
+												 symbols,
 												 1));
 	printf("\t\t");
 	memset(&code, 0, sizeof(code));
 	assert(0 == run_test_compile_instruction("mov/0 r0, r1",
 												 &code,
 												 &expected,
+												 symbols,
 												 1));
 	/**********************************************/
 
@@ -206,6 +213,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	expected.localities[1] = ADDR_ABSOLUTE;
 	((instruction_t*)&expected.content[1])->dest_reg = R0;
@@ -215,6 +223,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("inc/0 r0",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 
 	/**********************************************/
@@ -233,6 +242,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	expected.localities[1] = ADDR_ABSOLUTE;
 	((instruction_t*)&expected.content[1])->dest_reg = R0;
@@ -242,6 +252,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("inc/0 r0",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 
 	/**********************************************/
@@ -250,6 +261,7 @@ int test_compile_instruction()
 	printf("	One extra data: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
+	memset(symbols, 0, sizeof(symbols));
 	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
@@ -258,9 +270,12 @@ int test_compile_instruction()
 	expected.localities[1] = ADDR_RELOCATABLE;
 	expected.content[1].val = 0;
 	expected.IC = 2;
+	strcpy(symbols[0].name, "x");
+	symbols[0].locality = ADDR_RELOCATABLE;
 	assert(0 == run_test_compile_instruction("mov/0 x,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -268,6 +283,7 @@ int test_compile_instruction()
 	printf("	Two extra data: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
+	memset(symbols, 0, sizeof(symbols));
 	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
@@ -277,9 +293,12 @@ int test_compile_instruction()
 	expected.localities[2] = ADDR_RELOCATABLE;
 	expected.content[2].val = 0;
 	expected.IC = 3;
+	strcpy(symbols[0].name, "y");
+	symbols[0].locality = ADDR_RELOCATABLE;
 	assert(0 == run_test_compile_instruction("mov/0 #3,y",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -287,6 +306,7 @@ int test_compile_instruction()
 	printf("	Three extra data: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
+	memset(symbols, 0, sizeof(symbols));
 	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
@@ -298,9 +318,14 @@ int test_compile_instruction()
 	expected.localities[3] = ADDR_RELOCATABLE;
 	expected.content[3].val = 0;
 	expected.IC = 4;
+	strcpy(symbols[0].name, "x");
+	symbols[0].locality = ADDR_RELOCATABLE;
+	strcpy(symbols[1].name, "y");
+	symbols[1].locality = ADDR_RELOCATABLE;
 	assert(0 == run_test_compile_instruction("mov/0 x{5},y",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -308,6 +333,7 @@ int test_compile_instruction()
 	printf("	Four extra data: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
+	memset(symbols, 0, sizeof(symbols));
 	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
@@ -321,9 +347,16 @@ int test_compile_instruction()
 	expected.localities[4] = ADDR_RELOCATABLE;
 	expected.content[4].val = 0;
 	expected.IC = 5;
+	strcpy(symbols[0].name, "x");
+	symbols[0].locality = ADDR_RELOCATABLE;
+	strcpy(symbols[1].name, "y");
+	symbols[1].locality = ADDR_RELOCATABLE;
+	strcpy(symbols[2].name, "z");
+	symbols[2].locality = ADDR_RELOCATABLE;
 	assert(0 == run_test_compile_instruction("mov/0 x{5},y{z}",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -337,11 +370,13 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("mov/0 r0,#0",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("jsr/0 #31",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	/**********************************************/
 	printf("	Type'd instruction: ");
@@ -359,6 +394,7 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("mov/1/0/1 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 1));
 	/**********************************************/
 
@@ -372,26 +408,31 @@ int test_compile_instruction()
 	assert(0 == run_test_compile_instruction("mov/1 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0/1/1 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/1/2/1 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/2/0/1 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/3 r0,r1",
 											 &code,
 											 &expected,
+											 symbols,
 											 0));
 	/**********************************************/
 

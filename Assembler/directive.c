@@ -116,7 +116,6 @@ int directive_compile_entry(const statement_t *pEntry,
 							symbol_table_arr_t io_pSymbols)
 {
 	char *pName = NULL;
-	symbol_t *pSymbol = NULL;
 
 	if (pEntry == NULL ||
 		io_pSymbols == NULL)
@@ -128,35 +127,7 @@ int directive_compile_entry(const statement_t *pEntry,
 								   1) != 0)
 		return -2;
 
-	/* Look for the label in the symbol table */
-	pSymbol = symbol_get_from_table_by_name(io_pSymbols, pName);
-	if (pSymbol == NULL)
-	{
-		printf("Error! cannot set %s as an entry point, symbol doesn't exist!\n",
-				pName);
-		return -4;
-	}
-	/* Check if its already an entry */
-	else if (pSymbol->locality == ADDR_ENTRY)
-	{
-		printf("Error! %s is already an entry point!\n",
-				pName);
-		return -5;
-	}
-	/* Check if its an external symbol */
-	else if (pSymbol->locality == ADDR_EXTERNAL)
-	{
-		printf("Error! cannot set %s as an entry point, it's an external symbol!\n",
-				pName);
-		return -5;
-	}
-	else
-	{
-		/* Make it an entry */
-		pSymbol->locality = ADDR_ENTRY;
-	}
-
-	return 0;
+	return symbol_set_as_entry(io_pSymbols, pName);
 }
 
 int retrieve_data_fields(data_section_t* io_pData,

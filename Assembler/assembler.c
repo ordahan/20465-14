@@ -248,6 +248,7 @@ int second_pass(const statement_t *arrStatements,
 					/* Is it a labeled directive? */
 					if (pCurrStatement->szLabel != NULL)
 					{
+						/* fixme: do this later ... not now */
 						/* Locate the symbol associated with this directive */
 						symbol_t* pSymb = symbol_get_from_table_by_name(io_arrSymbols,
 																		pCurrStatement->szLabel);

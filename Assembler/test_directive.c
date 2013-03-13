@@ -597,7 +597,8 @@ int test_compile_entry()
 	assert(0 == parser_get_statement(&statement));
 	assert(0 == directive_compile_entry(&statement, arrSymbols));
 	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
-	assert(ADDR_ENTRY == arrSymbols[0].locality);
+	assert(ADDR_ABSOLUTE == arrSymbols[0].locality);
+	assert(ADDR_ENTRY_STATUS_ENTRY == arrSymbols[0].entry);
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
 	/**********************************************/
@@ -637,13 +638,14 @@ int test_compile_entry()
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].locality = ADDR_ABSOLUTE;
 	arrSymbols[0].address = 0;
+	arrSymbols[0].entry = ADDR_ENTRY_STATUS_NON_ENTRY;
 	strcpy(arrSymbols[0].name, "HelloMoto");
 	memset(&statement, 0, sizeof(statement));
 	strcpy(statement.szContent, ".entry HelloMoto");
 	assert(0 == parser_get_statement(&statement));
 	assert(0 == directive_compile_entry(&statement, arrSymbols));
 	assert(0 == strcmp(statement.szOperationData, arrSymbols[0].name));
-	assert(ADDR_ENTRY == arrSymbols[0].locality);
+	assert(ADDR_ENTRY_STATUS_ENTRY == arrSymbols[0].entry);
 	assert(0 != directive_compile_entry(&statement, arrSymbols));
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");

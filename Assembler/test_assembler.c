@@ -86,7 +86,7 @@ int test_assembler()
 								&data_expected);
 
 	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_ENTRY;
+	pSymbol->locality = ADDR_ABSOLUTE;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
 	code_expected.IC = 2;
 	code_expected.localities[0] = ADDR_ABSOLUTE;

@@ -94,14 +94,15 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers);
  * extra cells used). If the operand is a register, the value of the
  * register is temporarily placed in the "dest" register.
  * This function might change the value of the string szOperand!
- * do not rely on its value after running the function.
  *
  * @param szOperand string representing the operand value.
  * @param pInstruction Where to place the extra data that the operand takes.
+ * @param arrSymbols Where to retrieve symbols from.
  * @return Addressing type for the operand.
  */
 operand_addressing_t parser_get_operand(char* szOperand,
-										instruction_with_operands_t* pInstruction);
+										instruction_with_operands_t* pInstruction,
+										const symbol_table_arr_t arrSymbols);
 
 /* fixme: doc this */
 unsigned int parser_get_operand_memory_size(char* szOperand);
