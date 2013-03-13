@@ -7,3 +7,5 @@
 /test_assembler.out
 /parser.o
 /test_parser.o
+*.o
+*.out
