@@ -386,22 +386,26 @@ int test_compile_dummy_instruction()
 	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-1;
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
+	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-2;
-	assert(0 == test_dummy_instruction_compile(".string \"a\"",
-											   &data,
-											   &data_expected,
-											   0));
 	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-1;
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".string \"a\"",
+											   &data,
+											   &data_expected,
+											   0));
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
+	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"a\"",
 											   &data,
 											   &data_expected,
 											   0));
 	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-2;
+	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"abc\"",
 											   &data,
 											   &data_expected,
