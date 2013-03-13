@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "parser.h"
 
+/* fixme: change the api to get the proper values and not just the type.. */
 int symbol_add_to_table(symbol_table_arr_t table,
 						const symbol_t *symbol)
 {

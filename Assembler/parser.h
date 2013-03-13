@@ -120,4 +120,20 @@ unsigned int parser_get_num_items_in_list(char* szList);
  */
 unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum);
 
+/**
+ * Extracts the string representation in the given string.
+ * If the given string contains anything other than the representation
+ * or its syntax is incorrect - this function will fail.
+ *
+ * @param szString String that contains the representation.
+ * @param o_pStart Where to place the ptr to the start of the representation.
+ * @param o_pEnd  Where to place the ptr to the end of the representation.
+ * @return 0 on success, anything else on error. If found, o_pStart
+ * points to the first char in the string and o_pEnd points to the first
+ * byte after the last char in the string. In case of an error the values
+ * for the given ptr pair is un-determined and should not be relied upon.
+ * If the string is empty, o_pStart == o_pEnd (first byte after the empty string)
+ */
+int parser_get_string(const char* szString, const char** o_pStart, const char** o_pEnd);
+
 #endif /* PARSER_H_ */

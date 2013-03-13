@@ -107,14 +107,14 @@ int test_compile_dummy_instruction()
 	 * #element is not a valid number
 	 * #number out of range
 	 * #list not separated properly
-	 * label for data
-	 * multiple data parts
-	 * no chars in string
-	 * one char string
-	 * N chars string
-	 * no '"' at start / end / both
-	 * string too long (null-terminator out of bounds, more than 1 out of bounds)
-	 * another field before/after the string
+	 * #label for data
+	 * #multiple data parts
+	 * #no chars in string
+	 * #one char string
+	 * #N chars string
+	 * #no '"' at start / end / both
+	 * #string too long (null-terminator out of bounds, more than 1 out of bounds)
+	 * #another field before/after the string
 	 */
 	data_section_t     data, data_expected;
 
@@ -329,14 +329,17 @@ int test_compile_dummy_instruction()
 	printf("	no '\"' at start / end / both: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
+	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string hi\"",
 											   &data,
 											   &data_expected,
 											   0));
+	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"hi",
 											   &data,
 											   &data_expected,
 											   0));
+	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string hi",
 											   &data,
 											   &data_expected,

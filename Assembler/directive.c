@@ -26,14 +26,29 @@ int retrieve_data_fields(data_section_t* io_pData,
 					  	 char** arrFields,
 					  	 unsigned int nFields);
 
+/**
+ * Compiles the given data directive directly into the data section given.
+ * @param pDataDirective Directive to compile.
+ * @param io_pData Data section to put the results in.
+ * @return 0 if ok, anything else otherwise to signal error.
+ */
+int compile_data(const statement_t *pDataDirective,
+				 data_section_t* io_pData);
+
+/**
+ * Compiles the given string directive directly into the data section given.
+ * @param pStringDirective Directive to compile.
+ * @param io_pData Data section to put the results in.
+ * @return 0 if ok, anything else otherwise to signal error.
+ */
+int compile_string(const statement_t *pStringDirective,
+				   data_section_t* io_pData);
+
 /* Implementations */
 int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 									    data_section_t* io_pData,
 									    symbol_table_arr_t io_pSymbols)
 {
-	char *arrDataFields[ASSEMBLER_DATA_MAX_SIZE_CELLS];
-	unsigned int nNumDataFields = 0;
-
 	if (pDummyInst == NULL ||
 		io_pSymbols == NULL ||
 		io_pData == NULL)
@@ -55,25 +70,19 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 		}
 	}
 
-	/* Get the number of expected data fields */
-	nNumDataFields = parser_get_num_items_in_list(pDummyInst->szOperationData);
-	if (nNumDataFields == 0)
+	if (pDummyInst->info.directive.name == DIRECTIVE_DATA)
 	{
-		printf("Error! data directive must contain at least one element.");
-		return -2;
+		return compile_data(pDummyInst, io_pData);
 	}
-
-	/* Get the data field to add */
-	if (parser_get_items_from_list(pDummyInst->szOperationData,
-								   arrDataFields,
-								   nNumDataFields) != 0)
-		return -2;
-
-	/* Add the data fields to the data section */
-	if (retrieve_data_fields(io_pData,
-							 arrDataFields,
-							 nNumDataFields) != 0)
-		return -3;
+	else if (pDummyInst->info.directive.name == DIRECTIVE_STRING)
+	{
+		return compile_string(pDummyInst, io_pData);
+	}
+	else
+	{
+		/* Internal error.. must be a bug in the code itself. */
+		return -99;
+	}
 
 	return 0;
 }
@@ -175,6 +184,79 @@ int retrieve_data_fields(data_section_t* io_pData,
 		/* Count the number retrieved */
 		io_pData->DC++;
 	}
+
+	return 0;
+}
+
+int compile_data(const statement_t *pDataDirective,
+				 data_section_t* io_pData)
+{
+	char *arrDataFields[ASSEMBLER_DATA_MAX_SIZE_CELLS];
+	unsigned int nNumDataFields = 0;
+
+	/* Get the number of expected data fields */
+	nNumDataFields = parser_get_num_items_in_list(pDataDirective->szOperationData);
+	if (nNumDataFields == 0)
+	{
+		printf("Error! data directive must contain at least one element.");
+		return -2;
+	}
+
+	/* Get the data field to add */
+	if (parser_get_items_from_list(pDataDirective->szOperationData,
+								   arrDataFields,
+								   nNumDataFields) != 0)
+		return -3;
+
+	/* Add the data fields to the data section */
+	if (retrieve_data_fields(io_pData,
+							 arrDataFields,
+							 nNumDataFields) != 0)
+		return -4;
+
+	return 0;
+}
+
+int compile_string(const statement_t *pStringDirective,
+				   data_section_t* io_pData)
+{
+	const char *pStart;
+	const char *pEnd;
+
+	/* Get the string represented in the directive */
+	if (parser_get_string(pStringDirective->szOperationData,
+					  &pStart,
+					  &pEnd) != 0)
+	{
+		return -1;
+	}
+
+	/* Place all of its chars in the data section */
+	while (pStart <= pEnd)
+	{
+		/* No more room for data */
+		/* fixme: make the code / data section more
+		 * abstract by giving them a correct API
+		 */
+		if (io_pData->DC >= ASSEMBLER_DATA_MAX_SIZE_CELLS)
+		{
+			return -1;
+		}
+
+		/* Add the null-terminator */
+		if (pStart == pEnd)
+		{
+			io_pData->content[io_pData->DC].val = '\0';
+		}
+		else
+		{
+			io_pData->content[io_pData->DC].val = *pStart;
+		}
+
+		io_pData->DC++;
+		pStart++;
+	}
+
 
 	return 0;
 }

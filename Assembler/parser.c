@@ -28,6 +28,7 @@
 #define INDEX_OFFSET_OPEN_DELIMITER "{"
 #define INDEX_OFFSET_CLOSE_DELIMITER "}"
 #define LIST_DELIMITER ','
+#define STRING_REP_DELIMITER '"'
 
 /* Internal functions declarations */
 /**
@@ -77,6 +78,21 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
  * the index, index string if its ok.
  */
 char* parser_get_index_from_label(char* szLabel);
+
+/**
+ * Checks if the given string is comprised only of whitespaces.
+ * @param szString String to check
+ * @return If the given string consists only of whitespaces,
+ * returns 1. Otherwise - 0.
+ */
+unsigned char is_string_empty(const char* szString);
+
+/**
+ * Checks if the given char is a whitespace
+ * @param c Char to check
+ * @return 1 if it is, 0 if it is not.
+ */
+char is_white_space(char c);
 
 /* Internal definitions */
 typedef enum
@@ -677,6 +693,21 @@ char* parser_get_index_from_label(char* szLabel)
 	}
 }
 
+unsigned char is_string_empty(const char* szString)
+{
+	unsigned int i;
+
+	/* Is there anything at all on the list? */
+	for (i = 0; szString[i] != NULL_TERMINATOR; ++i) {
+		/* At least one non-blank char */
+		if (is_white_space(szString[i]) == 0) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
 unsigned int parser_get_num_items_in_list(char* szList)
 {
 	unsigned int nDelimitersFound = 0;
@@ -696,21 +727,8 @@ unsigned int parser_get_num_items_in_list(char* szList)
 	/* No delimiters */
 	if (nDelimitersFound == 0)
 	{
-		unsigned char fEmpty = 1;
-
-		/* Is there anything at all on the list? */
-		for (i = 0; szList[i] != NULL_TERMINATOR; ++i)
-		{
-			/* At least one non-blank char */
-			if (strchr(BLANKS, szList[i]) == NULL)
-			{
-				fEmpty = 0;
-				break;
-			}
-		}
-
 		/* Not even a single item */
-		if (fEmpty)
+		if (is_string_empty(szList) == 1)
 			return 0;
 	}
 
@@ -736,4 +754,79 @@ unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum)
 	}
 
 	return 1;
+}
+
+char is_white_space(char c)
+{
+	if (strchr(BLANKS, c) == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+int parser_get_string(const char* szString, const char** o_pStart, const char** o_pEnd)
+{
+	unsigned int i;
+
+	if (szString == NULL ||
+		o_pStart == NULL ||
+		o_pEnd == NULL)
+		return -1;
+
+	*o_pStart = *o_pEnd = NULL;
+
+	/* Look for the string representation delimiters */
+	for (i = 0; szString[i] != NULL_TERMINATOR; ++i)
+	{
+		/* Inside the string */
+		if (*o_pStart != NULL && *o_pEnd == NULL)
+		{
+			/* End found */
+			if (szString[i] == STRING_REP_DELIMITER)
+			{
+				*o_pEnd = szString + i;
+			}
+			/* Valid string char */
+		}
+		/* Before the string */
+		else if (*o_pStart == NULL)
+		{
+			/* Start found */
+			if (szString[i] == STRING_REP_DELIMITER)
+			{
+				/* Next char is first in string,
+				 * might not be a part of the string if its empty.
+				 */
+				*o_pStart = szString + i + 1;
+			}
+			/* Not the start yet */
+			else
+			{
+				/* Only white-spaces allowed */
+				if (is_white_space(szString[i]) == 0)
+				{
+					return -1;
+				}
+			}
+		}
+		/* After the string */
+		else
+		{
+			/* Only white-spaces allowed */
+			if (is_white_space(szString[i]) == 0)
+			{
+				return -1;
+			}
+		}
+	}
+
+	/* Make sure the entire string was found */
+	if (*o_pStart == NULL || *o_pEnd == NULL)
+		return -2;
+
+	return 0;
 }
