@@ -16,17 +16,18 @@
 #include "instruction.h"
 #include "directive.h"
 #include "symbol.h"
+#include "errno.h"
 
 /* Defines */
 #define BLANKS "\t \n\r"
 #define LABEL_SEPARATOR ':'
 #define INSTRUCTION_MODIFIER_SEPARATOR '/'
-#define ITEM_LIST_DELIMITERS ", \t" /* todo: is there a way to combine with blanks? */
 #define NUMBERS_BASE	(10)
 #define NULL_TERMINATOR '\0'
 #define IMMEDIATE_PREFIX '#'
 #define INDEX_OFFSET_OPEN_DELIMITER "{"
 #define INDEX_OFFSET_CLOSE_DELIMITER "}"
+#define LIST_DELIMITER ','
 
 /* Internal functions declarations */
 /**
@@ -92,6 +93,7 @@ int parser_get_statement(statement_t* io_pLine)
 {
 	char* szOperation = NULL;
 	char* pLabelEnd = NULL;
+	char* pContentEnd = NULL;
 	size_t nLabelSectionLength = 0;
 
 	/* Don't crash the program if we aren't given a
@@ -99,6 +101,9 @@ int parser_get_statement(statement_t* io_pLine)
 	 */
 	if (io_pLine == NULL)
 		return 1;
+
+	/* Save the end of the actual content */
+	pContentEnd = strchr(io_pLine->szContent, NULL_TERMINATOR);
 
 	/* Assume we didn't find anything */
 	io_pLine->type = STATEMENT_TYPE_ERROR;
@@ -137,7 +142,7 @@ int parser_get_statement(statement_t* io_pLine)
 		nLabelSectionLength++;
 	}
 
-	/* Split the line according to whitespaces, fetch the first
+	/* Split the operation from its data according to whitespaces, fetch the first
 	 * word after the label (if exists) */
 	szOperation = strtok(io_pLine->szContent + nLabelSectionLength, BLANKS);
 
@@ -152,7 +157,12 @@ int parser_get_statement(statement_t* io_pLine)
 		/* fixme: directive / instruction must appear right after label
 		 * or can there be any whitespaces separating them?
 		 */
-		io_pLine->szOperationData = strtok(NULL, BLANKS);
+		/* The data for the operation starts right after the operation itself ends */
+		io_pLine->szOperationData = strchr(szOperation, NULL_TERMINATOR) + 1;
+
+		/* Make sure the data is real */
+		if (io_pLine->szOperationData >= pContentEnd)
+			io_pLine->szOperationData = NULL;
 
 		/* Check if the operation is a directive */
 		if (szOperation[0] == '.')
@@ -380,7 +390,7 @@ int parser_get_items_from_list(char* szList,
 				state = PARSER_LIST_STATE_AFTER_ITEM;
 			}
 			/* Delimiter */
-			else if (szList[nCurrCharIdx] == ',')/* fixme: delimiter */
+			else if (szList[nCurrCharIdx] == LIST_DELIMITER)
 			{
 				state = PARSER_LIST_STATE_AFTER_DELIMITER;
 			}
@@ -390,7 +400,7 @@ int parser_get_items_from_list(char* szList,
 		else
 		{
 			/* Delimiter found */
-			if (szList[nCurrCharIdx] == ',') /* fixme: delimiter */
+			if (szList[nCurrCharIdx] == LIST_DELIMITER)
 			{
 				/* Invalid location */
 				if (state == PARSER_LIST_STATE_AFTER_DELIMITER ||
@@ -665,4 +675,65 @@ char* parser_get_index_from_label(char* szLabel)
 	{
 		return szLabel;
 	}
+}
+
+unsigned int parser_get_num_items_in_list(char* szList)
+{
+	unsigned int nDelimitersFound = 0;
+	unsigned int i;
+
+	/* Is the list valid? */
+	if (szList == NULL)
+		return 0;
+
+	/* Count the number of delimiters */
+	for (i = 0; szList[i] != NULL_TERMINATOR; ++i)
+	{
+		if (szList[i] == LIST_DELIMITER)
+			nDelimitersFound++;
+	}
+
+	/* No delimiters */
+	if (nDelimitersFound == 0)
+	{
+		unsigned char fEmpty = 1;
+
+		/* Is there anything at all on the list? */
+		for (i = 0; szList[i] != NULL_TERMINATOR; ++i)
+		{
+			/* At least one non-blank char */
+			if (strchr(BLANKS, szList[i]) == NULL)
+			{
+				fEmpty = 0;
+				break;
+			}
+		}
+
+		/* Not even a single item */
+		if (fEmpty)
+			return 0;
+	}
+
+	/* 1 Or more items found */
+	return nDelimitersFound + 1;
+}
+
+/* fixme: all the number retrievals change to this func */
+unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum)
+{
+	char * pEnd;
+
+	/* Try getting the number */
+	*o_pNum = strtol(szNumber, &pEnd, NUMBERS_BASE);
+
+	/* The entire string must represent the number,
+	 * make sure its also not out of bounds */
+	if (pEnd != strchr(szNumber, NULL_TERMINATOR) ||
+		errno == ERANGE)
+	{
+		errno = 0;
+		return 0;
+	}
+
+	return 1;
 }

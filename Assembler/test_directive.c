@@ -13,22 +13,285 @@
 
 #include "directive.h"
 #include "parser.h"
+#include "assembler.h"
 
 int test_compile_dummy_instruction();
 int test_compile_extern();
 int test_compile_entry();
 
+void init_object_blocks(symbol_table_arr_t *symbol_expected,
+					code_section_t *code_expected,
+					data_section_t *data_expected)
+{
+	if (symbol_expected != NULL)
+		memset(*symbol_expected, 0, sizeof(*symbol_expected));
+	if (code_expected != NULL)
+		memset(code_expected, 0, sizeof(*code_expected));
+	if (data_expected != NULL)
+		memset(data_expected, 0, sizeof(*data_expected));
+}
+
 int test_directive()
 {
+	assert(test_compile_dummy_instruction() == 0);
 	assert(test_compile_extern() == 0);
 	assert(test_compile_entry() == 0);
 
 	return 0;
 }
 
+int test_dummy_instruction_compile(const char		*line,
+						   data_section_t *data,
+						   const data_section_t *expected,
+						   char fShouldSucceed)
+{
+	unsigned i;
+	statement_t statement;
+	symbol_table_arr_t symbols;
+
+	memset(symbols, 0, sizeof(symbols));
+
+	/* Retrieve the line to compile */
+	strcpy(statement.szContent, line);
+
+	/* Create a statement from the given line */
+	assert(0 == parser_get_statement(&statement));
+
+	/* Check that the compilation returns as expected */
+	assert(!((0 == directive_compile_dummy_instruction(&statement, data, symbols)) ^
+			 fShouldSucceed));
+
+	if (fShouldSucceed != 0)
+
+	{
+		/* Check the IC */
+		assert(expected->DC == data->DC);
+
+		/* Check the label if exists */
+		if (statement.szLabel != NULL)
+		{
+			/* Find last symbol */
+			unsigned i;
+			symbol_t* pSymb = &symbols[0];
+			for (i = 1; symbols[i].address != ADDR_INVALID;++i )
+			{
+				pSymb = &symbols[i];
+			}
+
+			assert(0 == strcmp(statement.szLabel, pSymb->name));
+			assert(data->DC - 1 == pSymb->address);
+			assert(ADDR_RELOCATABLE == pSymb->locality);
+		}
+
+		/* Check the data generated */
+		for (i = 0; i < expected->DC; ++i)
+		{
+			assert(0 == memcmp(&expected->content[i],
+							   &data->content[i],
+							   sizeof(expected->content[0])));
+		}
+	}
+
+	printf("PASSED.\n");
+	return 0;
+}
+
 int test_compile_dummy_instruction()
 {
-	return -1;
+	/*todo:
+	 * #one data
+	 * #two data
+	 * #N data
+	 * #no data
+	 * #too much data (no more room)
+	 * #element is not a valid number
+	 * #number out of range
+	 * #list not separated properly
+	 * label for data
+	 * multiple data parts
+	 * no chars in string
+	 * one char string
+	 * N chars string
+	 * no '"' at start / end / both
+	 * string too long (null-terminator out of bounds, more than 1 out of bounds)
+	 * another field before/after the string
+	 */
+	data_section_t     data, data_expected;
+
+	printf("Testing compiling dummy directives:\n");
+
+	/**********************************************/
+	printf("	one data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 1;
+	data_expected.content[0].val = 13;
+	assert(0 == test_dummy_instruction_compile(".data 13",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	two data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 2;
+	data_expected.content[0].val = 13;
+	data_expected.content[1].val = -3;
+	assert(0 == test_dummy_instruction_compile(".data 13, -3",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	N data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 5;
+	data_expected.content[0].val = 13;
+	data_expected.content[1].val = 0;
+	data_expected.content[2].val = -4;
+	data_expected.content[3].val = 100000;
+	data_expected.content[4].val = -1000000;
+	assert(0 == test_dummy_instruction_compile(".data 13, 0, -4, 100000, -1000000",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	no data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	assert(0 == test_dummy_instruction_compile(".data ",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	too much data (no more room): ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
+	assert(0 == test_dummy_instruction_compile(".data 13",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	element is not a valid number: \n");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".data #13",
+											   &data,
+											   &data_expected,
+											   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".data abc",
+												   &data,
+												   &data_expected,
+												   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".data 15, A4",
+												   &data,
+												   &data_expected,
+												   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".data 15 %%2",
+												   &data,
+												   &data_expected,
+												   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".data 1..2",
+												   &data,
+												   &data_expected,
+												   0));
+	printf("\t\t");
+	assert(0 == test_dummy_instruction_compile(".data a",
+												   &data,
+												   &data_expected,
+												   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	number out of range: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	assert(0 == test_dummy_instruction_compile(".data 9999999999999999999999",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	list not separated properly: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	assert(0 == test_dummy_instruction_compile(".data 13 . 5",
+											   &data,
+											   &data_expected,
+											   0));
+	assert(0 == test_dummy_instruction_compile(".data 13,,5",
+												   &data,
+												   &data_expected,
+												   0));
+	assert(0 == test_dummy_instruction_compile(".data 13 #5",
+											   &data,
+											   &data_expected,
+											   0));
+	assert(0 == test_dummy_instruction_compile(".data 13\t5",
+											   &data,
+											   &data_expected,
+											   0));
+	assert(0 == test_dummy_instruction_compile(".data 13 5",
+											   &data,
+											   &data_expected,
+											   0));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	label for data: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 1;
+	data_expected.content[0].val = 13;
+	assert(0 == test_dummy_instruction_compile("X:.data 13",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+
+	/**********************************************/
+	printf("	multiple data parts: ");
+	init_object_blocks(NULL, NULL, &data_expected);
+	init_object_blocks(NULL, NULL, &data);
+	data_expected.DC = 1;
+	data_expected.content[0].val = 13;
+	assert(0 == test_dummy_instruction_compile(".data 13",
+											   &data,
+											   &data_expected,
+											   1));
+	data_expected.DC = 2;
+	data_expected.content[1].val = 29;
+	assert(0 == test_dummy_instruction_compile(".data 29",
+											   &data,
+											   &data_expected,
+											   1));
+	/**********************************************/
+	printf("	no chars in string: ");
+	printf("	one char string: ");
+	printf("	N chars string: ");
+	printf("	no '\"' at start / end / both: ");
+	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): ");
+	printf("	another field before/after the string: ");
+
+	printf("PASSED.\n");
+	return 0;
 }
 
 int test_compile_extern()

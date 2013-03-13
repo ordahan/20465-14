@@ -139,7 +139,7 @@ int test_compile_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Two operands: ");
+	printf("	Two operands: \n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	expected.localities[0] = ADDR_ABSOLUTE;
@@ -149,10 +149,23 @@ int test_compile_instruction()
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = MOV;
 	expected.IC = 1;
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
 											 &expected,
 											 1));
+	printf("\t\t");
+	memset(&code, 0, sizeof(code));
+	assert(0 == run_test_compile_instruction("mov/0 r0 ,r1",
+												 &code,
+												 &expected,
+												 1));
+	printf("\t\t");
+	memset(&code, 0, sizeof(code));
+	assert(0 == run_test_compile_instruction("mov/0 r0, r1",
+												 &code,
+												 &expected,
+												 1));
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1,r2",
 											 &code,

@@ -103,4 +103,21 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers);
 operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction);
 
+/**
+ * Calculates the number of items that comprise the list.
+ * Doesn't check that the list format is valid at all.
+ * @param szList List of items to count.
+ * @return negative number if the ptr given isn't valid, otherwise
+ * the number of items found on the list (0 is a valid number)
+ */
+unsigned int parser_get_num_items_in_list(char* szList);
+
+/**
+ * Gets the number represented in the string
+ * @param szNumber String of a number.
+ * @param o_pNum Number found.
+ * @return 1 if number retrieved ok, 0 otherwise.
+ */
+unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum);
+
 #endif /* PARSER_H_ */

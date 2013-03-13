@@ -30,7 +30,7 @@ typedef struct
 
 typedef struct
 {
-	machine_cell_t content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+	machine_cell_t content[ASSEMBLER_DATA_MAX_SIZE_CELLS];
 	unsigned	   DC;
 }data_section_t;
 
