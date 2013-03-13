@@ -64,7 +64,7 @@ int assembler_compile(FILE* flProgram,
 	size_t	nNumOfStatements = 0;
 
 	/* First of all, init the given output-bound array types */
-	memset(o_arrSymbols, 0, sizeof(o_arrSymbols));
+	memset(o_arrSymbols, 0, sizeof(symbol_table_arr_t));
 	memset(o_pCode, 0, sizeof(*o_pCode));
 	memset(o_pData, 0, sizeof(*o_pData));
 
@@ -222,9 +222,31 @@ int second_pass(const statement_t *arrStatements,
 						return -2;
 					break;
 				}
-				/* Already dealt with */
 				case (DIRECTIVE_DATA):
 				case (DIRECTIVE_STRING):
+				{
+					/* Is it a labeled directive? */
+					if (pCurrStatement->szLabel != NULL)
+					{
+						/* Locate the symbol associated with this directive */
+						symbol_t* pSymb = symbol_get_from_table_by_name(io_arrSymbols,
+																		pCurrStatement->szLabel);
+						/* Symbol has gone missing! */
+						if (pSymb == NULL)
+						{
+							printf("Internal error! symbol missing.. %s %d\n",
+									__FILE__,
+									__LINE__);
+						}
+						else
+						{
+							/* Correct its offset */
+							/* fixme: what if the address is out of bounds now? */
+							pSymb->address += io_pCode->IC;
+						}
+					}
+					break;
+				}
 				default:
 					break;
 			}

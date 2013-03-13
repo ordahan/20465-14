@@ -116,7 +116,7 @@ int test_assembler()
 								&data_expected);
 
 	printf("	Syntax error: ");
-	assert(1 == test_assembler_compile("tests/syntax_err.as",
+	assert(0 == test_assembler_compile("tests/syntax_err.as",
 										symbols_expected,
 										&code_expected,
 										&data_expected,
@@ -130,7 +130,7 @@ int test_assembler()
 								&data_expected);
 
 	printf("	Invalid extern: ");
-	assert(1 == test_assembler_compile("tests/invalid_extern.as",
+	assert(0 == test_assembler_compile("tests/invalid_extern.as",
 										symbols_expected,
 										&code_expected,
 										&data_expected,
@@ -144,7 +144,7 @@ int test_assembler()
 								&data_expected);
 
 	printf("	Invalid entry: ");
-	assert(1 == test_assembler_compile("tests/invalid_entry.as",
+	assert(0 == test_assembler_compile("tests/invalid_entry.as",
 										symbols_expected,
 										&code_expected,
 										&data_expected,
@@ -277,6 +277,7 @@ int test_assembler()
 	 * #.string error
 	 * #instruction + .data (data after text)
 	 */
+	printf("PASSED.\n");
 	return 0;
 }
 
@@ -333,7 +334,7 @@ int test_assembler_compile(const char* szTestFile,
 			return -2;
 		}
 
-		return 1;
+		return 0;
 	}
 
 	/* Check the code section */
