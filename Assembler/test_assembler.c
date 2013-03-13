@@ -162,6 +162,7 @@ int test_assembler()
 	strcpy(pSymbol->name, "LOL");
 	pSymbol = &symbols_expected[1];
 	pSymbol->locality = ADDR_RELOCATABLE;
+	pSymbol->address = 5;
 	strcpy(pSymbol->name, "rofl");
 
 	data_expected.DC = 11;
@@ -314,6 +315,10 @@ int test_assembler_compile(const char* szTestFile,
 									 symbols,
 									 &code,
 									 &data);
+
+	/* Don't forget to close the test file */
+	fclose(fd);
+
 	if (expected_result == 0)
 	{
 		if (compile_res != 0)
@@ -331,10 +336,57 @@ int test_assembler_compile(const char* szTestFile,
 		return 1;
 	}
 
-	/* Don't forget to close the test file */
-	fclose(fd);
+	/* Check the code section */
+	/* fixme: make this a function for test utils */
+	{
+		unsigned i;
 
-	/* Check that we got what we expected */
+		if (code_expected->IC != code.IC)
+		{
+			printf("IC not as expected: [%d != %d]\n",
+					code_expected->IC,
+					code.IC);
+			return -1;
+		}
+
+		for (i = 0; i < code.IC; ++i)
+		{
+			if (code_expected->content[i].val != code.content[i].val)
+			{
+				printf("Code in index %d doesn't match.\n", i);
+				return -2;
+			}
+			else if (code_expected->localities[i] != code.localities[i])
+			{
+				printf("Locality in index %d doesn't match.\n", i);
+				return -3;
+			}
+		}
+	}
+
+	/* fixme: make this a function for test utils */
+	{
+		unsigned i;
+
+		if (data_expected->DC != data.DC)
+		{
+			printf("DC not as expected: [%d != %d]\n",
+					data_expected->DC,
+					data.DC);
+			return -1;
+		}
+
+		for (i = 0; i < data.DC; ++i)
+		{
+			if (data_expected->content[i].val != data.content[i].val)
+			{
+				printf("data in index %d doesn't match.\n", i);
+				return -2;
+			}
+		}
+	}
+
+	/* Check the symbol table */
 	{
 		unsigned i;
 		for (i = 0; i < MAX_SYMBOLS; ++i)
@@ -348,15 +400,6 @@ int test_assembler_compile(const char* szTestFile,
 			}
 		}
 	}
-
-	if (0 != memcmp(code_expected,
-					&code,
-					sizeof(code)))
-		return -4;
-	if (0 != memcmp(data_expected,
-					&data,
-					sizeof(data)))
-		return -5;
 
 	return 0;
 }
