@@ -60,11 +60,11 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 		/* Save the label for the instruction,
 		 * its address is the DC before the instruction
 		 */
-		symbol_t label;
-		label.locality = ADDR_RELOCATABLE;
-		label.address = io_pData->DC;
-		strncpy(label.name, pDummyInst->szLabel, sizeof(label.name));
-		if (symbol_add_to_table(io_pSymbols, &label) != 0)
+		if (symbol_add_to_table(io_pSymbols,
+							    ADDR_RELOCATABLE,
+							    pDummyInst->szLabel,
+							    io_pData->DC,
+							    ADDR_SECTION_DATA) != 0)
 		{
 			return -1;
 		}
@@ -91,9 +91,6 @@ int directive_compile_extern(const statement_t *pExtern,
 							 symbol_table_arr_t io_pSymbols)
 {
 	char *pName;
-	symbol_t symbol;
-	symbol.address = 0;
-	symbol.locality = ADDR_EXTERNAL;
 
 	if (pExtern == NULL ||
 		io_pSymbols == NULL)
@@ -105,11 +102,12 @@ int directive_compile_extern(const statement_t *pExtern,
 								   1) != 0)
 		return -2;
 
-	/* Copy the content of the label */
-	strncpy(symbol.name, pName, sizeof(symbol.name));
-
 	/* Add the label to the table */
-	return symbol_add_to_table(io_pSymbols, &symbol);
+	return symbol_add_to_table(io_pSymbols,
+							   ADDR_EXTERNAL,
+							   pName,
+							   0,
+							   ADDR_SECTION_EXTERNAL); /*fixme: external section? */
 }
 
 int directive_compile_entry(const statement_t *pEntry,

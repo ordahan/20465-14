@@ -35,7 +35,8 @@ typedef enum
 typedef enum
 {
 	ADDR_SECTION_CODE,
-	ADDR_SECTION_DATA
+	ADDR_SECTION_DATA,
+	ADDR_SECTION_EXTERNAL
 }address_section_t;
 
 typedef struct
@@ -52,12 +53,19 @@ typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];
 /**
  * Adds the given symbol to the table.
  * Makes sure the symbol name is unique to the table.
+ *
  * @param table Table to add the symbol into
- * @param symbol Symbol to add into the table
+ * @param locality What is the addressing type for the symbol.
+ * @param szName Symbol name.
+ * @param address Address it resides in.
+ * @param section What section does the address belong to.
  * @return 0 if everything ok, -1 if not unique, anything else for error.
  */
 int symbol_add_to_table(symbol_table_arr_t table,
-						const symbol_t *symbol);
+						address_locality_t 	locality,
+						const char* szName,
+						unsigned long		address,
+						address_section_t	section);
 
 /**
  * Searches the given symbol table for a symbol with the given name.
@@ -77,5 +85,15 @@ const symbol_t* symbol_get_from_table_by_name(const symbol_table_arr_t table,
  * @return 0 on success, anything else on error.
  */
 int symbol_set_as_entry(symbol_table_arr_t table, const char* szName);
+
+/**
+ * Move the given section forward by the given offset amount.
+ * @param io_arrSymbols Symbol table with section symbols
+ * @param section Which section to move
+ * @param offset How many cells forward to shift them.
+ */
+void symbol_move_section(symbol_table_arr_t io_arrSymbols,
+						 address_section_t section,
+						 unsigned int offset);
 
 #endif /* SYMBOL_H_ */

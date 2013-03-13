@@ -81,6 +81,11 @@ int assembler_compile(FILE* flProgram,
 				   o_pCode) != 0)
 		return -1;
 
+	/* Move the data section to its final location so we
+	 * can resolve data symbols properly
+	 */
+	symbol_move_section(o_arrSymbols, ADDR_SECTION_DATA, o_pCode->IC);
+
 	/* First pass completed, resolve addresses */
 	if (second_pass(arrProgramStatements,
 					nNumOfStatements,
@@ -174,11 +179,11 @@ int first_pass(FILE* flProgram,
 				/* Save the label for the instruction,
 				 * its address is the IC before the instruction
 				 */
-				symbol_t label;
-				label.locality = ADDR_ABSOLUTE;
-				label.address = o_pCode->IC;
-				strncpy(label.name, pCurrStatement->szLabel, sizeof(label.name));
-				if (symbol_add_to_table(o_arrSymbols, &label) != 0)
+				if (symbol_add_to_table(o_arrSymbols,
+										ADDR_ABSOLUTE,
+										pCurrStatement->szLabel,
+										o_pCode->IC,
+										ADDR_SECTION_CODE) != 0)
 				{
 					return -1;
 				}
@@ -211,7 +216,6 @@ int second_pass(const statement_t *arrStatements,
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
 	const statement_t* pCurrStatement = NULL;
-	unsigned int originalIC = 0;
 
 	/* Making sure ptrs valid */
 	if (arrStatements == NULL ||
@@ -219,9 +223,7 @@ int second_pass(const statement_t *arrStatements,
 		io_pCode == NULL)
 		return -1;
 
-	/* Start counting the instructions again,
-	 * keep the previous IC. */
-	originalIC = io_pCode->IC;
+	/* Start counting the instructions again */
 	io_pCode->IC = 0;
 
 	/* Read each line from the input file */
@@ -244,30 +246,6 @@ int second_pass(const statement_t *arrStatements,
 				}
 				case (DIRECTIVE_DATA):
 				case (DIRECTIVE_STRING):
-				{
-					/* Is it a labeled directive? */
-					if (pCurrStatement->szLabel != NULL)
-					{
-						/* fixme: do this later ... not now */
-						/* Locate the symbol associated with this directive */
-						symbol_t* pSymb = symbol_get_from_table_by_name(io_arrSymbols,
-																		pCurrStatement->szLabel);
-						/* Symbol has gone missing! */
-						if (pSymb == NULL)
-						{
-							printf("Internal error! symbol missing.. %s %d\n",
-									__FILE__,
-									__LINE__);
-						}
-						else
-						{
-							/* Correct its offset */
-							/* fixme: what if the address is out of bounds now? */
-							pSymb->address += originalIC;
-						}
-					}
-					break;
-				}
 				default:
 					break;
 			}

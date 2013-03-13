@@ -24,35 +24,44 @@ int find_symbol_index_by_name(const symbol_table_arr_t table,
 
 /* fixme: change the api to get the proper values and not just the type.. */
 int symbol_add_to_table(symbol_table_arr_t table,
-						const symbol_t *symbol)
+						address_locality_t 	locality,
+						const char* szName,
+						unsigned long		address,
+						address_section_t	section)
 {
 	int i;
 
 	if (table == NULL ||
-		symbol == NULL)
+		szName == NULL)
 		return -2;
 
 	/* Check if the symbol exists already */
-	if (symbol_get_from_table_by_name(table, symbol->name) != NULL)
+	if (symbol_get_from_table_by_name(table, szName) != NULL)
 	{
-		printf("Error! symbol %s already exists in symbol table.\n", symbol->name);
+		printf("Error! symbol %s already exists in symbol table.\n",
+				szName);
 		return -1;
 	}
 
 	/* Make sure the name is valid */
-	if (parser_check_symbol_syntax(symbol->name) == 0)
+	if (parser_check_symbol_syntax(szName) == 0)
 		return -3;
 
 	/* Go symbol-by-symbol until we either find the first empty spot
 	 * or we reached the end of the table
 	 */
-	for (i = 0; i < sizeof(table); ++i)
+	for (i = 0; i < sizeof(symbol_table_arr_t) / sizeof(table[0]); ++i)
 	{
 		/* Is this a free spot? */
 		if (table[i].locality == ADDR_INVALID)
 		{
 			/* Add to the table */
-			memcpy(&table[i], symbol, sizeof(table[i]));
+			symbol_t *pSymbol = &table[i];
+			pSymbol->address = address;
+			pSymbol->entry = ADDR_ENTRY_STATUS_NON_ENTRY;
+			pSymbol->locality = locality;
+			pSymbol->section = section;
+			strcpy(pSymbol->name, szName);
 			return 0;
 		}
 	}
@@ -105,7 +114,7 @@ int find_symbol_index_by_name(const symbol_table_arr_t table,
 	/* Go symbol-by-symbol until we either find the requested
 	 * name or we reached the end of the table
 	 */
-	for (i = 0; i < sizeof(table); ++i)
+	for (i = 0; i < sizeof(symbol_table_arr_t) / sizeof(table[0]); ++i)
 	{
 		/* Is this a valid symbol? */
 		if (table[i].locality != ADDR_INVALID)
@@ -119,4 +128,19 @@ int find_symbol_index_by_name(const symbol_table_arr_t table,
 	}
 
 	return -1;
+}
+
+void symbol_move_section(symbol_table_arr_t table,
+						 address_section_t section,
+						 unsigned int offset)
+{
+	unsigned int i;
+	for (i = 0; i < sizeof(symbol_table_arr_t) / sizeof(table[0]); ++i)
+	{
+		if (table[i].locality != ADDR_INVALID &&
+				table[i].section == section)
+		{
+			table[i].address += offset;
+		}
+	}
 }
