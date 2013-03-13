@@ -300,7 +300,7 @@ int test_assembler_compile(const char* szTestFile,
 	static data_section_t data;
 	int compile_res = 0;
 
-	init_test_assembler_compile(&symbols, &code, &data);
+	init_test_assembler_compile(symbols, &code, &data);
 
 	/* Open the test file */
 	FILE* fd = fopen(szTestFile, "r");
