@@ -75,19 +75,55 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 /* fixme: const char**?*/
 
 /* Implementation */
+
+int instruction_get_size(const statement_t *pInstructionStatement)
+{
+	char* arrOperands[MAX_NUM_OPERANDS];
+	int nOperands;
+	unsigned int size = 1;
+	unsigned int i;
+
+	/* Retrieve opcode's configuration */
+	nOperands = get_num_operands_for_opcode(pInstructionStatement->info.instruction.name);
+
+	/* Must be a valid number */
+	if (nOperands < 0)
+		return -1;
+
+	/* Get the operands strings */
+	if (parser_get_items_from_list(
+			pInstructionStatement->szOperationData,
+			arrOperands,
+			nOperands) != 0)
+	{
+		printf("Error! Invalid number of operands: ");
+		return -1;
+	}
+
+	/* Count the extra data the operands take */
+	for (i = 0; i < nOperands; ++i)
+	{
+		size += parser_get_operand_memory_size(arrOperands[i]);
+	}
+
+	return size;
+}
+
 int instruction_compile(const statement_t *pInstructionStatement,
 						code_section_t* io_pCode,
 						symbol_table_arr_t io_pSymbols)
 {
 	char* arrOperands[MAX_NUM_OPERANDS];
 	unsigned int type,comb;
-	int nOperands;
+	int nExpectedOperands;
 	instruction_with_operands_t complete_instruction;
 	instruction_t* pInst = &complete_instruction.instruction;
 
 	if (pInstructionStatement == NULL ||
 		io_pCode == NULL)
 		return -1;
+
+	memset(&complete_instruction, 0, sizeof(complete_instruction));
 
 	/* Set the locality for the instruction code itself */
 	memset(complete_instruction.localities,
@@ -99,10 +135,10 @@ int instruction_compile(const statement_t *pInstructionStatement,
 	pInst->opcode = pInstructionStatement->info.instruction.name;
 
 	/* Retrieve opcode's configuration */
-	nOperands = get_num_operands_for_opcode(pInst->opcode);
+	nExpectedOperands = get_num_operands_for_opcode(pInst->opcode);
 
 	/* Must be a valid number */
-	if (nOperands < 0)
+	if (nExpectedOperands < 0)
 		return -1;
 
 	/* Set the type */
@@ -148,43 +184,28 @@ int instruction_compile(const statement_t *pInstructionStatement,
 		pInst->comb = comb;
 	}
 
-	/* Get the operands strings */
-	if (parser_get_items_from_list(
-			pInstructionStatement->szOperationData,
-		    arrOperands,
-		    nOperands) != 0)
-    {
-		printf("Error! Invalid number of operands: ");
-		return -1;
-    }
+	/* Get the operands strings,
+	 * assume that the instruction was
+	 * parsed already and found valid in
+	 * the number of operands given */
+	if (parser_get_consecutive_strings(pInstructionStatement->szOperationData,
+									   (pInstructionStatement->szContent +
+									    sizeof(pInstructionStatement->szContent)),
+									    (const char**)&arrOperands,
+									    nExpectedOperands) != 0)
+	{
+		return -2;
+	}
 
 	/* Retrieve the operands from their respective strings */
 	if (retrieve_operands(&complete_instruction,
 						  arrOperands,
-						  nOperands) != 0)
+						  nExpectedOperands) != 0)
 	{
-		/* todo: any error msg? */
 		return -1;
 	}
 
 	/* fixme: make this more elegant */
-
-	/* Add the instruction's label if exists */
-	if (pInstructionStatement->szLabel != NULL)
-	{
-		/* Save the label for the instruction,
-		 * its address is the IC before the instruction
-		 */
-		symbol_t label;
-		label.locality = ADDR_ABSOLUTE;
-		label.address = io_pCode->IC;
-		strncpy(label.name, pInstructionStatement->szLabel, sizeof(label.name));
-		if (symbol_add_to_table(io_pSymbols, &label) != 0)
-		{
-			return -1;
-		}
-	}
-
 	/* Update the code section with the compiled data */
 	memcpy(&io_pCode->content[io_pCode->IC],
 		   pInst,

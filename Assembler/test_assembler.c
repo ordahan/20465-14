@@ -273,28 +273,20 @@ int test_assembler()
 								&code_expected,
 								&data_expected);
 
-	/*.entry lol
-	mov/0 lol,#1 = 3
-	mov/0 Hallo, lol = 3
-	lol:.data -20
-	.extern Hallo
-	a:.string "hmz"
-	kicks:mov/0 a, r2 = 2 */
-
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_RELOCATABLE;
 	pSymbol->address = 0;
 	strcpy(pSymbol->name, "kicks");
 	pSymbol = &symbols_expected[1];
 	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 8;
+	pSymbol->address = 9;
 	strcpy(pSymbol->name, "lol");
 	pSymbol = &symbols_expected[2];
 	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 9;
+	pSymbol->address = 10;
 	strcpy(pSymbol->name, "rofl");
 
-	code_expected.IC = 8;
+	code_expected.IC = 9;
 	code_expected.localities[0] = ADDR_ABSOLUTE;
 	code_expected.localities[1] = ADDR_RELOCATABLE; /* fixme: entry is relocatable? */
 	code_expected.localities[2] = ADDR_ABSOLUTE;
@@ -304,8 +296,8 @@ int test_assembler()
 	pInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-	code_expected.content[1].val = 8;
-	code_expected.content[2].val = 1;
+	code_expected.content[1].val = 1;
+	code_expected.content[2].val = 9;
 	code_expected.localities[3] = ADDR_ABSOLUTE;
 	code_expected.localities[4] = ADDR_RELOCATABLE;
 	code_expected.localities[5] = ADDR_RELOCATABLE;
@@ -315,8 +307,8 @@ int test_assembler()
 	pInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_DIRECT;
-	code_expected.content[4].val = 8;
-	code_expected.content[5].val = 9;
+	code_expected.content[4].val = 9;
+	code_expected.content[5].val = 10;
 	code_expected.localities[0] = ADDR_ABSOLUTE;
 	code_expected.localities[1] = ADDR_EXTERNAL;
 	pInstruction = (instruction_t*)&code_expected.content[6].val;
@@ -335,8 +327,8 @@ int test_assembler()
 	data_expected.content[3].val = 'z';
 	data_expected.content[4].val = '\0';
 
-	printf("	instruction address resolution: ");
-	assert(0 == test_assembler_compile("tests/instruction_instruction_address_resolution.as",
+	printf("	instruction address resolution: \n");
+	assert(0 == test_assembler_compile("tests/instruction_address_resolution.as",
 										symbols_expected,
 										&code_expected,
 										&data_expected,
@@ -473,7 +465,7 @@ int test_assembler_compile(const char* szTestFile,
 				symbol_expected[i].locality != symbols[i].locality ||
 				0 != strcmp(symbol_expected[i].name, symbols[i].name))
 			{
-				printf("Symbol in index %d doesn't match expected.", i);
+				printf("Symbol in index %d doesn't match expected.\n", i);
 				return -3;
 			}
 		}

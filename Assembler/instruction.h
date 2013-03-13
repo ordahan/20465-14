@@ -111,22 +111,14 @@ extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];
 
 /**
  * Compile the instruction statement into an actual instruction.
- * Leave all the addresses unresolved.
  *
  * * Makes sure the operand's addressing methods are valid for the
- * opcode.
- *
- * * Calculates the number of memory cells needed for
- * the instruction (the opcode + memory cells for operands).
+ * opcodes.
  *
  * * Places the compiled instruction in the current IC of the code
- * section given (including 0'd cells for unresolved addresses in
- * the operands).
+ * section given.
  *
  * * Advances the IC accordingly.
- *
- * * Sets the 'type' of the instruction (which parts of the operands
- * the processor will actually use at runtime).
  *
  * @param pInstruction Statement to compile.
  * @param io_pCode Code section to put the compiled result into.
@@ -135,5 +127,13 @@ extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];
 int instruction_compile(const statement_t *pInstruction,
 						code_section_t* io_pCode,
 						symbol_table_arr_t io_pSymbols);
+
+/**
+ * Get the size of the given instruction statements.
+ * @param pInstructionStatement
+ * @return number of memory cells the instruction takes
+ * (1 + num of cells for the operands data)
+ */
+int instruction_get_size(const statement_t *pInstructionStatement);
 
 #endif /* INSTRUCTION_H_ */

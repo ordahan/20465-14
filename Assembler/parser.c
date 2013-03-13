@@ -27,6 +27,7 @@
 #define IMMEDIATE_PREFIX '#'
 #define INDEX_OFFSET_OPEN_DELIMITER "{"
 #define INDEX_OFFSET_CLOSE_DELIMITER "}"
+#define INDEX_OFFSET_DELIMITERS "{}" /*fixme: combine somehow */
 #define LIST_DELIMITER ','
 #define STRING_REP_DELIMITER '"'
 
@@ -125,7 +126,7 @@ int parser_get_statement(statement_t* io_pLine)
 	io_pLine->type = STATEMENT_TYPE_ERROR;
 
 	/* Given line is a comment */
-	if (io_pLine->szContent[0] == ';')
+	if (io_pLine->szContent[0] == ';') /*fixme: magic ...*/
 	{
 		io_pLine->type = STATEMENT_TYPE_COMMENT;
 		return 0;
@@ -589,7 +590,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	else
 	{
 		/* Split the index from the label, if there is any index */
-		const char* szIndexValue = parser_get_index_from_label(szOperand);
+		char* pIndex = parser_get_index_from_label(szOperand);
 
 		/* The label must be valid anyway */
 		if (parser_check_symbol_syntax(szOperand) == 0)
@@ -605,19 +606,22 @@ operand_addressing_t parser_get_operand(char* szOperand,
 		pInstruction->localities[pInstruction->num_extra_data] = ADDR_RELOCATABLE;
 
 		/* Does it have an index? */
-		if (szIndexValue != szOperand &&
-			szIndexValue != NULL)
+		if (pIndex != szOperand &&
+			pIndex != NULL)
 		{
-			long int index;
-			char* pEnd;
+			unsigned int index;
+			int fIsNumber;
 			address_locality_t locality_for_index = ADDR_ABSOLUTE;
+
+			/* Get the index value itself */
+			char* szIndex = strtok(pIndex, INDEX_OFFSET_DELIMITERS); /*fixme*/
 
 			/* Might be a number */
 			/* fixme: a negative index is possible? */
-			index = strtol(szIndexValue, &pEnd, NUMBERS_BASE);
+			fIsNumber = (parser_get_number(szIndex, &index) == 0);
 
 			/* Might be a register */ /* fixme: register index is just reg num? */
-			reg = parser_string_to_register_type(szIndexValue);
+			reg = parser_string_to_register_type(szIndex);
 
 			/* Index is a register */
 			if (reg != REGISTER_INVALID)
@@ -625,13 +629,13 @@ operand_addressing_t parser_get_operand(char* szOperand,
 				index = reg;
 			}
 			/* Not an immediate number, must be a label */
-			else if (pEnd != strchr(szIndexValue, NULL_TERMINATOR))
+			else if (fIsNumber)
 			{
 				/* Must be a valid label */
-				if (parser_check_symbol_syntax(szIndexValue) == 0)
+				if (parser_check_symbol_syntax(szIndex) == 0)
 				{
 					printf("Error! Index %s has syntax errors.\n",
-							szIndexValue);
+							szIndex);
 					return OPERAND_ADDR_NUM;
 				}
 
@@ -656,6 +660,42 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	return OPERAND_ADDR_NUM;
 }
 
+unsigned int parser_get_operand_memory_size(char* szOperand)
+{
+	machine_registers_t reg = parser_string_to_register_type(szOperand);
+
+	/* Immediate value */
+	if (szOperand[0] == IMMEDIATE_PREFIX)
+	{
+		return 1;
+	}
+	/* Register */
+	else if (reg != REGISTER_INVALID)
+	{
+		return 0;
+	}
+	/* Must be some sort of label */
+	else
+	{
+		/* Split the index from the label, if there is any index */
+		const char* szIndexValue = parser_get_index_from_label(szOperand);
+
+		/* Does it have an index? */
+		if (szIndexValue != szOperand &&
+			szIndexValue != NULL)
+		{
+			return 2;
+		}
+		/* No index, plain old label */
+		else
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 /* fixme: test me!!! */
 char* parser_get_index_from_label(char* szLabel)
 {
@@ -673,9 +713,11 @@ char* parser_get_index_from_label(char* szLabel)
 		if (szClosingDelim != NULL &&
 			(szClosingDelim[1]) == NULL_TERMINATOR)
 		{
+#if 0
 			/* Remove delimiters */
 			szStartingDelim[0] = NULL_TERMINATOR;
 			szClosingDelim[0] = NULL_TERMINATOR;
+#endif /*fixme: hrmasmhpphphpfff*/
 
 			/* Index starts right after starting delimiter */
 			return szStartingDelim+1;
@@ -827,6 +869,38 @@ int parser_get_string(const char* szString, const char** o_pStart, const char** 
 	/* Make sure the entire string was found */
 	if (*o_pStart == NULL || *o_pEnd == NULL)
 		return -2;
+
+	return 0;
+}
+
+int parser_get_consecutive_strings(const char* pStart,
+								   const char* pEnd,
+								   const char** arrStrings,
+								   unsigned int nMaxResults)
+{
+	int nFoundStrings;
+	unsigned int i;
+
+	/* Look for strings in the given range */
+	for (nFoundStrings = 0, i = 0;
+		 nFoundStrings < nMaxResults;
+		 ++nFoundStrings)
+    {
+		/* Surpassed the end of the content, cannot be valid */
+		if (pStart + i >= pEnd)
+		{
+			return -1;
+		}
+
+		arrStrings[nFoundStrings] = &pStart[i];
+
+		/* Jump to the next operand */
+		i += strlen(&pStart[nFoundStrings]);
+		while (strlen(&pStart[i]) == 0)
+		{
+			++i;
+		}
+    }
 
 	return 0;
 }

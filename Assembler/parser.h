@@ -103,6 +103,9 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers);
 operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction);
 
+/* fixme: doc this */
+unsigned int parser_get_operand_memory_size(char* szOperand);
+
 /**
  * Calculates the number of items that comprise the list.
  * Doesn't check that the list format is valid at all.
@@ -135,5 +138,21 @@ unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum);
  * If the string is empty, o_pStart == o_pEnd (first byte after the empty string)
  */
 int parser_get_string(const char* szString, const char** o_pStart, const char** o_pEnd);
+
+/**
+ * Finds consecutive strings in memory starting from
+ * pStart until reaching pEnd (all strings found must be
+ * in this range. A string that surpasses the range is
+ * treated as an error.)
+ * @param pStart Where to start looking.
+ * @param pEnd First address that is out of range.
+ * @param arrStrings Where to place ptrs to the strings found.
+ * @param nMaxResults Max num of strings to be found
+ * @return 0 on success, anything else on error.
+ */
+int parser_get_consecutive_strings(const char* pStart,
+								   const char* pEnd,
+								   const char** arrStrings,
+								   unsigned int nMaxResults);
 
 #endif /* PARSER_H_ */

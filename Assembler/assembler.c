@@ -112,6 +112,10 @@ int first_pass(FILE* flProgram,
 		o_pCode == NULL)
 		return -1;
 
+	/* Start the counters */
+	o_pCode->IC = 0;
+	o_pData->DC = 0;
+
 	/* Read each line from the input file */
 	while (fgets(pCurrStatement->szContent,
 			 sizeof(pCurrStatement->szContent),
@@ -154,7 +158,7 @@ int first_pass(FILE* flProgram,
 						nErrorCode = -1;
 					break;
 				}
-				/* Ignore these for now, 2nd pass will handle it */
+				/* Ignore for now, 2nd pass will handle it */
 				case (DIRECTIVE_ENTRY):
 				default:
 					break;
@@ -163,15 +167,25 @@ int first_pass(FILE* flProgram,
 		/* An instruction */
 		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
 		{
-			/* Compile the instruction itself and put it in
-			 * the code section
-			 */
-			if (instruction_compile(pCurrStatement,
-									o_pCode,
-									o_arrSymbols) != 0)
+			/* fixme: re-factor out the label stuff from data and string */
+			/* Add the instruction's label if exists */
+			if (pCurrStatement->szLabel != NULL)
 			{
-				nErrorCode = -1;
+				/* Save the label for the instruction,
+				 * its address is the IC before the instruction
+				 */
+				symbol_t label;
+				label.locality = ADDR_ABSOLUTE;
+				label.address = o_pCode->IC;
+				strncpy(label.name, pCurrStatement->szLabel, sizeof(label.name));
+				if (symbol_add_to_table(o_arrSymbols, &label) != 0)
+				{
+					return -1;
+				}
 			}
+
+			/* Reserve it a number of cells */
+			o_pCode->IC += instruction_get_size(pCurrStatement);
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{
@@ -197,12 +211,18 @@ int second_pass(const statement_t *arrStatements,
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
 	const statement_t* pCurrStatement = NULL;
+	unsigned int originalIC = 0;
 
 	/* Making sure ptrs valid */
 	if (arrStatements == NULL ||
 		io_arrSymbols == NULL ||
 		io_pCode == NULL)
 		return -1;
+
+	/* Start counting the instructions again,
+	 * keep the previous IC. */
+	originalIC = io_pCode->IC;
+	io_pCode->IC = 0;
 
 	/* Read each line from the input file */
 	for (nCurrLine = 0; nCurrLine < nNumOfStatements; ++nCurrLine)
@@ -242,7 +262,7 @@ int second_pass(const statement_t *arrStatements,
 						{
 							/* Correct its offset */
 							/* fixme: what if the address is out of bounds now? */
-							pSymb->address += io_pCode->IC;
+							pSymb->address += originalIC;
 						}
 					}
 					break;
@@ -254,9 +274,13 @@ int second_pass(const statement_t *arrStatements,
 		/* An instruction */
 		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
 		{
-			/* todo: Handle instruction */
-
-			/* Label */
+			/* Count again the current position in the code */
+			if (instruction_compile(pCurrStatement,
+									io_pCode,
+									io_arrSymbols) != 0)
+			{
+				nErrorCode = -1;
+			}
 		}
 		else
 		{
