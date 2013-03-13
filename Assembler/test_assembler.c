@@ -288,8 +288,8 @@ int test_assembler()
 
 	code_expected.IC = 9;
 	code_expected.localities[0] = ADDR_ABSOLUTE;
-	code_expected.localities[1] = ADDR_RELOCATABLE; /* fixme: entry is relocatable? */
-	code_expected.localities[2] = ADDR_ABSOLUTE;
+	code_expected.localities[1] = ADDR_ABSOLUTE;
+	code_expected.localities[2] = ADDR_RELOCATABLE; /* fixme: entry is relocatable? */
 	pInstruction = (instruction_t*)&code_expected.content[0].val;
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
@@ -309,8 +309,8 @@ int test_assembler()
 	pInstruction->src_addressing = OPERAND_ADDR_DIRECT;
 	code_expected.content[4].val = 9;
 	code_expected.content[5].val = 10;
-	code_expected.localities[0] = ADDR_ABSOLUTE;
-	code_expected.localities[1] = ADDR_EXTERNAL;
+	code_expected.localities[6] = ADDR_ABSOLUTE;
+	code_expected.localities[7] = ADDR_EXTERNAL;
 	pInstruction = (instruction_t*)&code_expected.content[6].val;
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
@@ -423,12 +423,18 @@ int test_assembler_compile(const char* szTestFile,
 		{
 			if (code_expected->content[i].val != code.content[i].val)
 			{
-				printf("Code in index %d doesn't match.\n", i);
+				printf("Code in index %d doesn't match: [%d != %d]\n",
+						i,
+						code_expected->content[i].val,
+						code.content[i].val);
 				return -2;
 			}
 			else if (code_expected->localities[i] != code.localities[i])
 			{
-				printf("Locality in index %d doesn't match.\n", i);
+				printf("Locality in index %d doesn't match: [%d != %d]\n",
+						i,
+						code_expected->localities[i],
+						code.localities[i]);
 				return -3;
 			}
 		}
