@@ -361,6 +361,44 @@ int test_compile_instruction()
 	/**********************************************/
 
 	/**********************************************/
+	printf("	Index with register: ");
+	memset(&code, 0, sizeof(code));
+	memset(&expected, 0, sizeof(expected));
+	memset(symbols, 0, sizeof(symbols));
+	pExpectedInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
+	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX;
+	pExpectedInstruction->opcode = MOV;
+	pExpectedInstruction->dest_reg = R2;
+	expected.content[1].val = 3;
+	expected.content[2].val = 0;
+	expected.localities[0] = ADDR_ABSOLUTE;
+	expected.localities[1] = ADDR_ABSOLUTE;
+	expected.localities[2] = ADDR_RELOCATABLE;
+	expected.IC = 3;
+	strcpy(symbols[0].name, "y");
+	symbols[0].locality = ADDR_RELOCATABLE;
+	assert(0 == run_test_compile_instruction("mov/0 #3,y{r2}",
+											 &code,
+											 &expected,
+											 symbols,
+											 1));
+	memset(&code, 0, sizeof(code));
+	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
+	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
+	pExpectedInstruction->src_reg = R6;
+	pExpectedInstruction->dest_reg = R1;
+	expected.content[1].val = 0;
+	expected.localities[0] = ADDR_ABSOLUTE;
+	expected.localities[1] = ADDR_RELOCATABLE;
+	expected.IC = 2;
+	assert(0 == run_test_compile_instruction("mov/0 y{r6},r1",
+												 &code,
+												 &expected,
+												 symbols,
+												 1));
+	/**********************************************/
+
+	/**********************************************/
 	printf("	Invalid addressing:\n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));

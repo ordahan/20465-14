@@ -602,9 +602,6 @@ operand_addressing_t parser_get_operand(char* szOperand,
 			/* Anyhow, the operand has an index */
 			addressing = OPERAND_ADDR_INDEX;
 
-			/* Assume its local */
-			locality_for_index = ADDR_ABSOLUTE;
-
 			/* Get the index value itself, splitting it from the label */
 			szIndex = strchr(szIndex, INDEX_OFFSET_OPEN_DELIMITER[0]);
 			szIndex[0] = NULL_TERMINATOR;
@@ -616,13 +613,20 @@ operand_addressing_t parser_get_operand(char* szOperand,
 			/* fixme: a negative index is possible? */
 			fIsNumber = (parser_get_number(szIndex, &index) == 1);
 
-			/* Might be a register */ /* fixme: register index is just reg num? */
+			/* Might be a register */
 			reg = parser_string_to_register_type(szIndex);
 
 			/* Index is a register */
 			if (reg != REGISTER_INVALID)
 			{
-				index = reg;
+				/* Temporarily place the register in the
+				 * destination register, the caller will
+				 * swap it to the src if needed.
+				 */
+				pInstruction->instruction.dest_reg = reg;
+
+				/* Signal we don't need an extra data cell */
+				locality_for_index = ADDR_INVALID;
 			}
 			/* Not an immediate number, must be a label */
 			else if (!fIsNumber)
@@ -637,7 +641,13 @@ operand_addressing_t parser_get_operand(char* szOperand,
 				index = pSymbol->address;
 				locality_for_index = pSymbol->locality;
 			}
-			/* A number, already retrieved */
+			/* A number */
+			else
+			{
+				/* Already retrieved its value,
+				 * signal its an immediate number */
+				locality_for_index = ADDR_ABSOLUTE;
+			}
 		}
 
 		/* Get the label (whether its only a label or it has an index)*/
@@ -653,11 +663,11 @@ operand_addressing_t parser_get_operand(char* szOperand,
 							pSymbol->address,
 							pSymbol->locality);
 
-		/* Save the index value as well */
+		/* Save the index value if needed (exists / not a register) */
 		if (locality_for_index != ADDR_INVALID)
-		instruction_add_data(pInstruction,
-							 index,
-							 locality_for_index);
+			instruction_add_data(pInstruction,
+								 index,
+								 locality_for_index);
 
 		return addressing;
 	}

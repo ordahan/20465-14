@@ -16,6 +16,8 @@ extern int test_instruction();
 
 int test_main()
 {
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
 	assert(test_directive() == 0);
 	assert(test_parser() == 0);
 	assert(test_instruction() == 0);
