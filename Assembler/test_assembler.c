@@ -345,10 +345,9 @@ int test_assembler()
 										&code_expected,
 										&data_expected,
 										   0));
-	printf("PASSED.\n");
 	/**********************************************/
 
-	/* todo: test cases for the assembler
+	/*
 	 * #syntax error
 	 * #invalid extern
 	 * #invalid entry
