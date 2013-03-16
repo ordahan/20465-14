@@ -1,6 +1,9 @@
 /*
  * assembler.h
  *
+ *	This module handles the compilation of file objects into
+ *	logical program outputs.
+ *
  *  Created on: Jan 16, 2013
  *      Author: Or Dahan 201644929
  */
@@ -35,6 +38,7 @@ typedef struct
 }data_section_t;
 
 /* todo: Add tests for the lengths of the given sections */
+/* todo: API for code / data sections */
 
 /* External functions */
 /**

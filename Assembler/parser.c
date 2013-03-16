@@ -69,9 +69,7 @@ machine_registers_t parser_string_to_register_type(const char* szRegister);
 
 /**
  * If there label given has an index offset to it, retrieves a ptr
- * to the index. Any syntax-used separator for the index are replaced
- * with a null-termination character (thus practically "splitting" the
- * label from it's index).
+ * to the index.
  *
  * @param szLabel Label that might contain an index offset.
  *
@@ -675,7 +673,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	return OPERAND_ADDR_NUM;
 }
 
-unsigned int parser_get_operand_memory_size(char* szOperand)
+unsigned int parser_shallow_parse_operand(char* szOperand)
 {
 	machine_registers_t reg = parser_string_to_register_type(szOperand);
 
@@ -692,10 +690,10 @@ unsigned int parser_get_operand_memory_size(char* szOperand)
 	/* Must be some sort of label */
 	else
 	{
-		/* Split the index from the label, if there is any index */
+		/* Find out if the value is an index */
 		const char* szIndexValue = parser_get_index_from_label(szOperand);
 
-		/* Does it have an index? */
+		/* Does it have an index? */ /* fixme: bug! index won't always return 2 */
 		if (szIndexValue != szOperand &&
 			szIndexValue != NULL)
 		{
@@ -728,12 +726,6 @@ char* parser_get_index_from_label(char* szLabel)
 		if (szClosingDelim != NULL &&
 			(szClosingDelim[1]) == NULL_TERMINATOR)
 		{
-#if 0
-			/* Remove delimiters */
-			szStartingDelim[0] = NULL_TERMINATOR;
-			szClosingDelim[0] = NULL_TERMINATOR;
-#endif /*fixme: hrmasmhpphphpfff*/
-
 			return szStartingDelim;
 		}
 		else

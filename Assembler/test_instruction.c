@@ -32,7 +32,7 @@ int run_test_compile_instruction(const char		*line,
 	assert(0 == parser_get_statement(&statement));
 
 	/* Shallow parse the statement */
-	instruction_get_size(&statement); /* fixme: maybe error value? */
+	instruction_shallow_parse(&statement); /* fixme: maybe error value? */
 
 	/* Check that the compilation returns as expected */
 	assert(!((0 == instruction_compile(&statement, code, symbols)) ^

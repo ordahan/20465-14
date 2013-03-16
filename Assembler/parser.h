@@ -104,8 +104,14 @@ operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction,
 										const symbol_table_arr_t arrSymbols);
 
-/* fixme: doc this */
-unsigned int parser_get_operand_memory_size(char* szOperand);
+/**
+ * Performs only a shallow parsing of an operand, finds out
+ * which type it is (doesn't check in case of a label, if it
+ * is legal).
+ * @param szOperand Operand to parse
+ * @return size of the operand in memory cells.
+ */
+unsigned int parser_shallow_parse_operand(char* szOperand);
 
 /**
  * Calculates the number of items that comprise the list.

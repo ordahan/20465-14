@@ -78,7 +78,7 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 
 /* Implementation */
 
-int instruction_get_size(const statement_t *pInstructionStatement)
+int instruction_shallow_parse(const statement_t *pInstructionStatement)
 {
 	char* arrOperands[MAX_NUM_OPERANDS];
 	int nOperands;
@@ -105,7 +105,7 @@ int instruction_get_size(const statement_t *pInstructionStatement)
 	/* Count the extra data the operands take */
 	for (i = 0; i < nOperands; ++i)
 	{
-		size += parser_get_operand_memory_size(arrOperands[i]);
+		size += parser_shallow_parse_operand(arrOperands[i]);
 	}
 
 	return size;

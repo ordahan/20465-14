@@ -190,7 +190,7 @@ int first_pass(FILE* flProgram,
 			}
 
 			/* Reserve it a number of cells */
-			o_pCode->IC += instruction_get_size(pCurrStatement);
+			o_pCode->IC += instruction_shallow_parse(pCurrStatement);
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{

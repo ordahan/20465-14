@@ -1,6 +1,8 @@
 /*
  * machine.h
  *
+ *  Describes the machine that we are compiling to.
+ *
  *  Created on: Jan 16, 2013
  *      Author: Or Dahan 201644929
  */

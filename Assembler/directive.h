@@ -1,6 +1,9 @@
 /*
  * directive.h
  *
+ *  Defines and handles all the possible directives in the
+ *  language.
+ *
  *  Created on: Jan 17, 2013
  *      Author: Or Dahan 201644929
  */

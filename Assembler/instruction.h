@@ -1,6 +1,8 @@
 /*
  * instruction.h
  *
+ *  Defines and handles the instruction set in the language.
+ *
  *  Created on: Jan 16, 2013
  *      Author: Or Dahan 201644929
  */
@@ -129,12 +131,13 @@ int instruction_compile(const statement_t *pInstruction,
 						symbol_table_arr_t io_pSymbols);
 
 /**
- * Get the size of the given instruction statements.
+ * Parses the given instruction just a bit to find out if
+ * its ok.
  * @param pInstructionStatement
  * @return number of memory cells the instruction takes
  * (1 + num of cells for the operands data)
  */
-int instruction_get_size(const statement_t *pInstructionStatement);
+int instruction_shallow_parse(const statement_t *pInstructionStatement);
 
 /**
  * Add an extra data cell to the given instruction.

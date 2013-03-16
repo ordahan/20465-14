@@ -1,6 +1,10 @@
 /*
  * statement.h
  *
+ *  Defines the structure and type of a "code statement",
+ *  which is basically a code line that is parsed into a
+ *  more logical structure for future usage by the assembler.
+ *
  *  Created on: Feb 20, 2013
  *      Author: Or Dahan 201644929
  */
