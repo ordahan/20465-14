@@ -25,7 +25,7 @@ int find_symbol_index_by_name(const symbol_table_arr_t table,
 int symbol_add_to_table(symbol_table_arr_t table,
 						address_locality_t 	locality,
 						const char* szName,
-						unsigned long		address,
+						memory_address_t		address,
 						address_section_t	section)
 {
 	int i;
@@ -153,5 +153,33 @@ void symbol_move_section(symbol_table_arr_t table,
 		{
 			table[i].address += offset;
 		}
+	}
+}
+
+const symbol_t* symbol_get_next_by_address(const symbol_table_arr_t table,
+										   memory_address_t address)
+{
+	unsigned int i;
+	memory_address_t addrMinimalCandidate = MEMORY_ADDRESS_INVALID;
+	unsigned int indexMinimalCandidate = 0;
+
+	for (i = 0; i < sizeof(symbol_table_arr_t) / sizeof(table[0]); ++i)
+	{
+		if (table[i].locality != ADDR_INVALID &&
+			table[i].address > address &&
+			table[i].address < addrMinimalCandidate)
+		{
+			addrMinimalCandidate = table[i].address;
+			indexMinimalCandidate = i;
+		}
+	}
+
+	if (addrMinimalCandidate == MEMORY_ADDRESS_INVALID)
+	{
+		return NULL;
+	}
+	else
+	{
+		return &table[indexMinimalCandidate];
 	}
 }

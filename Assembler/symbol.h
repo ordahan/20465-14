@@ -10,6 +10,8 @@
 #ifndef SYMBOL_H_
 #define SYMBOL_H_
 
+#include "machine.h"
+
 #define MAX_SYMBOLS 1000
 
 /* fixme: A line that contains only a label and ':'
@@ -68,7 +70,7 @@ typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];
 int symbol_add_to_table(symbol_table_arr_t  table,
 						address_locality_t 	locality,
 						const char* 		szName,
-						unsigned long		address,
+						memory_address_t	address,
 						address_section_t	section);
 
 /**
@@ -99,5 +101,15 @@ int symbol_set_as_entry(symbol_table_arr_t table, const char* szName);
 void symbol_move_section(symbol_table_arr_t io_arrSymbols,
 						 address_section_t section,
 						 unsigned int offset);
+
+/**
+ * Gets the symbol with the minimal address that is
+ * greater than this one.
+ * @param table Symbol table
+ * @param address Address to start the search
+ * @return NULL if there aren't any, symbol if there are.
+ */
+const symbol_t* symbol_get_next_by_address(const symbol_table_arr_t table,
+										   memory_address_t address);
 
 #endif /* SYMBOL_H_ */

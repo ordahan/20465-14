@@ -92,8 +92,8 @@ int file_create_object(const char *szFileName,
 int file_create_entry(const char *szFileName,
 					  const symbol_table_arr_t arrSymbols)
 {
-	unsigned int i;
 	FILE* fEntryFile = NULL;
+	const symbol_t* pCurrSymbol = symbol_get_next_by_address(arrSymbols, 0);
 
 	if (szFileName == NULL ||
 		arrSymbols == NULL)
@@ -102,11 +102,10 @@ int file_create_entry(const char *szFileName,
 	/* Go over all the symbols and print out the
 	 * entries
 	 */
-	for (i = 0; i < MAX_SYMBOLS; ++i)
+	while (pCurrSymbol != NULL)
 	{
 		/* Is this an entry symbol? */
-		if (arrSymbols[i].locality != ADDR_INVALID &&
-			arrSymbols[i].entry == ADDR_ENTRY_STATUS_ENTRY)
+		if (pCurrSymbol->entry == ADDR_ENTRY_STATUS_ENTRY)
 		{
 			/* Lazy open, is this the first one? */
 			if (fEntryFile == NULL)
@@ -122,9 +121,12 @@ int file_create_entry(const char *szFileName,
 			/* Add the symbol to file */
 			fprintf(fEntryFile,
 					"%s %s\n",
-					arrSymbols[i].name,
-					parser_int_to_string_base_4(arrSymbols[i].address, 0));
+					pCurrSymbol->name,
+					parser_int_to_string_base_4(pCurrSymbol->address, 0));
 		}
+
+		/* Get next one */
+		pCurrSymbol = symbol_get_next_by_address(arrSymbols, pCurrSymbol->address);
 	}
 
 	/* Close if needed */
