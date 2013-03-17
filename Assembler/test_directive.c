@@ -168,7 +168,7 @@ int test_compile_dummy_instruction()
 	printf("	too much data (no more room): \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data.counter_a = SECTION_MAX_SIZE;
+	data._counter = SECTION_MAX_SIZE;
 	assert(0 == test_dummy_instruction_compile(".data 13",
 											   &data,
 											   &data_expected,
@@ -377,25 +377,25 @@ int test_compile_dummy_instruction()
 	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data.counter_a = SECTION_MAX_SIZE;
+	data._counter = SECTION_MAX_SIZE;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.counter_a = SECTION_MAX_SIZE-1;
+	data._counter = SECTION_MAX_SIZE-1;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"a\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.counter_a = SECTION_MAX_SIZE;
+	data._counter = SECTION_MAX_SIZE;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"a\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.counter_a = SECTION_MAX_SIZE-2;
+	data._counter = SECTION_MAX_SIZE-2;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"abc\"",
 											   &data,

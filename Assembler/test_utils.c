@@ -70,30 +70,35 @@ int compare_memory_sections(const memory_section_t* pMem1,
 {
 	unsigned int i;
 
-	if (pMem1->counter_a != pMem2->counter_a)
+	if (section_get_size(pMem1) != section_get_size(pMem2))
 	{
 		printf("Sizes not as expected: [%d != %d]\n",
-				pMem1->counter_a,
-				pMem2->counter_a);
+				section_get_size(pMem1),
+				section_get_size(pMem2));
 		return -1;
 	}
 
-	for (i = 0; i < pMem2->counter_a; ++i)
+	for (i = 0; i < section_get_size(pMem1); ++i)
 	{
-		if (pMem1->content_a[i].val != pMem2->content_a[i].val)
+		const memory_section_cell_t* pCell1;
+		const memory_section_cell_t* pCell2;
+		section_read(pMem1, &pCell1, i);
+		section_read(pMem1, &pCell2, i);
+
+		if (pCell1->content.val != pCell2->content.val)
 		{
 			printf("Memory in index %d doesn't match: [%d != %d]\n",
 					i,
-					pMem1->content_a[i].val,
-					pMem2->content_a[i].val);
+					pCell1->content.val,
+					pCell2->content.val);
 			return -2;
 		}
-		else if (pMem1->localities_a[i] != pMem2->localities_a[i])
+		else if (pCell1->locality != pCell1->locality)
 		{
 			printf("Locality in index %d doesn't match: [%d != %d]\n",
 					i,
-					pMem1->localities_a[i],
-					pMem2->localities_a[i]);
+					pCell1->locality,
+					pCell1->locality);
 			return -3;
 		}
 	}

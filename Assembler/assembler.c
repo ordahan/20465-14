@@ -84,7 +84,11 @@ int assembler_compile(FILE* flProgram,
 	/* Move the data section to its final location so we
 	 * can resolve data symbols properly
 	 */
-	symbol_move_section(o_arrSymbols, ADDR_SECTION_DATA, o_pCode->counter_a);
+	o_pData->_base_offset = o_pCode->_base_offset +
+							section_get_size(o_pCode);
+	symbol_move_section(o_arrSymbols,
+						ADDR_SECTION_DATA,
+						o_pData->_base_offset);
 
 	/* First pass completed, resolve addresses */
 	if (second_pass(arrProgramStatements,
@@ -116,10 +120,6 @@ int first_pass(FILE* flProgram,
 		o_pData == NULL ||
 		o_pCode == NULL)
 		return -1;
-
-	/* Start the counters */
-	o_pCode->counter_a = 0;
-	o_pData->counter_a = 0;
 
 	/* Read each line from the input file */
 	while (fgets(pCurrStatement->szContent,
@@ -182,7 +182,7 @@ int first_pass(FILE* flProgram,
 				if (symbol_add_to_table(o_arrSymbols,
 										ADDR_ABSOLUTE,
 										pCurrStatement->szLabel,
-										o_pCode->counter_a,
+										section_get_size(o_pCode),
 										ADDR_SECTION_CODE) != 0)
 				{
 					return -1;
@@ -190,7 +190,8 @@ int first_pass(FILE* flProgram,
 			}
 
 			/* Reserve it a number of cells */
-			o_pCode->counter_a += instruction_shallow_parse(pCurrStatement);
+			if (section_write(o_pCode, 0, ADDR_ABSOLUTE) != 0)
+				nErrorCode = -2;
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{
@@ -223,8 +224,8 @@ int second_pass(const statement_t *arrStatements,
 		io_pCode == NULL)
 		return -1;
 
-	/* Start counting the instructions again */
-	io_pCode->counter_a = 0;
+	/* Start the section all over again */
+	section_set_size(io_pCode, 0);
 
 	/* Read each line from the input file */
 	for (nCurrLine = 0; nCurrLine < nNumOfStatements; ++nCurrLine)

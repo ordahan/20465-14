@@ -44,7 +44,7 @@ int run_test_compile_instruction(const char		*line,
 		if (statement.szLabel != NULL)
 		{
 			assert(0 == strcmp(statement.szLabel, symbols[0].name));
-			assert(code->counter_a == symbols[0].address);
+			assert(section_get_size(code) == symbols[0].address);
 			assert(ADDR_ABSOLUTE == symbols[0].locality);
 		}
 

@@ -132,7 +132,7 @@ int test_files()
 					  &code,
 					  &data);
 
-	printf("	valid externals: ");
+	printf("	valid object: ");
 	szFileName = "tests/valid_object";
 	szFileExpectedName = "tests/valid_object.ob";
 	szFileExpected = "expecteds/valid_object.ob";
@@ -140,7 +140,7 @@ int test_files()
 	section_write(&code, 3, ADDR_RELOCATABLE);
 	section_write(&code, 3, ADDR_EXTERNAL);
 	section_write(&code, 7, ADDR_ABSOLUTE);
-
+	data._base_offset = section_get_size(&code) + code._base_offset;
 	section_write(&data, 5, ADDR_ABSOLUTE);
 
 	assert(0 == file_create_object(szFileName, &code, &data));

@@ -18,17 +18,18 @@ memory_address_t section_write(memory_section_t* pSection,
 		return MEMORY_ADDRESS_INVALID;
 
 	/* Make sure not to overflow the section content */
-	if (pSection->counter_a >= SECTION_MAX_SIZE)
+	if (pSection->_counter >= SECTION_MAX_SIZE)
 		return MEMORY_ADDRESS_INVALID;
 
 	/* Place the value in the section */
-	pSection->content_a[pSection->counter_a].val = nValue;
-	pSection->localities_a[pSection->counter_a] = locAddress;
+	pSection->cells[pSection->_counter].content.val = nValue;
+	pSection->cells[pSection->_counter].locality = locAddress;
 
 	/* Count it as added */
-	pSection->counter_a++;
+	pSection->_counter++;
 
-	return 0;
+	/* Return its absolute address */
+	return pSection->_base_offset + pSection->_counter - 1;
 }
 
 unsigned int section_get_size(const memory_section_t* pSection)
@@ -36,5 +37,34 @@ unsigned int section_get_size(const memory_section_t* pSection)
 	if (pSection == NULL)
 			return 0;
 
-	return pSection->counter_a;
+	return pSection->_counter;
+}
+
+
+memory_address_t section_read(const memory_section_t* pSection,
+							  const memory_section_cell_t** o_pCell,
+							  unsigned int offset)
+{
+	if (o_pCell == NULL ||
+		pSection == NULL)
+		return MEMORY_ADDRESS_INVALID;
+
+	if (offset > section_get_size(pSection))
+		return MEMORY_ADDRESS_INVALID;
+
+	/* Get the requested cell */
+	*o_pCell = &pSection->cells[offset];
+
+	/* Return its absolute address */
+	return offset + pSection->_base_offset;
+}
+
+
+void section_set_size(memory_section_t* pSection,
+					  unsigned int nSize)
+{
+	if (pSection == NULL)
+		return;
+
+	pSection->_counter = nSize;
 }

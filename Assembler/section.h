@@ -21,10 +21,15 @@
 /* Typedefs */
 typedef struct
 {
-	memory_address_t   base_offset;
-	unsigned int 	   counter_a;
-	machine_cell_t 	   content_a[SECTION_MAX_SIZE];
-	address_locality_t localities_a[SECTION_MAX_SIZE];
+	machine_cell_t 	   content;
+	address_locality_t locality;
+}memory_section_cell_t;
+
+typedef struct
+{
+	memory_address_t   		_base_offset;
+	unsigned int 	   		_counter;
+	memory_section_cell_t 	cells[SECTION_MAX_SIZE];
 }memory_section_t;
 
 memory_address_t section_write(memory_section_t* pSection,
@@ -32,4 +37,12 @@ memory_address_t section_write(memory_section_t* pSection,
 				   	   	   	   address_locality_t locAddress);
 
 unsigned int section_get_size(const memory_section_t* pSection);
+
+void section_set_size(memory_section_t* pSection,
+					  unsigned int nSize);
+
+memory_address_t section_read(const memory_section_t* pSection,
+							  const memory_section_cell_t** o_pCell,
+							  unsigned int offset);
+
 #endif /* SECTIONS_H_ */

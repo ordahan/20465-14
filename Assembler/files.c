@@ -27,6 +27,11 @@ FILE* open_file_with_ext(const char* szFileName,
 					 	 const char* szExt,
 					 	 const char* szMode);
 
+/* fixme */
+int print_section_to_object(FILE* pObjectFile,
+							const memory_section_t* pSection,
+						    unsigned char fPrintLocality);
+
 /* Implementations */
 FILE* file_open_input(const char *szFileName)
 {
@@ -39,7 +44,6 @@ int file_create_object(const char *szFileName,
 {
 	const char* szHeader = "Base 4 Address	Base 4 machine code	Absolute, relocatable or external";
 	FILE* fObjectFile = NULL;
-	unsigned int i;
 
 	if (szFileName == NULL ||
 		pCode == NULL ||
@@ -64,44 +68,20 @@ int file_create_object(const char *szFileName,
 			"%s\n",
 			parser_int_to_string_base_4(section_get_size(pData), 0));
 
-	/* Go over the code section and print it */
-	for (i = 0; i < section_get_size(pCode); ++i)
+	/* Print the code section */
+	if (print_section_to_object(fObjectFile,
+								pCode,
+								1) != 0)
 	{
-		fprintf(fObjectFile,
-				"%s\t",
-				parser_int_to_string_base_4(i, 0));
-
-		/* Put 0 instead of externals for the sake of consistency */
-		if (pCode->localities_a[i] == ADDR_EXTERNAL)
-		{
-			fprintf(fObjectFile,
-					"%s\t",
-					parser_int_to_string_base_4(0,
-												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
-		}
-		else
-		{
-			fprintf(fObjectFile,
-					"%s\t",
-					parser_int_to_string_base_4(pCode->content_a[i].val,
-												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
-		}
-
-		fprintf(fObjectFile,
-				"%c\n",
-				parser_get_locality_letter(pCode->localities_a[i]));
+		return -1;
 	}
 
-	/* Go over the data section and print it */
-	for (i = 0; i < section_get_size(pData); ++i)
+	/* Print the data section */
+	if (print_section_to_object(fObjectFile,
+								pData,
+								0) != 0)
 	{
-		fprintf(fObjectFile,
-				"%s\t",
-				parser_int_to_string_base_4(section_get_size(pCode) + i, 0));
-		fprintf(fObjectFile,
-				"%s\n",
-				parser_int_to_string_base_4(pData->content_a[i].val,
-											MACHINE_CELL_NUM_BASE_4_CHARACTERS));
+		return -1;
 	}
 
 	fclose(fObjectFile);
@@ -160,6 +140,9 @@ int file_create_externals(const char *szFileName,
 {
 	unsigned int i;
 	FILE* fExternalsFile = NULL;
+	const memory_section_cell_t* pCell;
+	memory_address_t addrCell;
+
 
 	if (szFileName == NULL ||
 		arrSymbols == NULL ||
@@ -170,8 +153,17 @@ int file_create_externals(const char *szFileName,
 	 */
 	for (i = 0; i < section_get_size(pCode); ++i)
 	{
+		/* Read the current code cell */
+		addrCell = section_read(pCode, &pCell, i);
+
+		/* Make sure we retrieved a valid memory cell */
+		if (addrCell == MEMORY_ADDRESS_INVALID)
+		{
+			return -2;
+		}
+
 		/* Is this an external? */
-		if (pCode->localities_a[i] == ADDR_EXTERNAL)
+		if (pCell->locality == ADDR_EXTERNAL)
 		{
 			/* Lazy open, is this the first one? */
 			if (fExternalsFile == NULL)
@@ -189,7 +181,7 @@ int file_create_externals(const char *szFileName,
 			 */
 			fprintf(fExternalsFile,
 					"%s %s\n",
-					arrSymbols[pCode->content_a[i].val].name,
+					arrSymbols[pCell->content.val].name,
 					parser_int_to_string_base_4(i, 0));
 		}
 	}
@@ -230,4 +222,65 @@ FILE* open_file_with_ext(const char* szFileName,
 	}
 
 	return f;
+}
+
+int print_section_to_object(FILE* fObjectFile,
+						    const memory_section_t* pSection,
+						    unsigned char fPrintLocality)
+{
+	unsigned int i;
+	const memory_section_cell_t* pCell;
+	memory_address_t addrCell;
+
+	if (fObjectFile == NULL ||
+		pSection == NULL)
+		return -1;
+
+	/* Go over the section and print it */
+	for (i = 0; i < section_get_size(pSection); ++i)
+	{
+		/* Read the current code cell */
+		addrCell = section_read(pSection, &pCell, i);
+
+		/* Make sure we retrieved a valid memory cell */
+		if (addrCell == MEMORY_ADDRESS_INVALID)
+		{
+			return -2;
+		}
+
+		/* Address of the cell */
+		fprintf(fObjectFile,
+				"%s",
+				parser_int_to_string_base_4(addrCell, 0));
+
+		/* Value of the cell */
+		if (pCell->locality == ADDR_EXTERNAL)
+		{
+			/* Put 0 instead of externals for the sake of consistency
+			 * as we don't know the real address */
+			fprintf(fObjectFile,
+					"\t%s",
+					parser_int_to_string_base_4(0,
+												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
+		}
+		else
+		{
+			fprintf(fObjectFile,
+					"\t%s",
+					parser_int_to_string_base_4(pCell->content.val,
+												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
+		}
+
+		/* Locality of the cell */
+		if (fPrintLocality == 1)
+		{
+			fprintf(fObjectFile,
+					"\t%c",
+					parser_get_locality_letter(pCell->locality));
+		}
+
+		fprintf(fObjectFile, "\n");
+	}
+
+	return 0;
 }
