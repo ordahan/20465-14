@@ -1,0 +1,18 @@
+1.
+assembler ps no_externs ps_with_errors no_entries
+Compiling ps...DONE.
+Compiling no_externs...DONE.
+Compiling ps_with_errors...Error! Illegal directive: .blaalla
+Syntax error: .blaalla [line 9]
+Error! Instruction doesn't have a valid modifier: error!
+Syntax error: error! [line 17]
+ [line 18]
+Error! Illegal instruction: jsar
+Syntax error: jsar [line 24]
+Error! Invalid number of operands:  [line 33]
+Aborted compilation of ps_with_errors, errors.
+Compiling no_entries...DONE.
+
+2. 
+assembler spaces
+Compiling spaces...DONE.

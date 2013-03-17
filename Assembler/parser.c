@@ -116,10 +116,8 @@ int parser_get_statement(statement_t* io_pLine)
 	 */
 	if (io_pLine == NULL)
 		return 1;
-
 	/* Save the end of the actual content */
 	pContentEnd = strchr(io_pLine->szContent, NULL_TERMINATOR);
-
 	/* Make sure its a full line */
 	if (*(pContentEnd - 1) != NEWLINE)
 	{
@@ -177,12 +175,22 @@ int parser_get_statement(statement_t* io_pLine)
 	}
 	else
 	{
-		/* The data for the operation starts right after the operation itself ends */
-		io_pLine->szOperationData = strchr(szOperation, NULL_TERMINATOR) + 1;
+		/* The data for the operation starts right after the operation
+		 * itself, the first non-whitespace char */
+		io_pLine->szOperationData = strchr(szOperation, NULL_TERMINATOR);
+		do
+		{
+			/* Make sure the data is real */
+			if (io_pLine->szOperationData >= pContentEnd)
+			{
+				/* Data not found */
+				io_pLine->szOperationData = NULL;
+				break;
+			}
 
-		/* Make sure the data is real */
-		if (io_pLine->szOperationData >= pContentEnd)
-			io_pLine->szOperationData = NULL;
+			/* At least one char after the null terminator, maybe more */
+			io_pLine->szOperationData++;
+		}while (is_white_space(io_pLine->szOperationData[0]) == 1);
 
 		/* Check if the operation is a directive */
 		if (szOperation[0] == '.')
@@ -236,7 +244,6 @@ int parser_get_statement(statement_t* io_pLine)
 		io_pLine->type = STATEMENT_TYPE_INSTRUCTION;
 		return 0;
 	}
-
 	return -1;
 }
 

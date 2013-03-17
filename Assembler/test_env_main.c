@@ -20,11 +20,11 @@ int test_env_main()
 	setvbuf(stdout, NULL, _IONBF, 0);
 	setvbuf(stderr, NULL, _IONBF, 0);
 
-	assert(test_main() == 0);
-	assert(test_files() == 0);
 	assert(test_directive() == 0);
 	assert(test_parser() == 0);
 	assert(test_instruction() == 0);
+	assert(test_files() == 0);
+	assert(test_main() == 0);
 	assert(test_assembler() == 0);
 	return 0;
 }

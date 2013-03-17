@@ -44,5 +44,16 @@ int test_main()
 	printf("PASSED.\n");
 	/**********************************************/
 
+	/**********************************************/
+	printf("	example from book #2: ");
+	system("cd inputs; rm *.ext *.ent *.ob");
+	args[1] = "inputs/2";
+	assert(0 == main(2, args));
+
+	assert(NULL != fopen("inputs/2.ob", "r"));
+
+	printf("PASSED.\n");
+	/**********************************************/
+
 	return 0;
 }
