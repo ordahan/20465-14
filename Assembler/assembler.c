@@ -63,13 +63,13 @@ int assembler_compile(FILE* flProgram,
 	static statement_t arrProgramStatements[MAX_STATEMENTS_IN_PROGRAM];
 	size_t	nNumOfStatements = 0;
 
-	/* First of all, init the given output-bound array types */
-	memset(o_arrSymbols, 0, sizeof(symbol_table_arr_t));
-	memset(o_pCode, 0, sizeof(*o_pCode));
-	memset(o_pData, 0, sizeof(*o_pData));
+	if (o_arrSymbols == NULL ||
+		o_pCode == NULL ||
+		o_pData == NULL)
+		return -1;
 
-	/* Set the base of the program */
-	o_pCode->_base_offset = BASE_ADDRESS;
+	/* First of all, init the given output-bound array types */
+	init_program_data(o_arrSymbols, o_pCode, o_pData);
 
 	/* Make a first pass that completes parsing
 	 * of the code, without resolving addresses
@@ -114,6 +114,7 @@ int first_pass(FILE* flProgram,
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
 	statement_t* pCurrStatement = &o_arrStatements[nCurrLine];
+	symbol_t symbCurrLabel;
 
 	/* Making sure ptrs valid */
 	if (flProgram == NULL ||
@@ -144,6 +145,10 @@ int first_pass(FILE* flProgram,
 			nErrorCode = -1;
 		}
 
+		/* Set the label as non-valid */
+		symbCurrLabel.locality = ADDR_INVALID;
+		symbCurrLabel.address = MEMORY_ADDRESS_INVALID;
+
 		/* Some kind of directive */
 		if (pCurrStatement->type == STATEMENT_TYPE_DIRECTIVE)
 		{
@@ -153,6 +158,12 @@ int first_pass(FILE* flProgram,
 				case (DIRECTIVE_DATA):
 				case (DIRECTIVE_STRING):
 				{
+					/* Save label params that might be needed */
+					symbCurrLabel.locality = ADDR_RELOCATABLE;
+					symbCurrLabel.address = section_get_size(o_pData);
+					symbCurrLabel.section = ADDR_SECTION_DATA;
+
+					/* Compile the dummy instruction */
 					if (directive_compile_dummy_instruction(pCurrStatement,
 															o_pData,
 															o_arrSymbols) != 0)
@@ -175,30 +186,63 @@ int first_pass(FILE* flProgram,
 		/* An instruction */
 		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
 		{
-			/* fixme: re-factor out the label stuff from data and string */
-			/* Add the instruction's label if exists */
-			if (pCurrStatement->szLabel != NULL)
+			/* Get the instruction size */
+			int nSize = instruction_shallow_parse(pCurrStatement);
+
+			/* Check that the instruction is legal */
+			if (nSize < 0)
 			{
-				/* Save the label for the instruction,
-				 * its address is the IC before the instruction
-				 */
-				if (symbol_add_to_table(o_arrSymbols,
-										ADDR_ABSOLUTE,
-										pCurrStatement->szLabel,
-										section_get_size(o_pCode),
-										ADDR_SECTION_CODE) != 0)
-				{
-					return -1;
-				}
+				nErrorCode = -3;
 			}
 
 			/* Reserve it a number of cells */
-			if (section_write(o_pCode, 0, ADDR_ABSOLUTE) != 0)
-				nErrorCode = -2;
+			while (nSize > 0)
+			{
+				/* Reserve an empty cell */
+				memory_address_t addrCurrent = section_write(o_pCode, 0, ADDR_ABSOLUTE);
+
+				/* Make sure there is room */
+				if (addrCurrent == MEMORY_ADDRESS_INVALID)
+				{
+					nErrorCode = -2;
+					break;
+				}
+
+				/* First cell's address is the instruction start address */
+				if (symbCurrLabel.address == MEMORY_ADDRESS_INVALID)
+				{
+					symbCurrLabel.address = addrCurrent;
+				}
+
+				/* Next cell */
+				nSize--;
+			}
+
+			/* Save label params that might be needed */
+			symbCurrLabel.locality = ADDR_ABSOLUTE;
+			symbCurrLabel.section = ADDR_SECTION_CODE;
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{
 			/*todo: Handle error */
+		}
+
+		/* Add the label if exists */
+		if (pCurrStatement->szLabel != NULL &&
+			symbCurrLabel.locality != ADDR_INVALID &&
+			symbCurrLabel.address != MEMORY_ADDRESS_INVALID)
+		{
+			/* Save the label for the instruction,
+			 * its address is the DC before the instruction
+			 */
+			if (symbol_add_to_table(o_arrSymbols,
+									symbCurrLabel.locality,
+									pCurrStatement->szLabel,
+									symbCurrLabel.address,
+									symbCurrLabel.section) != 0)
+			{
+				return -1;
+			}
 		}
 
 		/* Set the curr statement ptr to the next one
@@ -272,4 +316,16 @@ int second_pass(const statement_t *arrStatements,
 	}
 
 	return nErrorCode;
+}
+
+void init_program_data(symbol_table_arr_t symbols,
+					   memory_section_t *pCode,
+					   memory_section_t *pData)
+{
+	memset(symbols, 0, sizeof(symbol_table_arr_t));
+	memset(pCode, 0, sizeof(*pCode));
+	memset(pData, 0, sizeof(*pData));
+
+	/* Set the base of the program */
+	pCode->_base_offset = BASE_ADDRESS;
 }

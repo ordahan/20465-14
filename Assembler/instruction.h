@@ -139,7 +139,7 @@ int instruction_compile(const statement_t *pInstruction,
  * its ok.
  * @param pInstructionStatement
  * @return number of memory cells the instruction takes
- * (1 + num of cells for the operands data)
+ * (1 + num of cells for the operands data). -1 is given on error.
  */
 int instruction_shallow_parse(const statement_t *pInstructionStatement);
 

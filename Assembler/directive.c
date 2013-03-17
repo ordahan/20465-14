@@ -54,22 +54,6 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 		io_pData == NULL)
 		return -1;
 
-	/* Add the instruction's label if exists */
-	if (pDummyInst->szLabel != NULL)
-	{
-		/* Save the label for the instruction,
-		 * its address is the DC before the instruction
-		 */
-		if (symbol_add_to_table(io_pSymbols,
-							    ADDR_RELOCATABLE,
-							    pDummyInst->szLabel,
-							    section_get_size(io_pData),
-							    ADDR_SECTION_DATA) != 0)
-		{
-			return -1;
-		}
-	}
-
 	if (pDummyInst->info.directive.name == DIRECTIVE_DATA)
 	{
 		return compile_data(pDummyInst, io_pData);

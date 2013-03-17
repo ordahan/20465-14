@@ -13,6 +13,7 @@
 #include "assembler.h"
 #include "instruction.h"
 #include "test_utils.h"
+#include "parser.h"
 
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t symbol_expected,
@@ -68,9 +69,11 @@ int test_assembler()
 								&data_expected);
 	memset(pInstruction, 0, sizeof(*pInstruction));
 
-	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_EXTERNAL;
-	strcpy(pSymbol->name, "ThisIsMySymbol!");
+	symbol_add_to_table(symbols_expected,
+						ADDR_EXTERNAL,
+						"ThisIsMySymbol!",
+						0,
+						ADDR_SECTION_EXTERNAL);
 
 	printf("	File only with extern: ");
 	assert(0 == test_assembler_compile("tests/extern.as",
@@ -87,10 +90,6 @@ int test_assembler()
 					  &data_expected);
 	memset(pInstruction, 0, sizeof(*pInstruction));
 
-	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_ABSOLUTE;
-	strcpy(pSymbol->name, "ThisIsMySymbol!");
-
 	/*mov/0 #3,r1*/
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
@@ -101,6 +100,12 @@ int test_assembler()
 
 	section_write(&code_expected, instruction.raw, ADDR_ABSOLUTE);
 	section_write(&code_expected, 3, ADDR_ABSOLUTE);
+
+	symbol_add_to_table(symbols_expected,
+						ADDR_ABSOLUTE,
+						"ThisIsMySymbol!",
+						0,
+						ADDR_SECTION_CODE);
 
 	printf("	File with entry and instruction: ");
 	assert(0 == test_assembler_compile("tests/entry.as",
@@ -158,17 +163,21 @@ int test_assembler()
 
 	/**********************************************/
 	init_program_data(symbols_expected,
-								&code_expected,
-								&data_expected);
+					  &code_expected,
+					  &data_expected);
 	memset(pInstruction, 0, sizeof(*pInstruction));
 
-	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	strcpy(pSymbol->name, "LOL");
-	pSymbol = &symbols_expected[1];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 5;
-	strcpy(pSymbol->name, "rofl");
+	symbol_add_to_table(symbols_expected,
+						ADDR_RELOCATABLE,
+						"LOL",
+						0,
+						ADDR_SECTION_DATA);
+
+	symbol_add_to_table(symbols_expected,
+						ADDR_RELOCATABLE,
+						"rofl",
+						5,
+						ADDR_SECTION_DATA);
 
 	section_write(&data_expected, -5, ADDR_ABSOLUTE);
 	section_write(&data_expected, 1, ADDR_ABSOLUTE);
@@ -183,7 +192,7 @@ int test_assembler()
 	section_write(&data_expected, '\0',  ADDR_ABSOLUTE);
 
 
-	printf("	.data and .string: ");
+	printf("	.data and .string: \n");
 	assert(0 == test_assembler_compile("tests/data_and_string.as",
 										symbols_expected,
 										&code_expected,
@@ -223,33 +232,20 @@ int test_assembler()
 
 	/**********************************************/
 	init_program_data(symbols_expected,
-								&code_expected,
-								&data_expected);
+					 &code_expected,
+					 &data_expected);
 	memset(pInstruction, 0, sizeof(*pInstruction));
 
-	pSymbol = &symbols_expected[2];
-	pSymbol->locality = ADDR_ABSOLUTE;
-	pSymbol->address = 0;
-	strcpy(pSymbol->name, "ThisIsMySymbol!");
-
-	pInstruction->comb = INST_COMB_MSB_MSB;
-	pInstruction->type = INST_TYPE_20_BIT;
-	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
-	pInstruction->dest_reg = R1;
-	pInstruction->opcode = MOV;
-	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-
-	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
-	section_write(&code_expected, 3, ADDR_ABSOLUTE);
-
-	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 2;
-	strcpy(pSymbol->name, "LOL");
-	pSymbol = &symbols_expected[1];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 7;
-	strcpy(pSymbol->name, "rofl");
+	symbol_add_to_table(symbols_expected,
+						ADDR_RELOCATABLE,
+						"LOL",
+						0,
+						ADDR_SECTION_DATA);
+	symbol_add_to_table(symbols_expected,
+						ADDR_RELOCATABLE,
+						"rofl",
+						5,
+						ADDR_SECTION_DATA);
 
 	section_write(&data_expected, -5, ADDR_ABSOLUTE);
 	section_write(&data_expected, 1, ADDR_ABSOLUTE);
@@ -262,6 +258,22 @@ int test_assembler()
 	section_write(&data_expected, 'l',  ADDR_ABSOLUTE);
 	section_write(&data_expected, 'o',  ADDR_ABSOLUTE);
 	section_write(&data_expected, '\0',  ADDR_ABSOLUTE);
+
+	symbol_add_to_table(symbols_expected,
+						ADDR_ABSOLUTE,
+						"ThisIsMySymbol!",
+						0,
+						ADDR_SECTION_CODE);
+
+	pInstruction->comb = INST_COMB_MSB_MSB;
+	pInstruction->type = INST_TYPE_20_BIT;
+	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
+	pInstruction->dest_reg = R1;
+	pInstruction->opcode = MOV;
+	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
+
+	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&code_expected, 3, ADDR_ABSOLUTE);
 
 	printf("	instruction and data: ");
 	assert(0 == test_assembler_compile("tests/instruction_and_data.as",
@@ -278,25 +290,29 @@ int test_assembler()
 								&data_expected);
 	memset(pInstruction, 0, sizeof(*pInstruction));
 
-	pSymbol = &symbols_expected[0];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 9;
-	strcpy(pSymbol->name, "lol");
+	symbol_add_to_table(symbols_expected,
+						ADDR_RELOCATABLE,
+						"lol",
+						0,
+						ADDR_SECTION_DATA);
 
-	pSymbol = &symbols_expected[1];
-	pSymbol->locality = ADDR_EXTERNAL;
-	pSymbol->address = 0;
-	strcpy(pSymbol->name, "Hallo");
+	symbol_add_to_table(symbols_expected,
+						ADDR_EXTERNAL,
+						"Hallo",
+						0,
+						ADDR_SECTION_EXTERNAL);
 
-	pSymbol = &symbols_expected[2];
-	pSymbol->locality = ADDR_RELOCATABLE;
-	pSymbol->address = 10;
-	strcpy(pSymbol->name, "a");
+	symbol_add_to_table(symbols_expected,
+						ADDR_RELOCATABLE,
+						"a",
+						1,
+						ADDR_SECTION_DATA);
 
-	pSymbol = &symbols_expected[3];
-	pSymbol->locality = ADDR_ABSOLUTE;
-	pSymbol->address = 6;
-	strcpy(pSymbol->name, "kicks");
+	symbol_add_to_table(symbols_expected,
+						ADDR_ABSOLUTE,
+						"kicks",
+						6,
+						ADDR_SECTION_CODE);
 
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
@@ -352,6 +368,7 @@ int test_assembler()
 	 * #.string error
 	 * #instruction + .data (data after text)
 	 * #instruction address resolution
+	 * todo: extern / entry labels don't mean anything
 	 */
 	printf("PASSED.\n");
 	return 0;
@@ -418,6 +435,15 @@ int test_assembler_compile(const char* szTestFile,
 		return -1;
 	}
 
+	/* Update the symbol table with correct offsets */
+	symbol_move_section(symbol_expected,
+						ADDR_SECTION_CODE,
+						code._base_offset);
+	symbol_move_section(symbol_expected,
+						ADDR_SECTION_DATA,
+						code._base_offset +
+						section_get_size(&code));
+
 	/* Check the symbol table */
 	{
 		unsigned i;
@@ -427,7 +453,14 @@ int test_assembler_compile(const char* szTestFile,
 				symbol_expected[i].locality != symbols[i].locality ||
 				0 != strcmp(symbol_expected[i].name, symbols[i].name))
 			{
-				printf("Symbol in index %d doesn't match expected.\n", i);
+				printf("Symbol in index %d doesn't match expected: [%lu %c %s != %lu %c %s].\n",
+					   i,
+					   symbol_expected[i].address,
+					   parser_get_locality_letter(symbol_expected[i].locality),
+					   symbol_expected[i].name,
+					   symbols[i].address,
+					   parser_get_locality_letter(symbols[i].locality),
+					   symbols[i].name);
 				return -3;
 			}
 		}

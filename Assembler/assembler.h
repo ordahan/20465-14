@@ -34,4 +34,9 @@ int assembler_compile(FILE* pAssemblyFile,
 					  memory_section_t *o_pCode,
 					  memory_section_t *o_pData);
 
+/* fixme */
+void init_program_data(symbol_table_arr_t symbols,
+					   memory_section_t *pCode,
+					   memory_section_t *pData);
+
 #endif /* ASSEMBLER_H_ */

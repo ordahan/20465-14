@@ -64,22 +64,6 @@ int test_dummy_instruction_compile(const char		*line,
 	if (fShouldSucceed != 0)
 
 	{
-		/* Check the label if exists */
-		if (statement.szLabel != NULL)
-		{
-			/* Find last symbol */
-			unsigned i;
-			symbol_t* pSymb = &symbols[0];
-			for (i = 1; symbols[i].address != ADDR_INVALID;++i )
-			{
-				pSymb = &symbols[i];
-			}
-
-			assert(0 == strcmp(statement.szLabel, pSymb->name));
-			assert(section_get_size(data) - 1 == pSymb->address);
-			assert(ADDR_RELOCATABLE == pSymb->locality);
-		}
-
 		/* Check the data section */
 		if (compare_memory_sections(expected, data) != 0)
 		{
@@ -94,7 +78,7 @@ int test_dummy_instruction_compile(const char		*line,
 
 int test_compile_dummy_instruction()
 {
-	/*todo:
+	/*
 	 * #one data
 	 * #two data
 	 * #N data
@@ -103,7 +87,6 @@ int test_compile_dummy_instruction()
 	 * #element is not a valid number
 	 * #number out of range
 	 * #list not separated properly
-	 * #label for data
 	 * #multiple data parts
 	 * #no chars in string
 	 * #one char string
@@ -245,18 +228,6 @@ int test_compile_dummy_instruction()
 											   &data,
 											   &data_expected,
 											   0));
-	/**********************************************/
-
-	/**********************************************/
-	printf("	label for data: \n");
-	init_object_blocks(NULL, NULL, &data_expected);
-	init_object_blocks(NULL, NULL, &data);
-
-	section_write(&data_expected, 13, ADDR_ABSOLUTE);
-	assert(0 == test_dummy_instruction_compile("X:.data 13",
-											   &data,
-											   &data_expected,
-											   1));
 	/**********************************************/
 
 	/**********************************************/
