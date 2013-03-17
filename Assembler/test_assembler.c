@@ -27,7 +27,6 @@ int test_assembler()
 	static memory_section_t code_expected;
 	static memory_section_t data_expected;
 
-	symbol_t *pSymbol = NULL;
 	instruction_t instruction;
 	instruction_t *pInstruction = &instruction;
 
@@ -369,6 +368,7 @@ int test_assembler()
 	 * #instruction + .data (data after text)
 	 * #instruction address resolution
 	 * todo: extern / entry labels don't mean anything
+	 * todo: line too long
 	 */
 	printf("PASSED.\n");
 	return 0;

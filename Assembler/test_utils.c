@@ -9,6 +9,7 @@
 #include "test_utils.h"
 #include <memory.h>
 #include "statement.h"
+#include "parser.h"
 
 int compare_files(const char* szFile1 , const char* szFile2)
 {
@@ -94,4 +95,22 @@ int compare_memory_sections(const memory_section_t* pMem1,
 	}
 
 	return 0;
+}
+
+const statement_t* get_statement(const char* line)
+{
+	static statement_t statement;
+	char line_with_newline[sizeof(statement.szContent)];
+
+	strcpy(line_with_newline, line);
+	strcat(line_with_newline, "\n");
+
+	/* Retrieve the line to compile */
+	strcpy(statement.szContent, line_with_newline);
+
+	/* Create a statement from the given line */
+	if (parser_get_statement(&statement) != 0)
+		return NULL;
+
+	return &statement;
 }

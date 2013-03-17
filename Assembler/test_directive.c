@@ -46,19 +46,15 @@ int test_dummy_instruction_compile(const char		*line,
 						   const memory_section_t *expected,
 						   char fShouldSucceed)
 {
-	statement_t statement;
 	symbol_table_arr_t symbols;
+	const statement_t* pStatement = get_statement(line);
 
 	memset(symbols, 0, sizeof(symbols));
 
-	/* Retrieve the line to compile */
-	strcpy(statement.szContent, line);
-
-	/* Create a statement from the given line */
-	assert(0 == parser_get_statement(&statement));
+	assert(pStatement != NULL);
 
 	/* Check that the compilation returns as expected */
-	assert(!((0 == directive_compile_dummy_instruction(&statement, data, symbols)) ^
+	assert(!((0 == directive_compile_dummy_instruction(pStatement, data, symbols)) ^
 			 fShouldSucceed));
 
 	if (fShouldSucceed != 0)
@@ -445,7 +441,7 @@ int test_compile_extern()
 	 * #name with syntax error
 	 */
 	symbol_table_arr_t arrSymbols;
-	statement_t		   statement;
+	const statement_t*		   pStatement;
 
 	printf("Testing compiling externals:\n");
 
@@ -453,11 +449,10 @@ int test_compile_extern()
 	printf("	Valid extern: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
 	arrSymbols[0].address = 1;
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".extern HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 == directive_compile_extern(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
+	pStatement = get_statement(".extern HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 == directive_compile_extern(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData , arrSymbols[0].name));
 	assert(ADDR_EXTERNAL == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
@@ -466,11 +461,10 @@ int test_compile_extern()
 	/**********************************************/
 	printf("	Valid extern with label: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, "GREETINGS: .extern HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 == directive_compile_extern(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
+	pStatement = get_statement("GREETINGS: .extern HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 == directive_compile_extern(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData , arrSymbols[0].name));
 	assert(ADDR_EXTERNAL == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
@@ -479,10 +473,9 @@ int test_compile_extern()
 	/**********************************************/
 	printf("	Extern without params: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".extern");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 != directive_compile_extern(&statement, arrSymbols));
+	pStatement = get_statement(".extern");
+	assert(NULL != pStatement);
+	assert(0 != directive_compile_extern(pStatement, arrSymbols));
 	assert(ADDR_INVALID == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
@@ -491,14 +484,13 @@ int test_compile_extern()
 	/**********************************************/
 	printf("	Extern existing: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".extern HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 == directive_compile_extern(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
+	pStatement = get_statement(".extern HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 == directive_compile_extern(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData , arrSymbols[0].name));
 	assert(ADDR_EXTERNAL == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
-	assert(0 != directive_compile_extern(&statement, arrSymbols));
+	assert(0 != directive_compile_extern(pStatement, arrSymbols));
 	assert(ADDR_INVALID == arrSymbols[1].locality);
 	printf("PASSED.\n");
 	/**********************************************/
@@ -506,10 +498,9 @@ int test_compile_extern()
 	/**********************************************/
 	printf("	Extern with invalid syntax: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".extern @elloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 != directive_compile_extern(&statement, arrSymbols));
+	pStatement = get_statement(".extern @elloMoto");
+	assert(NULL != pStatement);
+	assert(0 != directive_compile_extern(pStatement, arrSymbols));
 	assert(ADDR_INVALID == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
@@ -518,15 +509,14 @@ int test_compile_extern()
 	/**********************************************/
 	printf("	Extern long name: \n");
 	memset(arrSymbols, 0, sizeof(arrSymbols));
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".extern A23456789012345678901234567890");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 == directive_compile_extern(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
+	pStatement = get_statement(".extern A23456789012345678901234567890");
+	assert(NULL != pStatement);
+	assert(0 == directive_compile_extern(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData , arrSymbols[0].name));
 	assert(ADDR_EXTERNAL == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
-	strcpy(statement.szContent, ".extern A23456789012345678901234567890000");
-	assert(0 != directive_compile_extern(&statement, arrSymbols));
+	pStatement = get_statement(".extern A23456789012345678901234567890000");
+	assert(0 != directive_compile_extern(pStatement, arrSymbols));
 	assert(ADDR_INVALID == arrSymbols[1].locality);
 	printf("PASSED.\n");
 	/**********************************************/
@@ -544,7 +534,7 @@ int test_compile_entry()
 	 * #Entry for an already entry marked symbol
 	 */
 	symbol_table_arr_t arrSymbols;
-	statement_t		   statement;
+	const statement_t*		   pStatement;
 
 	printf("Testing compiling externals:\n");
 
@@ -554,11 +544,10 @@ int test_compile_entry()
 	arrSymbols[0].locality = ADDR_ABSOLUTE;
 	arrSymbols[0].address = 0;
 	strcpy(arrSymbols[0].name, "HelloMoto");
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".entry HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 == directive_compile_entry(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
+	pStatement = get_statement(".entry HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 == directive_compile_entry(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData , arrSymbols[0].name));
 	assert(ADDR_ABSOLUTE == arrSymbols[0].locality);
 	assert(ADDR_ENTRY_STATUS_ENTRY == arrSymbols[0].entry);
 	assert(0 == arrSymbols[0].address);
@@ -571,11 +560,10 @@ int test_compile_entry()
 	arrSymbols[0].locality = ADDR_EXTERNAL;
 	arrSymbols[0].address = 0;
 	strcpy(arrSymbols[0].name, "HelloMoto");
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".entry HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 != directive_compile_entry(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData , arrSymbols[0].name));
+	pStatement = get_statement(".entry HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 != directive_compile_entry(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData , arrSymbols[0].name));
 	assert(ADDR_EXTERNAL == arrSymbols[0].locality);
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
@@ -587,10 +575,9 @@ int test_compile_entry()
 	arrSymbols[0].locality = ADDR_EXTERNAL;
 	arrSymbols[0].address = 0;
 	strcpy(arrSymbols[0].name, "HelloM0t0");
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".entry HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 != directive_compile_entry(&statement, arrSymbols));
+	pStatement = get_statement(".entry HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 != directive_compile_entry(pStatement, arrSymbols));
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
 	/**********************************************/
@@ -602,13 +589,12 @@ int test_compile_entry()
 	arrSymbols[0].address = 0;
 	arrSymbols[0].entry = ADDR_ENTRY_STATUS_NON_ENTRY;
 	strcpy(arrSymbols[0].name, "HelloMoto");
-	memset(&statement, 0, sizeof(statement));
-	strcpy(statement.szContent, ".entry HelloMoto");
-	assert(0 == parser_get_statement(&statement));
-	assert(0 == directive_compile_entry(&statement, arrSymbols));
-	assert(0 == strcmp(statement.szOperationData, arrSymbols[0].name));
+	pStatement = get_statement(".entry HelloMoto");
+	assert(NULL != pStatement);
+	assert(0 == directive_compile_entry(pStatement, arrSymbols));
+	assert(0 == strcmp(pStatement->szOperationData, arrSymbols[0].name));
 	assert(ADDR_ENTRY_STATUS_ENTRY == arrSymbols[0].entry);
-	assert(0 != directive_compile_entry(&statement, arrSymbols));
+	assert(0 != directive_compile_entry(pStatement, arrSymbols));
 	assert(0 == arrSymbols[0].address);
 	printf("PASSED.\n");
 	/**********************************************/

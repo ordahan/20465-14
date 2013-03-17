@@ -19,6 +19,7 @@
 #include "errno.h"
 
 /* Defines */
+#define NEWLINE '\n'
 #define BLANKS "\t \n\r"
 #define LABEL_SEPARATOR ':'
 #define INSTRUCTION_MODIFIER_SEPARATOR '/'
@@ -119,6 +120,14 @@ int parser_get_statement(statement_t* io_pLine)
 
 	/* Save the end of the actual content */
 	pContentEnd = strchr(io_pLine->szContent, NULL_TERMINATOR);
+
+	/* Make sure its a full line */
+	if (*(pContentEnd - 1) != NEWLINE)
+	{
+		printf("Error! line too long (over %d chars) or it doesn't end with a newline char.",
+			   MAX_LINE_LENGTH);
+		return -1;
+	}
 
 	/* Assume we didn't find anything */
 	io_pLine->type = STATEMENT_TYPE_ERROR;

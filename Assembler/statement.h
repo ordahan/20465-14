@@ -50,7 +50,7 @@ typedef struct
 
 	char* szOperationData;
 
-	char szContent[MAX_LINE_LENGTH]; /* Original line */
+	char szContent[MAX_LINE_LENGTH + 1]; /* Original line */
 }statement_t;
 
 #endif /* STATEMENT_H_ */

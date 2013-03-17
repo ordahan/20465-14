@@ -34,7 +34,7 @@ int test_get_statement()
 	printf("	Empty line: ");
 	memset(&stResult, 0, sizeof(stResult));
 	stResult.szLabel = "lalala";
-	strcpy(stResult.szContent, "   				");
+	strcpy(stResult.szContent, "   				\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_EMPTY == stResult.type);
 	assert(stResult.szLabel == NULL);
@@ -44,7 +44,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Commented line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "; dsad  		dsa mov extern entry 	LAbde:	");
+	strcpy(stResult.szContent, "; dsad  		dsa mov extern entry 	LAbde:	\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_COMMENT == stResult.type);
 	printf("PASSED.\n");
@@ -53,7 +53,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Illegal directive line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".fu abc");
+	strcpy(stResult.szContent, ".fu abc\n");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -61,15 +61,15 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Extern line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".extern ABC");
+	strcpy(stResult.szContent, ".extern ABC\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
 	assert(&stResult.szContent[8] == stResult.szOperationData);
 	assert(NULL == stResult.szLabel);
-	strcpy(stResult.szContent, ".extern");
+	strcpy(stResult.szContent, ".extern\n");
 	assert(0 == parser_get_statement(&stResult));
-	strcpy(stResult.szContent, ".extern ");
+	strcpy(stResult.szContent, ".extern \n");
 	assert(0 == parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -77,15 +77,15 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Entry line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".entry ABC");
+	strcpy(stResult.szContent, ".entry ABC\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_ENTRY == stResult.info.directive.name);
 	assert(&stResult.szContent[7] == stResult.szOperationData);
 	assert(NULL == stResult.szLabel);
-	strcpy(stResult.szContent, ".entry");
+	strcpy(stResult.szContent, ".entry\n");
 	assert(0 == parser_get_statement(&stResult));
-	strcpy(stResult.szContent, ".entry ");
+	strcpy(stResult.szContent, ".entry \n");
 	assert(0 == parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -93,7 +93,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Data line single: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".data 7");
+	strcpy(stResult.szContent, ".data 7\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
@@ -105,21 +105,21 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Data line multiple: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".data +7, -57    ,17,9 ");
+	strcpy(stResult.szContent, ".data +7, -57    ,17,9 \n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
 	assert(&stResult.szContent[6] == stResult.szOperationData);
-	assert(17 == strlen(stResult.szOperationData));
+	assert(18 == strlen(stResult.szOperationData));
 	assert(NULL == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
 	/* Not handled here, should be ok */
 	/**********************************************/
-	printf("	Data line invalid number format: ");
+	printf("	Data line invalid number format: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".data +7-57");
+	strcpy(stResult.szContent, ".data +7-57\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
@@ -130,9 +130,9 @@ int test_get_statement()
 
 	/* Not handled here, should be ok */
 	/**********************************************/
-	printf("	Data line multiple number not separated: ");
+	printf("	Data line multiple number not separated: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".data +7 -57");
+	strcpy(stResult.szContent, ".data +7 -57\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_DATA == stResult.info.directive.name);
@@ -144,7 +144,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	String line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".string \"ABC\"");
+	strcpy(stResult.szContent, ".string \"ABC\"\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_STRING == stResult.info.directive.name);
@@ -156,7 +156,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	String line missing quote: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".string \"ABC");
+	strcpy(stResult.szContent, ".string \"ABC\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_STRING == stResult.info.directive.name);
@@ -168,7 +168,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	String line missing quotes: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".string ABC");
+	strcpy(stResult.szContent, ".string ABC\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_STRING == stResult.info.directive.name);
@@ -180,7 +180,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Ignoring white-spaces on directive: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "   .extern   	    ABC     ");
+	strcpy(stResult.szContent, "   .extern   	    ABC     \n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
@@ -193,7 +193,7 @@ int test_get_statement()
 	/* Should pass as we don't parse to deeply here */
 	printf("	Extra shit in directive: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ".extern dasd ABC");
+	strcpy(stResult.szContent, ".extern dasd ABC\n");
 	assert(0 == parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -201,7 +201,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Labeled line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "H3LL0: .extern foo");
+	strcpy(stResult.szContent, "H3LL0: .extern foo\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_DIRECTIVE == stResult.type);
 	assert(DIRECTIVE_EXTERN == stResult.info.directive.name);
@@ -213,7 +213,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Label not first in line: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "   HELLO: .extern foo");
+	strcpy(stResult.szContent, "   HELLO: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -221,13 +221,13 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Label with bad syntax: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "8ELLO: .extern foo");
+	strcpy(stResult.szContent, "8ELLO: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ",ELLO: .extern foo");
+	strcpy(stResult.szContent, ",ELLO: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, ":HELLO: .extern foo");
+	strcpy(stResult.szContent, ":HELLO: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -235,10 +235,10 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Label too long: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELLO: .extern foo");
+	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELLO: .extern foo\n");
 	assert(0 == parser_get_statement(&stResult));
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELL31: .extern foo");
+	strcpy(stResult.szContent, "HELLOHELLOHELLOHELLOHELLOHELL31: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -246,10 +246,10 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Label with reserved name: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "r5: .extern foo");
+	strcpy(stResult.szContent, "r5: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "rts: .extern foo");
+	strcpy(stResult.szContent, "rts: .extern foo\n");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/
@@ -257,7 +257,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Instruction line, No operands: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "rts/0");
+	strcpy(stResult.szContent, "rts/0\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(RTS == stResult.info.instruction.name);
@@ -270,7 +270,7 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Instruction line, One operand: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "clr/0 r2");
+	strcpy(stResult.szContent, "clr/0 r2\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(CLR == stResult.info.instruction.name);
@@ -281,9 +281,9 @@ int test_get_statement()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Instruction line, Two operands: ");
+	printf("	Instruction line, Two operands: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "mov/0 A,r1");
+	strcpy(stResult.szContent, "mov/0 A,r1\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
@@ -294,9 +294,9 @@ int test_get_statement()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Instruction line with label: ");
+	printf("	Instruction line with label: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "MOFO:mov/0 A,r1");
+	strcpy(stResult.szContent, "MOFO:mov/0 A,r1\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
@@ -307,9 +307,9 @@ int test_get_statement()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Instruction line with type=1: ");
+	printf("	Instruction line with type=1: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "mov/1/0/1 A,r1");
+	strcpy(stResult.szContent, "mov/1/0/1 A,r1\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
@@ -320,9 +320,9 @@ int test_get_statement()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Instruction line with everything: ");
+	printf("	Instruction line with everything: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "MOFO:mov/1/0/1 A,r1");
+	strcpy(stResult.szContent, "MOFO:mov/1/0/1 A,r1\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
@@ -334,9 +334,9 @@ int test_get_statement()
 
 	/**********************************************/
 	/* Should pass as we don't parse to deeply here */
-	printf("	Instruction line with more operands than should: ");
+	printf("	Instruction line with more operands than should: \n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "MOFO:mov/1/0/1 A,r1, x5");
+	strcpy(stResult.szContent, "MOFO:mov/1/0/1 A,r1, x5\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
@@ -349,21 +349,29 @@ int test_get_statement()
 	/**********************************************/
 	printf("	Instruction line with weird spacing: ");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "MOFO:      mov/1/0/1 		A,		r1	");
+	strcpy(stResult.szContent, "MOFO:      mov/1/0/1 		A,		r1	\n");
 	assert(0 == parser_get_statement(&stResult));
 	assert(STATEMENT_TYPE_INSTRUCTION == stResult.type);
 	assert(MOV == stResult.info.instruction.name);
 	assert(&stResult.szContent[15] == stResult.info.instruction.modifiers);
 	assert(&stResult.szContent[21] == stResult.szOperationData);
-	assert(9 == strlen(stResult.szOperationData));
+	assert(10 == strlen(stResult.szOperationData));
 	assert(stResult.szContent == stResult.szLabel);
 	printf("PASSED.\n");
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Instruction line illegal opcode:");
+	printf("	Instruction line illegal opcode:\n");
 	memset(&stResult, 0, sizeof(stResult));
-	strcpy(stResult.szContent, "MOFO:m00f/1/0/1 A,r1");
+	strcpy(stResult.szContent, "MOFO:m00f/1/0/1 A,r1\n");
+	assert(0 != parser_get_statement(&stResult));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	printf("	Line too long: ");
+	memset(&stResult, 0, sizeof(stResult));
+	strcpy(stResult.szContent, "01234567890123456789012345678901234567890123456789012345678901234567890123456789\n");
 	assert(0 != parser_get_statement(&stResult));
 	printf("PASSED.\n");
 	/**********************************************/

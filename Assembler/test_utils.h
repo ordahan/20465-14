@@ -10,11 +10,14 @@
 
 #include "symbol.h"
 #include "assembler.h"
+#include "statement.h"
 
 int compare_files(const char* szFile1 , const char* szFile2);
 
 int compare_memory_sections(const memory_section_t* pMem1,
 							const memory_section_t* pMem2);
+
+const statement_t* get_statement(const char* line);
 
 
 #endif /* TEST_UTILS_H_ */

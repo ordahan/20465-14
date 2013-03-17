@@ -9,10 +9,14 @@
 #include <assert.h>
 #include <memory.h>
 
+#include "test_utils.h"
+
 extern int main(int argc, char** argv);
 
 int test_main()
 {
+	char* args[] = {"Assembler", "tests/ps"};
+
 	/* todo:
 	 * example from book
 	 * without externs
@@ -25,7 +29,7 @@ int test_main()
 
 
 	printf("	example from book: ");
-
+	assert(0 == main(sizeof(args) / sizeof(args[0]), args));
 	printf("PASSED.\n");
 	/**********************************************/
 

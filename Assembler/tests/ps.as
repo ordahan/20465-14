@@ -12,7 +12,8 @@ LASTCHAR: .data 0
 LEN: .data 0
 K: .data 0
 
-; count length of string, print the original string, reverse string, print reversed string.
+; count length of string, print the original string, 
+; reverse string, print reversed string.
 MAIN: lea/0 STR{LEN}, STRADD
 jsr/0 COUNT
 jsr/0 PRTSTR

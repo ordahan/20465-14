@@ -63,7 +63,8 @@ int assembler_compile(FILE* flProgram,
 	static statement_t arrProgramStatements[MAX_STATEMENTS_IN_PROGRAM];
 	size_t	nNumOfStatements = 0;
 
-	if (o_arrSymbols == NULL ||
+	if (flProgram == NULL ||
+		o_arrSymbols == NULL ||
 		o_pCode == NULL ||
 		o_pData == NULL)
 		return -1;
@@ -112,7 +113,8 @@ int first_pass(FILE* flProgram,
 			   memory_section_t *o_pCode)
 {
 	size_t nCurrLine = 0;
-	int nErrorCode = 0;
+	int nCurrStatementError = 0;
+	int nHasErrors = 0;
 	statement_t* pCurrStatement = &o_arrStatements[nCurrLine];
 	symbol_t symbCurrLabel;
 
@@ -134,6 +136,9 @@ int first_pass(FILE* flProgram,
 		/* Count the line as read */
 		nCurrLine++;
 
+		/* Reset error indicator */
+		nCurrStatementError = 0;
+
 		/* Parse the statement from the line */
 		if (parser_get_statement(pCurrStatement) != 0)
 		{
@@ -142,7 +147,7 @@ int first_pass(FILE* flProgram,
 			 * make sure to notify this is not a valid program
 			 * that should not be compiled into an .obj
 			 */
-			nErrorCode = -1;
+			nCurrStatementError = -1;
 		}
 
 		/* Set the label as non-valid */
@@ -167,14 +172,14 @@ int first_pass(FILE* flProgram,
 					if (directive_compile_dummy_instruction(pCurrStatement,
 															o_pData,
 															o_arrSymbols) != 0)
-						nErrorCode = -1;
+						nCurrStatementError = -1;
 					break;
 				}
 				case (DIRECTIVE_EXTERN):
 				{
 					if (directive_compile_extern(pCurrStatement,
 												 o_arrSymbols) != 0)
-						nErrorCode = -1;
+						nCurrStatementError = -1;
 					break;
 				}
 				/* Ignore for now, 2nd pass will handle it */
@@ -192,7 +197,7 @@ int first_pass(FILE* flProgram,
 			/* Check that the instruction is legal */
 			if (nSize < 0)
 			{
-				nErrorCode = -3;
+				nCurrStatementError = -3;
 			}
 
 			/* Reserve it a number of cells */
@@ -204,7 +209,7 @@ int first_pass(FILE* flProgram,
 				/* Make sure there is room */
 				if (addrCurrent == MEMORY_ADDRESS_INVALID)
 				{
-					nErrorCode = -2;
+					nCurrStatementError = -2;
 					break;
 				}
 
@@ -224,7 +229,8 @@ int first_pass(FILE* flProgram,
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{
-			/*todo: Handle error */
+			printf("Syntax error: %s", pCurrStatement->szContent);
+			nCurrStatementError = -1;
 		}
 
 		/* Add the label if exists */
@@ -245,6 +251,14 @@ int first_pass(FILE* flProgram,
 			}
 		}
 
+		/* Provide extra info in case of an error */
+		if (nCurrStatementError != 0)
+		{
+			nHasErrors = 1;
+			printf(" line(%d)\n", nCurrLine);
+		}
+
+
 		/* Set the curr statement ptr to the next one
 		 * on the list.
 		 */
@@ -253,7 +267,7 @@ int first_pass(FILE* flProgram,
 
 	*o_pNumStatements = nCurrLine;
 
-	return nErrorCode;
+	return nHasErrors;
 }
 
 int second_pass(const statement_t *arrStatements,

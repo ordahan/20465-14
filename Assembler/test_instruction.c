@@ -23,27 +23,25 @@ int run_test_compile_instruction(const char		*line,
 								 symbol_table_arr_t symbols,
 								 char fShouldSucceed)
 {
-	statement_t statement;
+	const statement_t* pStatement;
 
-	/* Retrieve the line to compile */
-	strcpy(statement.szContent, line);
+	pStatement = get_statement(line);
 
-	/* Create a statement from the given line */
-	assert(0 == parser_get_statement(&statement));
+	assert(NULL != pStatement);
 
 	/* Shallow parse the statement */
-	instruction_shallow_parse(&statement); /* fixme: maybe error value? */
+	instruction_shallow_parse(pStatement); /* fixme: maybe error value? */
 
 	/* Check that the compilation returns as expected */
-	assert(!((0 == instruction_compile(&statement, code, symbols)) ^
+	assert(!((0 == instruction_compile(pStatement, code, symbols)) ^
 			 fShouldSucceed));
 
 	if (fShouldSucceed == 1)
 	{
 		/* Check the label if exists */
-		if (statement.szLabel != NULL)
+		if (pStatement->szLabel != NULL)
 		{
-			assert(0 == strcmp(statement.szLabel, symbols[0].name));
+			assert(0 == strcmp(pStatement->szLabel, symbols[0].name));
 			assert(section_get_size(code) == symbols[0].address);
 			assert(ADDR_ABSOLUTE == symbols[0].locality);
 		}
