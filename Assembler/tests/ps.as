@@ -14,6 +14,8 @@ K: .data 0
 
 ; count length of string, print the original string, 
 ; reverse string, print reversed string.
+; comments are trimmed to 80 chars as i decided
+; this is a reasonable length for readbility of code
 MAIN: lea/0 STR{LEN}, STRADD
 jsr/0 COUNT
 jsr/0 PRTSTR
