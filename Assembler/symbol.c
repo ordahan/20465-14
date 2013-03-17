@@ -21,7 +21,7 @@
  */
 int find_symbol_index_by_name(const symbol_table_arr_t table,
 							  const char* szName);
-
+/* Implementation */
 int symbol_add_to_table(symbol_table_arr_t table,
 						address_locality_t 	locality,
 						const char* szName,
