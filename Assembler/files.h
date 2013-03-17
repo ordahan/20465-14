@@ -21,7 +21,9 @@
 #define FILE_OBJECT_EXT "ob"
 #define FILE_ENTIRES_EXT "ent"
 #define FILE_EXTERNALS_EXT "ext"
-#define FILE_NAME_MAX_LENGTH (255)
+#define FILE_NAME_MAX_LENGTH (252)
+#define FILE_NAME_MAX_EXT_LENGTH (3)
+#define FILE_NAME_SEPARATOR_LENGTH (1)
 
 /* API */
 /**
@@ -33,31 +35,38 @@ FILE* file_open_input(const char *szFileName);
 
 /**
  * Creates an object file from the given sections.
+ * If the file szFileName + ".ob" exists, overrides it.
+ * @param szFileName Filename without extension
  * @param pCode Code section of the file.
  * @param pData Data section of the file.
  * @param 0 on success, anything else on error.
  */
-int file_create_object(const code_section_t *pCode,
+int file_create_object(const char *szFileName,
+					   const code_section_t *pCode,
 		  	  	  	   const data_section_t *o_pData);
 
 /**
  * Creates an entry file from the given symbol table,
  * if there are any entries in it.
- *
+ * If the file szFileName + ".ob" exists, overrides it.
+ * @param szFileName Filename without extension
  * @param arrSymbols  Symbol table
  * @param 0 on success, anything else on error.
  */
-int file_create_entry(const symbol_table_arr_t arrSymbols);
+int file_create_entry(const char *szFileName,
+					  const symbol_table_arr_t arrSymbols);
 
 /**
  * Creates an externals file from the given symbol table
  * and code section, if there are any external symbols in it.
- *
+ * If the file szFileName + ".ob" exists, overrides it.
+ * @param szFileName Filename without extension
  * @param arrSymbols  Symbol table
  * @param pCode Code section that has references to externals.
  * @param 0 on success, anything else on error.
  */
-int file_create_externals(const symbol_table_arr_t arrSymbols,
+int file_create_externals(const char *szFileName,
+						  const symbol_table_arr_t arrSymbols,
 					  	  const code_section_t *pCode);
 
 #endif /* FILES_H_ */

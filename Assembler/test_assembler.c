@@ -19,7 +19,7 @@ int test_assembler_compile(const char* szTestFile,
 						   data_section_t *data_expected,
 						   int expected_result);
 
-void init_test_assembler_compile(symbol_table_arr_t symbol_expected,
+void init_program_data(symbol_table_arr_t symbol_expected,
 						   	   	 code_section_t *code_expected,
 						   	   	 data_section_t *data_expected);
 
@@ -35,7 +35,7 @@ int test_assembler()
 	printf("Testing assembler module:\n");
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -49,9 +49,9 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
-								&code_expected,
-								&data_expected);
+	init_program_data(symbols_expected,
+					  &code_expected,
+					  &data_expected);
 
 	printf("	File only with comments: ");
 	assert(0 == test_assembler_compile("tests/comments.as",
@@ -63,7 +63,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -81,7 +81,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -111,7 +111,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -125,7 +125,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -139,7 +139,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -153,7 +153,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -188,7 +188,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -202,7 +202,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -216,7 +216,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -269,7 +269,7 @@ int test_assembler()
 	/**********************************************/
 
 	/**********************************************/
-	init_test_assembler_compile(symbols_expected,
+	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
 
@@ -362,15 +362,6 @@ int test_assembler()
 }
 
 
-void init_test_assembler_compile(symbol_table_arr_t symbol_expected,
-						   	   	 code_section_t *code_expected,
-						   	   	 data_section_t *data_expected)
-{
-	memset(symbol_expected, 0, sizeof(symbol_expected));
-	memset(code_expected, 0, sizeof(*code_expected));
-	memset(data_expected, 0, sizeof(*data_expected));
-}
-
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t symbol_expected,
 						   code_section_t *code_expected,
@@ -382,7 +373,7 @@ int test_assembler_compile(const char* szTestFile,
 	static data_section_t data;
 	int compile_res = 0;
 
-	init_test_assembler_compile(symbols, &code, &data);
+	init_program_data(symbols, &code, &data);
 
 	/* Open the test file */
 	FILE* fd = fopen(szTestFile, "r");

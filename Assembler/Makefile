@@ -1,3 +1,4 @@
+
 # Or Dahan 201644929
 
 CC=gcc
@@ -21,7 +22,7 @@ clean:
 # This is done only for my own testing,
 # should not be executed
 TEST_EXECUTALBE=test_$(EXECUTABLE).out
-TEST_SOURCES=test_main.c test_assembler.c test_parser.c test_directive.c test_instruction.c test_files.c
+TEST_SOURCES=test_main.c test_assembler.c test_parser.c test_directive.c test_instruction.c test_files.c test_utils.c
 TEST_OBJECTS=$(TEST_SOURCES:.c=.o)
 
 test: $(TEST_SOURCES) $(SOURCES) $(TEST_EXECUTALBE)
