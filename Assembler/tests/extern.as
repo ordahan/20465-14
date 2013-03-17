@@ -1,1 +1,1 @@
-.extern 	ThisIsMySymbol!
+ThisIsMySymbol!:.extern 	ThisIsMySymbol!

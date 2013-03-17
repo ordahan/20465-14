@@ -496,7 +496,6 @@ instruction_type_t parser_get_instruction_type(const char* szModifiers)
 	}
 }
 
-/* fixme: magic numbers */
 instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 {
 	unsigned long comb1, comb2;
@@ -794,7 +793,6 @@ unsigned int parser_get_num_items_in_list(char* szList)
 	return nDelimitersFound + 1;
 }
 
-/* fixme: all the number retrievals change to this func */
 unsigned char parser_get_number(const char* szNumber, int *o_pNum)
 {
 	char * pEnd;
