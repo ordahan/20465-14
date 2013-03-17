@@ -922,7 +922,7 @@ char* parser_int_to_string_base_4(int num, unsigned int numMinDigitsToFormat)
 
 	/* Reset the result */
 	memset(szResult, '0', sizeof(szResult));
-	szResult[numMaxDigitsAvailable + 1] = NULL_TERMINATOR;
+	szResult[numMaxDigitsAvailable] = NULL_TERMINATOR;
 
 	/* Each round, the remainder from division by base
 	 * is the digit we need, starting with the least
@@ -934,7 +934,7 @@ char* parser_int_to_string_base_4(int num, unsigned int numMinDigitsToFormat)
 		/* Place the current digit in the least signifcant
 		 * place + num of chars written so far
 		 */
-		szResult[numMaxDigitsAvailable - numWritten] = '0' + curNum % base;
+		szResult[numMaxDigitsAvailable - numWritten - 1] = '0' + curNum % base;
 
 		/* Continue to the next division */
 		numWritten++;
@@ -951,10 +951,25 @@ char* parser_int_to_string_base_4(int num, unsigned int numMinDigitsToFormat)
 	}
 	else if (numMinDigitsToFormat < numWritten)
 	{
-		return &szResult[numMaxDigitsAvailable - numWritten + 1];
+		return &szResult[numMaxDigitsAvailable - numWritten];
 	}
 	else
 	{
 		return &szResult[numMaxDigitsAvailable - numMinDigitsToFormat];
+	}
+}
+
+char parser_get_locality_letter(address_locality_t locality)
+{
+	switch (locality)
+	{
+	case (ADDR_ABSOLUTE):
+			return 'a';
+	case (ADDR_EXTERNAL):
+			return 'e';
+	case (ADDR_RELOCATABLE):
+			return 'r';
+	default:
+			return '0';
 	}
 }

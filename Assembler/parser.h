@@ -171,6 +171,10 @@ int parser_get_consecutive_strings(const char* pStart,
  * @return String representing the given number extended by the amount
  * requested.
  */
+/* fixme: doc static */
 char* parser_int_to_string_base_4(int num, unsigned int numToExtend);
+
+/* fixme: doc this */
+char parser_get_locality_letter(address_locality_t locality);
 
 #endif /* PARSER_H_ */

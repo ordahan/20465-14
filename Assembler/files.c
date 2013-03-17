@@ -35,9 +35,78 @@ FILE* file_open_input(const char *szFileName)
 
 int file_create_object(const char *szFileName,
 					   const code_section_t *pCode,
-		  	  	  	   const data_section_t *o_pData)
+		  	  	  	   const data_section_t *pData)
 {
-	return -1;
+	const char* szHeader = "Base 4 Address	Base 4 machine code	Absolute, relocatable or external";
+	FILE* fObjectFile = NULL;
+	unsigned int i;
+
+	if (szFileName == NULL ||
+		pCode == NULL ||
+		pData == NULL)
+		return -1;
+
+	/* Open the object file for writing */
+	fObjectFile = open_file_with_ext(szFileName,
+									 FILE_OBJECT_EXT,
+									 "w");
+	if (fObjectFile == NULL)
+		return -1;
+
+	/* Print the header */
+	fprintf(fObjectFile, "%s\n", szHeader);
+
+	/* Print the sizes of sections */
+	fprintf(fObjectFile,
+			"%s ",
+			parser_int_to_string_base_4(pCode->IC, 0));
+	fprintf(fObjectFile,
+			"%s\n",
+			parser_int_to_string_base_4(pData->DC, 0));
+
+	/* Go over the code section and print it */
+	for (i = 0; i < pCode->IC; ++i)
+	{
+		fprintf(fObjectFile,
+				"%s\t",
+				parser_int_to_string_base_4(i, 0));
+
+		/* Put 0 instead of externals for the sake of consistency */
+		if (pCode->localities[i] == ADDR_EXTERNAL)
+		{
+			fprintf(fObjectFile,
+					"%s\t",
+					parser_int_to_string_base_4(0,
+												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
+		}
+		else
+		{
+			fprintf(fObjectFile,
+					"%s\t",
+					parser_int_to_string_base_4(pCode->content[i].val,
+												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
+		}
+
+		fprintf(fObjectFile,
+				"%c\n",
+				parser_get_locality_letter(pCode->localities[i]));
+	}
+
+	/* Go over the data section and print it */
+	for (i = 0; i < pData->DC; ++i)
+	{
+		fprintf(fObjectFile,
+				"%s\t",
+				parser_int_to_string_base_4(pCode->IC + i, 0));
+		fprintf(fObjectFile,
+				"%s\n",
+				parser_int_to_string_base_4(pData->content[i].val,
+											MACHINE_CELL_NUM_BASE_4_CHARACTERS));
+	}
+
+	fclose(fObjectFile);
+
+	return 0;
 }
 
 int file_create_entry(const char *szFileName,

@@ -28,7 +28,7 @@ int test_files()
 	 * #no entry symbols
 	 * #valid entries
 	 * #no externals
-	 * valid externals
+	 * #valid externals
 	 * object file
 	 */
 
@@ -129,6 +129,34 @@ int test_files()
 	code.localities[3] = ADDR_EXTERNAL;
 	code.localities[4] = ADDR_EXTERNAL;
 	assert(0 == file_create_externals(szFileName, symbols, &code));
+	assert(0 == compare_files(szFileExpected, szFileExpectedName));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_program_data(symbols,
+					  &code,
+					  &data);
+
+	printf("	valid externals: ");
+	szFileName = "tests/valid_object";
+	szFileExpectedName = "tests/valid_object.ob";
+	szFileExpected = "expecteds/valid_object.ob";
+
+	code.IC = 4;
+	code.content[0].val = 3;
+	code.content[1].val = 3;
+	code.content[2].val = 3;
+	code.content[3].val = 7;
+	code.localities[0] = ADDR_ABSOLUTE;
+	code.localities[1] = ADDR_RELOCATABLE;
+	code.localities[2] = ADDR_EXTERNAL;
+	code.localities[3] = ADDR_ABSOLUTE;
+
+	data.DC = 1;
+	data.content[0].val = 5;
+
+	assert(0 == file_create_object(szFileName, &code, &data));
 	assert(0 == compare_files(szFileExpected, szFileExpectedName));
 	printf("PASSED.\n");
 	/**********************************************/
