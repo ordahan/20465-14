@@ -20,7 +20,7 @@ int test_files()
 	const char* szFileExpectedName;
 	symbol_table_arr_t symbols;
 	memory_section_t code;
-	data_section_t data;
+	memory_section_t data;
 
 	/* todo: tests for files
 	 * #no input file
@@ -141,8 +141,7 @@ int test_files()
 	section_write(&code, 3, ADDR_EXTERNAL);
 	section_write(&code, 7, ADDR_ABSOLUTE);
 
-	data.DC = 1;
-	data.content[0].val = 5;
+	section_write(&data, 5, ADDR_ABSOLUTE);
 
 	assert(0 == file_create_object(szFileName, &code, &data));
 	assert(0 == compare_files(szFileExpected, szFileExpectedName));

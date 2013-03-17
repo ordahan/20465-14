@@ -30,6 +30,6 @@
 int assembler_compile(FILE* pAssemblyFile,
 					  symbol_table_arr_t o_arrSymbols,
 					  memory_section_t *o_pCode,
-					  data_section_t *o_pData);
+					  memory_section_t *o_pData);
 
 #endif /* ASSEMBLER_H_ */

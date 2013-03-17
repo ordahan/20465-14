@@ -57,7 +57,7 @@ int compare_files(const char* szFile1 , const char* szFile2)
 
 void init_program_data(symbol_table_arr_t symbol_expected,
 					   memory_section_t *pMem1,
-					   data_section_t *data_expected)
+					   memory_section_t *data_expected)
 {
 	memset(symbol_expected, 0, sizeof(symbol_table_arr_t));
 	memset(pMem1, 0, sizeof(*pMem1));

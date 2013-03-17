@@ -22,7 +22,7 @@
  * @param nFields Number of fields on the list.
  * @return 0 if everything is ok, any other number otherwise.
  */
-int retrieve_data_fields(data_section_t* io_pData,
+int retrieve_data_fields(memory_section_t* io_pData,
 					  	 char** arrFields,
 					  	 unsigned int nFields);
 
@@ -33,7 +33,7 @@ int retrieve_data_fields(data_section_t* io_pData,
  * @return 0 if ok, anything else otherwise to signal error.
  */
 int compile_data(const statement_t *pDataDirective,
-				 data_section_t* io_pData);
+				 memory_section_t* io_pData);
 
 /**
  * Compiles the given string directive directly into the data section given.
@@ -42,11 +42,11 @@ int compile_data(const statement_t *pDataDirective,
  * @return 0 if ok, anything else otherwise to signal error.
  */
 int compile_string(const statement_t *pStringDirective,
-				   data_section_t* io_pData);
+				   memory_section_t* io_pData);
 
 /* Implementations */
 int directive_compile_dummy_instruction(const statement_t *pDummyInst,
-									    data_section_t* io_pData,
+									    memory_section_t* io_pData,
 									    symbol_table_arr_t io_pSymbols)
 {
 	if (pDummyInst == NULL ||
@@ -63,7 +63,7 @@ int directive_compile_dummy_instruction(const statement_t *pDummyInst,
 		if (symbol_add_to_table(io_pSymbols,
 							    ADDR_RELOCATABLE,
 							    pDummyInst->szLabel,
-							    io_pData->DC,
+							    section_get_size(io_pData),
 							    ADDR_SECTION_DATA) != 0)
 		{
 			return -1;
@@ -128,7 +128,7 @@ int directive_compile_entry(const statement_t *pEntry,
 	return symbol_set_as_entry(io_pSymbols, pName);
 }
 
-int retrieve_data_fields(data_section_t* io_pData,
+int retrieve_data_fields(memory_section_t* io_pData,
 					  	 char** arrFields,
 					  	 unsigned int nFields)
 {
@@ -137,30 +137,28 @@ int retrieve_data_fields(data_section_t* io_pData,
 	/* Go over the list and retrieve the numbers from it */
 	for (i = 0; i < nFields; ++i)
 	{
-		/* fixme: add this test to instructions as well */
-		/* Make sure we don't have too much data already */
-		if (io_pData->DC >=  ASSEMBLER_DATA_MAX_SIZE_CELLS)
-		{
-			return -2;
-		}
-
+		int val;
 		if (0 == parser_get_number(arrFields[i],
-						  	  	   &io_pData->content[io_pData->DC].val))
+						  	  	   &val))
 		{
 			/* Error retrieving fields */
 			return -1;
 		}
-		/* Count the number retrieved */
-		io_pData->DC++;
+
+		/* Write the data to the section */
+		if (section_write(io_pData, val, ADDR_ABSOLUTE) == MEMORY_ADDRESS_INVALID)
+		{
+			return -1;
+		}
 	}
 
 	return 0;
 }
 
 int compile_data(const statement_t *pDataDirective,
-				 data_section_t* io_pData)
+				 memory_section_t* io_pData)
 {
-	char *arrDataFields[ASSEMBLER_DATA_MAX_SIZE_CELLS];
+	char *arrDataFields[SECTION_MAX_SIZE];
 	unsigned int nNumDataFields = 0;
 
 	/* Get the number of expected data fields */
@@ -187,42 +185,38 @@ int compile_data(const statement_t *pDataDirective,
 }
 
 int compile_string(const statement_t *pStringDirective,
-				   data_section_t* io_pData)
+				   memory_section_t* io_pData)
 {
 	const char *pStart;
 	const char *pEnd;
+	char curr;
 
 	/* Get the string represented in the directive */
 	if (parser_get_string(pStringDirective->szOperationData,
-					  &pStart,
-					  &pEnd) != 0)
+					      &pStart,
+					      &pEnd) != 0)
 	{
 		return -1;
 	}
 
-	/* Place all of its chars in the data section */
+	/* Place its chars one by one in the data section */
 	while (pStart <= pEnd)
 	{
-		/* No more room for data */
-		/* fixme: make the code / data section more
-		 * abstract by giving them a correct API
-		 */
-		if (io_pData->DC >= ASSEMBLER_DATA_MAX_SIZE_CELLS)
-		{
-			return -1;
-		}
-
-		/* Add the null-terminator */
+		/* Last char written, add the null-terminator */
 		if (pStart == pEnd)
 		{
-			io_pData->content[io_pData->DC].val = '\0';
+			curr = '\0';
 		}
 		else
 		{
-			io_pData->content[io_pData->DC].val = *pStart;
+			curr = *pStart;
 		}
 
-		io_pData->DC++;
+		if (section_write(io_pData, curr, ADDR_ABSOLUTE) == MEMORY_ADDRESS_INVALID)
+		{
+			return -2;
+		}
+
 		pStart++;
 	}
 

@@ -9,6 +9,7 @@
 #include "section.h"
 #include <stdlib.h>
 
+/* fixme: check return code in instruction */
 memory_address_t section_write(memory_section_t* pSection,
 							   unsigned int nValue,
 				   	   	   	   address_locality_t locAddress)

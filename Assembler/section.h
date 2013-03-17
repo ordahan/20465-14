@@ -15,25 +15,16 @@
  * can a program weigh more?
  */
 #define SECTION_MAX_SIZE 2000
-#define ASSEMBLER_CODE_MAX_SIZE_CELLS SECTION_MAX_SIZE
-#define ASSEMBLER_DATA_MAX_SIZE_CELLS SECTION_MAX_SIZE
 
 /* todo: Add tests for the lengths of the given sections */
-/* todo: API for code / data sections */
 
 /* Typedefs */
 typedef struct
 {
-	machine_cell_t content[ASSEMBLER_DATA_MAX_SIZE_CELLS];
-	unsigned	   DC;
-}data_section_t;
-
-typedef struct
-{
 	memory_address_t   base_offset;
 	unsigned int 	   counter_a;
-	machine_cell_t 	   content_a[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-	address_locality_t localities_a[ASSEMBLER_CODE_MAX_SIZE_CELLS];
+	machine_cell_t 	   content_a[SECTION_MAX_SIZE];
+	address_locality_t localities_a[SECTION_MAX_SIZE];
 }memory_section_t;
 
 memory_address_t section_write(memory_section_t* pSection,

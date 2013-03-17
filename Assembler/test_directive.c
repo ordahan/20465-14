@@ -14,6 +14,7 @@
 #include "directive.h"
 #include "parser.h"
 #include "assembler.h"
+#include "test_utils.h"
 
 int test_compile_dummy_instruction();
 int test_compile_extern();
@@ -21,7 +22,7 @@ int test_compile_entry();
 
 void init_object_blocks(symbol_table_arr_t *symbol_expected,
 					memory_section_t *code_expected,
-					data_section_t *data_expected)
+					memory_section_t *data_expected)
 {
 	if (symbol_expected != NULL)
 		memset(*symbol_expected, 0, sizeof(*symbol_expected));
@@ -41,11 +42,10 @@ int test_directive()
 }
 
 int test_dummy_instruction_compile(const char		*line,
-						   data_section_t *data,
-						   const data_section_t *expected,
+						   memory_section_t *data,
+						   const memory_section_t *expected,
 						   char fShouldSucceed)
 {
-	unsigned i;
 	statement_t statement;
 	symbol_table_arr_t symbols;
 
@@ -64,9 +64,6 @@ int test_dummy_instruction_compile(const char		*line,
 	if (fShouldSucceed != 0)
 
 	{
-		/* Check the IC */
-		assert(expected->DC == data->DC);
-
 		/* Check the label if exists */
 		if (statement.szLabel != NULL)
 		{
@@ -79,16 +76,15 @@ int test_dummy_instruction_compile(const char		*line,
 			}
 
 			assert(0 == strcmp(statement.szLabel, pSymb->name));
-			assert(data->DC - 1 == pSymb->address);
+			assert(section_get_size(data) - 1 == pSymb->address);
 			assert(ADDR_RELOCATABLE == pSymb->locality);
 		}
 
-		/* Check the data generated */
-		for (i = 0; i < expected->DC; ++i)
+		/* Check the data section */
+		if (compare_memory_sections(expected, data) != 0)
 		{
-			assert(0 == memcmp(&expected->content[i],
-							   &data->content[i],
-							   sizeof(expected->content[0])));
+			printf("Data sections don't match.\n");
+			return -1;
 		}
 	}
 
@@ -116,7 +112,7 @@ int test_compile_dummy_instruction()
 	 * #string too long (null-terminator out of bounds, more than 1 out of bounds)
 	 * #another field before/after the string
 	 */
-	data_section_t     data, data_expected;
+	memory_section_t     data, data_expected;
 
 	printf("Testing compiling dummy directives:\n");
 
@@ -124,8 +120,7 @@ int test_compile_dummy_instruction()
 	printf("	one data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 1;
-	data_expected.content[0].val = 13;
+	section_write(&data_expected, 13, ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".data 13",
 											   &data,
 											   &data_expected,
@@ -136,9 +131,8 @@ int test_compile_dummy_instruction()
 	printf("	two data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 2;
-	data_expected.content[0].val = 13;
-	data_expected.content[1].val = -3;
+	section_write(&data_expected, 13, ADDR_ABSOLUTE);
+	section_write(&data_expected, -3, ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".data 13, -3",
 											   &data,
 											   &data_expected,
@@ -149,12 +143,11 @@ int test_compile_dummy_instruction()
 	printf("	N data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 5;
-	data_expected.content[0].val = 13;
-	data_expected.content[1].val = 0;
-	data_expected.content[2].val = -4;
-	data_expected.content[3].val = 100000;
-	data_expected.content[4].val = -1000000;
+	section_write(&data_expected, 13, ADDR_ABSOLUTE);
+	section_write(&data_expected, 0, ADDR_ABSOLUTE);
+	section_write(&data_expected, -4, ADDR_ABSOLUTE);
+	section_write(&data_expected, 100000, ADDR_ABSOLUTE);
+	section_write(&data_expected, -1000000, ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".data 13, 0, -4, 100000, -1000000",
 											   &data,
 											   &data_expected,
@@ -175,7 +168,7 @@ int test_compile_dummy_instruction()
 	printf("	too much data (no more room): \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
+	data.counter_a = SECTION_MAX_SIZE;
 	assert(0 == test_dummy_instruction_compile(".data 13",
 											   &data,
 											   &data_expected,
@@ -258,8 +251,8 @@ int test_compile_dummy_instruction()
 	printf("	label for data: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 1;
-	data_expected.content[0].val = 13;
+
+	section_write(&data_expected, 13, ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile("X:.data 13",
 											   &data,
 											   &data_expected,
@@ -270,14 +263,12 @@ int test_compile_dummy_instruction()
 	printf("	multiple data parts: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 1;
-	data_expected.content[0].val = 13;
+	section_write(&data_expected, 13, ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".data 13",
 											   &data,
 											   &data_expected,
 											   1));
-	data_expected.DC = 2;
-	data_expected.content[1].val = 29;
+	section_write(&data_expected, 29, ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".data 29",
 											   &data,
 											   &data_expected,
@@ -288,8 +279,8 @@ int test_compile_dummy_instruction()
 	printf("	no chars in string: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 1;
-	data_expected.content[0].val = '\0';
+
+	section_write(&data_expected, '\0', ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".string \"\"",
 											   &data,
 											   &data_expected,
@@ -300,9 +291,9 @@ int test_compile_dummy_instruction()
 	printf("	one char string: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 2;
-	data_expected.content[0].val = 'x';
-	data_expected.content[1].val = '\0';
+
+	section_write(&data_expected, 'x', ADDR_ABSOLUTE);
+	section_write(&data_expected, '\0', ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".string \"x\"",
 											   &data,
 											   &data_expected,
@@ -313,12 +304,12 @@ int test_compile_dummy_instruction()
 	printf("	N chars string: \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data_expected.DC = 5;
-	data_expected.content[0].val = '1';
-	data_expected.content[1].val = '2';
-	data_expected.content[2].val = '3';
-	data_expected.content[3].val = '4';
-	data_expected.content[4].val = '\0';
+
+	section_write(&data_expected, '1', ADDR_ABSOLUTE);
+	section_write(&data_expected, '2', ADDR_ABSOLUTE);
+	section_write(&data_expected, '3', ADDR_ABSOLUTE);
+	section_write(&data_expected, '4', ADDR_ABSOLUTE);
+	section_write(&data_expected, '\0', ADDR_ABSOLUTE);
 	assert(0 == test_dummy_instruction_compile(".string \"1234\"",
 											   &data,
 											   &data_expected,
@@ -386,25 +377,25 @@ int test_compile_dummy_instruction()
 	printf("	string too long (null-terminator out of bounds, more than 1 out of bounds): \n");
 	init_object_blocks(NULL, NULL, &data_expected);
 	init_object_blocks(NULL, NULL, &data);
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
+	data.counter_a = SECTION_MAX_SIZE;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-1;
+	data.counter_a = SECTION_MAX_SIZE-1;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"a\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS;
+	data.counter_a = SECTION_MAX_SIZE;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"a\"",
 											   &data,
 											   &data_expected,
 											   0));
-	data.DC = ASSEMBLER_DATA_MAX_SIZE_CELLS-2;
+	data.counter_a = SECTION_MAX_SIZE-2;
 	printf("\t\t");
 	assert(0 == test_dummy_instruction_compile(".string \"abc\"",
 											   &data,

@@ -36,7 +36,7 @@ int first_pass(FILE* flProgram,
 			   size_t nMaxNumOfStatements,
 			   size_t *o_pNumStatements,
 			   symbol_table_arr_t o_arrSymbols,
-			   data_section_t *o_pData,
+			   memory_section_t *o_pData,
 			   memory_section_t *o_pCode);
 
 /**
@@ -57,7 +57,7 @@ int second_pass(const statement_t *arrStatements,
 int assembler_compile(FILE* flProgram,
 					  symbol_table_arr_t o_arrSymbols,
 					  memory_section_t *o_pCode,
-					  data_section_t *o_pData)
+					  memory_section_t *o_pData)
 {
 	/* fixme: Should this be placed elsewhere? */
 	static statement_t arrProgramStatements[MAX_STATEMENTS_IN_PROGRAM];
@@ -101,7 +101,7 @@ int first_pass(FILE* flProgram,
 			   size_t nMaxNumOfStatements,
 			   size_t *o_pNumStatements,
 			   symbol_table_arr_t o_arrSymbols,
-			   data_section_t *o_pData,
+			   memory_section_t *o_pData,
 			   memory_section_t *o_pCode)
 {
 	size_t nCurrLine = 0;
@@ -119,7 +119,7 @@ int first_pass(FILE* flProgram,
 
 	/* Start the counters */
 	o_pCode->counter_a = 0;
-	o_pData->DC = 0;
+	o_pData->counter_a = 0;
 
 	/* Read each line from the input file */
 	while (fgets(pCurrStatement->szContent,

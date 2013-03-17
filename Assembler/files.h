@@ -46,7 +46,7 @@ FILE* file_open_input(const char *szFileName);
  */
 int file_create_object(const char *szFileName,
 					   const memory_section_t *pCode,
-		  	  	  	   const data_section_t *o_pData);
+		  	  	  	   const memory_section_t *o_pData);
 
 /**
  * Creates an entry file from the given symbol table,

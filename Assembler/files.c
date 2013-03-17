@@ -35,7 +35,7 @@ FILE* file_open_input(const char *szFileName)
 
 int file_create_object(const char *szFileName,
 					   const memory_section_t *pCode,
-		  	  	  	   const data_section_t *pData)
+		  	  	  	   const memory_section_t *pData)
 {
 	const char* szHeader = "Base 4 Address	Base 4 machine code	Absolute, relocatable or external";
 	FILE* fObjectFile = NULL;
@@ -62,7 +62,7 @@ int file_create_object(const char *szFileName,
 			parser_int_to_string_base_4(section_get_size(pCode), 0));
 	fprintf(fObjectFile,
 			"%s\n",
-			parser_int_to_string_base_4(pData->DC, 0));
+			parser_int_to_string_base_4(section_get_size(pData), 0));
 
 	/* Go over the code section and print it */
 	for (i = 0; i < section_get_size(pCode); ++i)
@@ -93,14 +93,14 @@ int file_create_object(const char *szFileName,
 	}
 
 	/* Go over the data section and print it */
-	for (i = 0; i < pData->DC; ++i)
+	for (i = 0; i < section_get_size(pData); ++i)
 	{
 		fprintf(fObjectFile,
 				"%s\t",
 				parser_int_to_string_base_4(section_get_size(pCode) + i, 0));
 		fprintf(fObjectFile,
 				"%s\n",
-				parser_int_to_string_base_4(pData->content[i].val,
+				parser_int_to_string_base_4(pData->content_a[i].val,
 											MACHINE_CELL_NUM_BASE_4_CHARACTERS));
 	}
 

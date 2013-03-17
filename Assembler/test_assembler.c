@@ -17,14 +17,14 @@
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t symbol_expected,
 						   memory_section_t *code_expected,
-						   data_section_t *data_expected,
+						   memory_section_t *data_expected,
 						   int expected_result);
 
 int test_assembler()
 {
 	static symbol_table_arr_t symbols_expected;
 	static memory_section_t code_expected;
-	static data_section_t data_expected;
+	static memory_section_t data_expected;
 
 	symbol_t *pSymbol = NULL;
 	instruction_t instruction;
@@ -170,18 +170,18 @@ int test_assembler()
 	pSymbol->address = 5;
 	strcpy(pSymbol->name, "rofl");
 
-	data_expected.DC = 11;
-	data_expected.content[0].val = -5;
-	data_expected.content[1].val = 1;
-	data_expected.content[2].val = 3;
-	data_expected.content[3].val = 14;
-	data_expected.content[4].val = 100;
-	data_expected.content[5].val = 'H';
-	data_expected.content[6].val = 'e';
-	data_expected.content[7].val = 'l';
-	data_expected.content[8].val = 'l';
-	data_expected.content[9].val = 'o';
-	data_expected.content[10].val = '\0';
+	section_write(&data_expected, -5, ADDR_ABSOLUTE);
+	section_write(&data_expected, 1, ADDR_ABSOLUTE);
+	section_write(&data_expected, 3, ADDR_ABSOLUTE);
+	section_write(&data_expected, 14, ADDR_ABSOLUTE);
+	section_write(&data_expected, 100, ADDR_ABSOLUTE);
+	section_write(&data_expected, 'H',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'e',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'l',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'l',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'o',  ADDR_ABSOLUTE);
+	section_write(&data_expected, '\0',  ADDR_ABSOLUTE);
+
 
 	printf("	.data and .string: ");
 	assert(0 == test_assembler_compile("tests/data_and_string.as",
@@ -251,18 +251,17 @@ int test_assembler()
 	pSymbol->address = 7;
 	strcpy(pSymbol->name, "rofl");
 
-	data_expected.DC = 11;
-	data_expected.content[0].val = -5;
-	data_expected.content[1].val = 1;
-	data_expected.content[2].val = 3;
-	data_expected.content[3].val = 14;
-	data_expected.content[4].val = 100;
-	data_expected.content[5].val = 'H';
-	data_expected.content[6].val = 'e';
-	data_expected.content[7].val = 'l';
-	data_expected.content[8].val = 'l';
-	data_expected.content[9].val = 'o';
-	data_expected.content[10].val = '\0';
+	section_write(&data_expected, -5, ADDR_ABSOLUTE);
+	section_write(&data_expected, 1, ADDR_ABSOLUTE);
+	section_write(&data_expected, 3, ADDR_ABSOLUTE);
+	section_write(&data_expected, 14, ADDR_ABSOLUTE);
+	section_write(&data_expected, 100, ADDR_ABSOLUTE);
+	section_write(&data_expected, 'H',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'e',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'l',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'l',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'o',  ADDR_ABSOLUTE);
+	section_write(&data_expected, '\0',  ADDR_ABSOLUTE);
 
 	printf("	instruction and data: ");
 	assert(0 == test_assembler_compile("tests/instruction_and_data.as",
@@ -330,12 +329,11 @@ int test_assembler()
 	section_write(&code_expected, 10, ADDR_RELOCATABLE);
 	section_write(&code_expected, 9, ADDR_RELOCATABLE); /* fixme: entry is relocatable? */
 
-	data_expected.DC = 5;
-	data_expected.content[0].val = -20;
-	data_expected.content[1].val = 'h';
-	data_expected.content[2].val = 'm';
-	data_expected.content[3].val = 'z';
-	data_expected.content[4].val = '\0';
+	section_write(&data_expected, -20, ADDR_ABSOLUTE);
+	section_write(&data_expected, 'h',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'm',  ADDR_ABSOLUTE);
+	section_write(&data_expected, 'z',  ADDR_ABSOLUTE);
+	section_write(&data_expected, '\0',  ADDR_ABSOLUTE);
 
 	printf("	instruction address resolution: \n");
 	assert(0 == test_assembler_compile("tests/instruction_address_resolution.as",
@@ -363,12 +361,12 @@ int test_assembler()
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t symbol_expected,
 						   memory_section_t *code_expected,
-						   data_section_t *data_expected,
+						   memory_section_t *data_expected,
 						   int expected_result)
 {
 	static symbol_table_arr_t symbols;
 	static memory_section_t code;
-	static data_section_t data;
+	static memory_section_t data;
 	int compile_res = 0;
 
 	init_program_data(symbols, &code, &data);
@@ -408,28 +406,16 @@ int test_assembler_compile(const char* szTestFile,
 
 	/* Check the code section */
 	if (compare_memory_sections(code_expected, &code) != 0)
-		return -1;
-
-	/* fixme: make this a function for test utils */
 	{
-		unsigned i;
+		printf("Code sections don't match.\n");
+		return -1;
+	}
 
-		if (data_expected->DC != data.DC)
-		{
-			printf("DC not as expected: [%d != %d]\n",
-					data_expected->DC,
-					data.DC);
-			return -1;
-		}
-
-		for (i = 0; i < data.DC; ++i)
-		{
-			if (data_expected->content[i].val != data.content[i].val)
-			{
-				printf("data in index %d doesn't match.\n", i);
-				return -2;
-			}
-		}
+	/* Check the data section */
+	if (compare_memory_sections(data_expected, &data) != 0)
+	{
+		printf("Data sections don't match.\n");
+		return -1;
 	}
 
 	/* Check the symbol table */

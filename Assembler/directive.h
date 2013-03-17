@@ -35,7 +35,7 @@ typedef enum
  * @return 0 on successful compilation, any other value on error.
  */
 int directive_compile_dummy_instruction(const statement_t *pDummyInst,
-									    data_section_t* io_pData,
+									    memory_section_t* io_pData,
 									    symbol_table_arr_t io_pSymbols);
 
 /**
