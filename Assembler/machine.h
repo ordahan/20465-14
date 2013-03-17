@@ -12,7 +12,7 @@
 
 typedef struct
 {
-	unsigned int val; /*fixme: 20 bit*/
+	unsigned int val:20;
 }machine_cell_t;
 
 #define MACHINE_CELL_NUM_BITS (20)

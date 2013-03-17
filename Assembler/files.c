@@ -27,7 +27,13 @@ FILE* open_file_with_ext(const char* szFileName,
 					 	 const char* szExt,
 					 	 const char* szMode);
 
-/* fixme */
+/**
+ * Prints the given memory section to the object file.
+ * @param pObjectFile File to print to
+ * @param pSection Memory section to print
+ * @param fPrintLocality Whether or not to print the locality letter.
+ * @return 0 if ok, anything else on error.
+ */
 int print_section_to_object(FILE* pObjectFile,
 							const memory_section_t* pSection,
 						    unsigned char fPrintLocality);

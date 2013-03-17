@@ -73,7 +73,6 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 					  char** arrOperands,
 					  unsigned int nOperands,
 					  const symbol_table_arr_t arrSymbols);
-/* fixme: const char**?*/
 
 /* Implementation */
 
@@ -286,7 +285,6 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 	/* Binary operation */
 	if (nOperands == 2)
 	{
-		/* fixme: is the first always src ? */
 		/* Get the source operand */
 		addresingSrc = parser_get_operand(arrOperands[0],
 							   	   	   	  pInstruction,

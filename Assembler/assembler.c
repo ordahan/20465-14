@@ -255,7 +255,7 @@ int first_pass(FILE* flProgram,
 		if (nCurrStatementError != 0)
 		{
 			nHasErrors = 1;
-			printf(" line(%d)\n", nCurrLine);
+			printf(" [line %d]\n", nCurrLine);
 		}
 
 

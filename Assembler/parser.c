@@ -28,9 +28,9 @@
 #define IMMEDIATE_PREFIX '#'
 #define INDEX_OFFSET_OPEN_DELIMITER "{"
 #define INDEX_OFFSET_CLOSE_DELIMITER "}"
-#define INDEX_OFFSET_DELIMITERS "{}" /*fixme: combine somehow */
 #define LIST_DELIMITER ','
 #define STRING_REP_DELIMITER '"'
+#define COMMENT ';'
 
 /* Internal functions declarations */
 /**
@@ -133,7 +133,7 @@ int parser_get_statement(statement_t* io_pLine)
 	io_pLine->type = STATEMENT_TYPE_ERROR;
 
 	/* Given line is a comment */
-	if (io_pLine->szContent[0] == ';') /*fixme: magic ...*/
+	if (io_pLine->szContent[0] == COMMENT)
 	{
 		io_pLine->type = STATEMENT_TYPE_COMMENT;
 		return 0;
@@ -244,7 +244,6 @@ int parser_get_statement(statement_t* io_pLine)
 	return -1;
 }
 
-/* fixme: make this more elegant - like instruction */
 directive_type_t parser_string_to_directive_type(const char* szDirective)
 {
 	if (szDirective == NULL)
@@ -313,7 +312,6 @@ machine_registers_t parser_string_to_register_type(const char* szRegister)
 	if (szRegister == NULL)
 		return ILLEGAL;
 
-	/* fixme: Is this case sensitive? */
 	/* Match to an instruction */
 	for (currRegister = (opcode_t)0;
 		 currRegister < REGISTER_INVALID;
@@ -328,10 +326,6 @@ machine_registers_t parser_string_to_register_type(const char* szRegister)
 	return REGISTER_INVALID;
 }
 
-/* fixme: belongs to symbol.h only? check validity only there...
- * even in index addressing etc we don't care.. address resolution
- * process will not be able to find the symbol anyway (because it wasn't
- * legal and didn't get into the symbol table) */
 int parser_check_symbol_syntax(const char* szSymbol)
 {
 	size_t nSymbolLength = 0;
@@ -559,7 +553,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction,
 										const symbol_table_arr_t arrSymbols)
 {
-	unsigned int val;
+	int val;
 	machine_registers_t reg = parser_string_to_register_type(szOperand);
 
 	/* Immediate value */
@@ -593,7 +587,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 	{
 		operand_addressing_t addressing = OPERAND_ADDR_DIRECT;
 		address_locality_t locality_for_index = ADDR_INVALID;
-		unsigned int index;
+		int index;
 
 		/* Split the index from the label, if there is any index */
 		char* pIndex = parser_get_index_from_label(szOperand);
@@ -617,7 +611,6 @@ operand_addressing_t parser_get_operand(char* szOperand,
 			szIndex = pIndex + 1;
 
 			/* Might be a number */
-			/* fixme: a negative index is possible? */
 			fIsNumber = (parser_get_number(szIndex, &index) == 1);
 
 			/* Might be a register */
@@ -703,7 +696,7 @@ unsigned int parser_shallow_parse_operand(char* szOperand)
 		/* Find out if the value is an index */
 		char* szIndexValue = parser_get_index_from_label(szOperand);
 
-		/* Does it have an index? */ /* fixme: bug! index won't always return 2 */
+		/* Does it have an index? */
 		if (szIndexValue != szOperand &&
 			szIndexValue != NULL)
 		{
@@ -735,7 +728,6 @@ unsigned int parser_shallow_parse_operand(char* szOperand)
 	return size;
 }
 
-/* fixme: test me!!! */
 char* parser_get_index_from_label(char* szLabel)
 {
 	char* szStartingDelim = strstr(szLabel, INDEX_OFFSET_OPEN_DELIMITER);
@@ -811,7 +803,7 @@ unsigned int parser_get_num_items_in_list(char* szList)
 }
 
 /* fixme: all the number retrievals change to this func */
-unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum)
+unsigned char parser_get_number(const char* szNumber, int *o_pNum)
 {
 	char * pEnd;
 

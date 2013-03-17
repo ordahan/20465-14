@@ -14,11 +14,8 @@
 
 #define MAX_SYMBOLS 1000
 
-/* fixme: A line that contains only a label and ':'
- * is considered legal(?), and it might take the entire line
- */
 /* Assume label's total length is 30 (instructions not exactly
- * clear wether its 30 or 31) */
+ * clear whether its 30 or 31) */
 #define MAX_LABEL_LENGTH ((unsigned int)30)
 
 /* Typedefs */

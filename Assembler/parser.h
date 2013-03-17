@@ -129,7 +129,7 @@ unsigned int parser_get_num_items_in_list(char* szList);
  * @param o_pNum Number found.
  * @return 1 if number retrieved ok, 0 otherwise.
  */
-unsigned char parser_get_number(const char* szNumber, unsigned int *o_pNum);
+unsigned char parser_get_number(const char* szNumber, int *o_pNum);
 
 /**
  * Extracts the string representation in the given string.

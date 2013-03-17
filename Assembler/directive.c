@@ -91,7 +91,7 @@ int directive_compile_extern(const statement_t *pExtern,
 							   ADDR_EXTERNAL,
 							   pName,
 							   0,
-							   ADDR_SECTION_EXTERNAL); /*fixme: external section? */
+							   ADDR_SECTION_EXTERNAL);
 }
 
 int directive_compile_entry(const statement_t *pEntry,

@@ -30,7 +30,7 @@ int run_test_compile_instruction(const char		*line,
 	assert(NULL != pStatement);
 
 	/* Shallow parse the statement */
-	instruction_shallow_parse(pStatement); /* fixme: maybe error value? */
+	instruction_shallow_parse(pStatement);
 
 	/* Check that the compilation returns as expected */
 	assert(!((0 == instruction_compile(pStatement, code, symbols)) ^

@@ -153,7 +153,18 @@ void instruction_add_data(instruction_with_operands_t* pInstruction,
 						  unsigned int val,
 						  address_locality_t locality);
 
-/* fixme */
+/**
+ * Sets the given instruction's values as given,
+ * and zeroes the remaining bits (rfu, pad)
+ * @param pInstruction
+ * @param comb
+ * @param dest_reg
+ * @param dest_addressing
+ * @param src_reg
+ * @param src_addressing
+ * @param opcode
+ * @param type
+ */
 void instruction_set_values(instruction_t* pInstruction,
 					 instruction_comb_t 	 comb,
 					 machine_registers_t  dest_reg,

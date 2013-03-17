@@ -321,7 +321,7 @@ int test_assembler()
 
 	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
 	section_write(&code_expected, 1, ADDR_ABSOLUTE);
-	section_write(&code_expected, 9, ADDR_RELOCATABLE); /* fixme: entry is relocatable? */
+	section_write(&code_expected, 9, ADDR_RELOCATABLE);
 
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
@@ -342,7 +342,7 @@ int test_assembler()
 
 	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
 	section_write(&code_expected, 10, ADDR_RELOCATABLE);
-	section_write(&code_expected, 9, ADDR_RELOCATABLE); /* fixme: entry is relocatable? */
+	section_write(&code_expected, 9, ADDR_RELOCATABLE);
 
 	section_write(&data_expected, -20, ADDR_ABSOLUTE);
 	section_write(&data_expected, 'h',  ADDR_ABSOLUTE);
