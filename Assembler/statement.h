@@ -12,6 +12,11 @@
 #ifndef STATEMENT_H_
 #define STATEMENT_H_
 
+/* Length of any line is 80, not just for instruction lines.
+ * 80 seems like a reasonable number for code not to get too
+ * messy, thus maintaining readability for coders with small
+ * screens (or multi-window editing)
+ */
 #define MAX_LINE_LENGTH 80
 
 /* Typedefs */

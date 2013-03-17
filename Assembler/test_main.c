@@ -15,7 +15,7 @@ extern int main(int argc, char** argv);
 
 int test_main()
 {
-	char* args[] = {"Assembler", "tests/ps"};
+	char* args[5] = {"Assembler"};
 
 	/* todo:
 	 * example from book
@@ -29,7 +29,8 @@ int test_main()
 
 
 	printf("	example from book: ");
-	assert(0 == main(sizeof(args) / sizeof(args[0]), args));
+	args[1] = "tests/ps";
+	assert(0 == main(2, args));
 	assert(0 == compare_files("expecteds/ps.ent", "tests/ps.ent"));
 	assert(0 == compare_files("expecteds/ps.ext", "tests/ps.ext"));
 	assert(0 == compare_files("expecteds/ps.ob", "tests/ps.ob"));
