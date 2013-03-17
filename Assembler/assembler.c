@@ -68,6 +68,9 @@ int assembler_compile(FILE* flProgram,
 	memset(o_pCode, 0, sizeof(*o_pCode));
 	memset(o_pData, 0, sizeof(*o_pData));
 
+	/* Set the base of the program */
+	o_pCode->_base_offset = BASE_ADDRESS;
+
 	/* Make a first pass that completes parsing
 	 * of the code, without resolving addresses
 	 * yet

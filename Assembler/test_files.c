@@ -136,6 +136,7 @@ int test_files()
 	szFileName = "tests/valid_object";
 	szFileExpectedName = "tests/valid_object.ob";
 	szFileExpected = "expecteds/valid_object.ob";
+	code._base_offset = BASE_ADDRESS;
 	section_write(&code, 3, ADDR_ABSOLUTE);
 	section_write(&code, 3, ADDR_RELOCATABLE);
 	section_write(&code, 3, ADDR_EXTERNAL);

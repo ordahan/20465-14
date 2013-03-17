@@ -18,6 +18,8 @@
 #include "symbol.h"
 #include "section.h"
 
+#define BASE_ADDRESS (100)
+
 /* External functions */
 /**
  * Reads a program from the given file and compiles it.
