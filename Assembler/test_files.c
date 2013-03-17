@@ -22,7 +22,7 @@ int test_files()
 	memory_section_t code;
 	memory_section_t data;
 
-	/* todo: tests for files
+	/*
 	 * #no input file
 	 * #input file exists
 	 * #no entry symbols

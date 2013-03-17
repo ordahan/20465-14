@@ -368,7 +368,7 @@ int test_assembler()
 	 * #instruction + .data (data after text)
 	 * #instruction address resolution
 	 * todo: extern / entry labels don't mean anything
-	 * todo: line too long
+	 * #line too long
 	 */
 	printf("PASSED.\n");
 	return 0;

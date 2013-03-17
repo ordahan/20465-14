@@ -104,7 +104,6 @@ typedef enum
 }parser_list_state_t;
 
 /* Implementations */
-/* fixme: shorter this one */
 int parser_get_statement(statement_t* io_pLine)
 {
 	char* szOperation = NULL;
@@ -178,9 +177,6 @@ int parser_get_statement(statement_t* io_pLine)
 	}
 	else
 	{
-		/* fixme: directive / instruction must appear right after label
-		 * or can there be any whitespaces separating them?
-		 */
 		/* The data for the operation starts right after the operation itself ends */
 		io_pLine->szOperationData = strchr(szOperation, NULL_TERMINATOR) + 1;
 
@@ -476,7 +472,6 @@ int parser_get_items_from_list(char* szList,
 	}
 }
 
-/* todo: test this separately */
 instruction_type_t parser_get_instruction_type(const char* szModifiers)
 {
 	unsigned long type;
@@ -501,7 +496,6 @@ instruction_type_t parser_get_instruction_type(const char* szModifiers)
 	}
 }
 
-/* todo: test this separately */
 /* fixme: magic numbers */
 instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 {
@@ -547,8 +541,6 @@ instruction_comb_t parser_get_instruction_comb(const char* szModifiers)
 	}
 }
 
-/* todo: test this separately */
-/* todo: split code to more funcs */
 operand_addressing_t parser_get_operand(char* szOperand,
 										instruction_with_operands_t* pInstruction,
 										const symbol_table_arr_t arrSymbols)
@@ -929,7 +921,7 @@ int parser_get_consecutive_strings(const char* pStart,
 	return 0;
 }
 
-char* parser_int_to_string_base_4(int num, unsigned int numMinDigits)
+const char* parser_int_to_string_base_4(int num, unsigned int numMinDigits)
 {
 	/* At most 32 bit numbers + NULL-TERMINATOR */
 	static char szResult[sizeof(num) * 8 + 1];

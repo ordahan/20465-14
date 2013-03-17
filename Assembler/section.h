@@ -11,12 +11,9 @@
 #include "machine.h"
 #include "symbol.h"
 
-/* TODO: Is this rly the restriction we need?
- * can a program weigh more?
+/* Large enough for any normal program
  */
 #define SECTION_MAX_SIZE 2000
-
-/* todo: Add tests for the lengths of the given sections */
 
 /* Typedefs */
 typedef struct

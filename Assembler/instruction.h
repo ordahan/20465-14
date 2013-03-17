@@ -108,7 +108,7 @@ typedef struct
 
 	/* Extra first locality is reserved for the instruction itself */
 	address_locality_t   localities[MAX_INSTRUCTION_EXTRA_DATA_CELLS + 1];
-}instruction_with_operands_t; /* todo: add api for this data structure */
+}instruction_with_operands_t;
 
 /* Externals */
 extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];

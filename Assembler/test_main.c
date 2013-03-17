@@ -18,7 +18,7 @@ int test_main()
 	char* args[5] = {"Assembler"};
 
 	/* todo:
-	 * example from book
+	 * #example from book
 	 * without externs
 	 * without entries
 	 * with errors (first pass)

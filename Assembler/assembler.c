@@ -59,7 +59,6 @@ int assembler_compile(FILE* flProgram,
 					  memory_section_t *o_pCode,
 					  memory_section_t *o_pData)
 {
-	/* fixme: Should this be placed elsewhere? */
 	static statement_t arrProgramStatements[MAX_STATEMENTS_IN_PROGRAM];
 	size_t	nNumOfStatements = 0;
 

@@ -20,9 +20,7 @@
 
 #define MAX_LIST_LENGTH MAX_LINE_LENGTH
 
-/* todo: decide on a good number.. maybe use some other #define
- * for memory size etc?
- */
+/* For ease of implementation */
 #define MAX_STATEMENTS_IN_PROGRAM 4096
 
 /**
@@ -59,7 +57,6 @@ int parser_get_statement(statement_t* io_pLine);
  * @param nListSize Number of items that should be on the list.
  * @return 0 for success, anything else on error.
  */
-/* todo: add more tests for null-termination */
 int parser_get_items_from_list(char* szList,
 							   char** o_arrItems,
 							   size_t nListSize);
@@ -165,16 +162,21 @@ int parser_get_consecutive_strings(const char* pStart,
 
 /**
  * Returns a string representing the given int in base 4.
+ * The string belongs to the parsing function! Do not rely
+ * on its value after it has been called again.
  *
  * @param num Number to convert
  * @param fExtend Number of chars to be extended to the left.
  * @return String representing the given number extended by the amount
  * requested.
  */
-/* fixme: doc static */
-char* parser_int_to_string_base_4(int num, unsigned int numToExtend);
+const char* parser_int_to_string_base_4(int num, unsigned int numToExtend);
 
-/* fixme: doc this */
+/**
+ * Converts locality value to an ascii letter
+ * @param locality Locality to convert
+ * @return an ascii character for the given locality
+ */
 char parser_get_locality_letter(address_locality_t locality);
 
 #endif /* PARSER_H_ */
