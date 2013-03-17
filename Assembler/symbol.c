@@ -22,7 +22,6 @@
 int find_symbol_index_by_name(const symbol_table_arr_t table,
 							  const char* szName);
 
-/* fixme: change the api to get the proper values and not just the type.. */
 int symbol_add_to_table(symbol_table_arr_t table,
 						address_locality_t 	locality,
 						const char* szName,
@@ -57,11 +56,23 @@ int symbol_add_to_table(symbol_table_arr_t table,
 		{
 			/* Add to the table */
 			symbol_t *pSymbol = &table[i];
-			pSymbol->address = address;
 			pSymbol->entry = ADDR_ENTRY_STATUS_NON_ENTRY;
 			pSymbol->locality = locality;
 			pSymbol->section = section;
 			strcpy(pSymbol->name, szName);
+
+			/* In case its an external symbol, the address is
+			 * its index in the symbol table for future use.
+			 */
+			if (locality == ADDR_EXTERNAL)
+			{
+				pSymbol->address = i;
+			}
+			else
+			{
+				pSymbol->address = address;
+			}
+
 			return 0;
 		}
 	}

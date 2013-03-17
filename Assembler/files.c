@@ -182,7 +182,7 @@ int file_create_externals(const char *szFileName,
 			fprintf(fExternalsFile,
 					"%s %s\n",
 					arrSymbols[pCell->content.val].name,
-					parser_int_to_string_base_4(i, 0));
+					parser_int_to_string_base_4(addrCell, 0));
 		}
 	}
 

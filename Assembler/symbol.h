@@ -55,6 +55,8 @@ typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];
 /**
  * Adds the given symbol to the table.
  * Makes sure the symbol name is unique to the table.
+ * In case of an external symbol - its address
+ * will be its index in the symbol table.
  *
  * @param table Table to add the symbol into
  * @param locality What is the addressing type for the symbol.
@@ -63,9 +65,9 @@ typedef symbol_t symbol_table_arr_t[MAX_SYMBOLS];
  * @param section What section does the address belong to.
  * @return 0 if everything ok, -1 if not unique, anything else for error.
  */
-int symbol_add_to_table(symbol_table_arr_t table,
+int symbol_add_to_table(symbol_table_arr_t  table,
 						address_locality_t 	locality,
-						const char* szName,
+						const char* 		szName,
 						unsigned long		address,
 						address_section_t	section);
 

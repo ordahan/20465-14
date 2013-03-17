@@ -30,6 +30,9 @@ int test_main()
 
 	printf("	example from book: ");
 	assert(0 == main(sizeof(args) / sizeof(args[0]), args));
+	assert(0 == compare_files("expecteds/ps.ent", "tests/ps.ent"));
+	assert(0 == compare_files("expecteds/ps.ext", "tests/ps.ext"));
+	assert(0 == compare_files("expecteds/ps.ob", "tests/ps.ob"));
 	printf("PASSED.\n");
 	/**********************************************/
 

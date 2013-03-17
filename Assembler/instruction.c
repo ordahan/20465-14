@@ -207,17 +207,22 @@ int instruction_compile(const statement_t *pInstructionStatement,
 		return -1;
 	}
 
-	/* fixme: make this more elegant */
 	/* Update the code section with the compiled data */
-	section_write(io_pCode, pInst->raw, ADDR_ABSOLUTE);
+	if (section_write(io_pCode, pInst->raw, ADDR_ABSOLUTE) ==
+			MEMORY_ADDRESS_INVALID)
+		return -1;
 
 	{
 		unsigned int i;
 		for (i = 0; i < complete_instruction.num_extra_data; ++i)
 		{
-			section_write(io_pCode,
-						  complete_instruction.extra_data[i].val,
-						  complete_instruction.localities[i+1]);
+			if (section_write(io_pCode,
+							  complete_instruction.extra_data[i].val,
+							  complete_instruction.localities[i+1]) ==
+				MEMORY_ADDRESS_INVALID)
+			{
+				return -1;
+			}
 		}
 	}
 

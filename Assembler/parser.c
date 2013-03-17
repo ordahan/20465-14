@@ -685,37 +685,54 @@ operand_addressing_t parser_get_operand(char* szOperand,
 unsigned int parser_shallow_parse_operand(char* szOperand)
 {
 	machine_registers_t reg = parser_string_to_register_type(szOperand);
+	unsigned int size = 0;
 
 	/* Immediate value */
 	if (szOperand[0] == IMMEDIATE_PREFIX)
 	{
-		return 1;
+		size = 1;
 	}
 	/* Register */
 	else if (reg != REGISTER_INVALID)
 	{
-		return 0;
+		size = 0;
 	}
 	/* Must be some sort of label */
 	else
 	{
 		/* Find out if the value is an index */
-		const char* szIndexValue = parser_get_index_from_label(szOperand);
+		char* szIndexValue = parser_get_index_from_label(szOperand);
 
 		/* Does it have an index? */ /* fixme: bug! index won't always return 2 */
 		if (szIndexValue != szOperand &&
 			szIndexValue != NULL)
 		{
-			return 2;
+			/* Temporarily split from the rest of the line */
+			char* close_delim = strchr(szIndexValue,
+									   INDEX_OFFSET_CLOSE_DELIMITER[0]);
+			close_delim[0] = NULL_TERMINATOR;
+
+			/* Is it a register? */
+			if (parser_string_to_register_type(szIndexValue + 1) != REGISTER_INVALID)
+			{
+				size = 1;
+			}
+			else
+			{
+				size = 2;
+			}
+
+			/* Bring back the delimiter */
+			close_delim[0] = INDEX_OFFSET_CLOSE_DELIMITER[0];
 		}
 		/* No index, plain old label */
 		else
 		{
-			return 1;
+			size = 1;
 		}
 	}
 
-	return 0;
+	return size;
 }
 
 /* fixme: test me!!! */
