@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "symbol.h"
+#include "parser.h"
 
 /* Internal functions */
 /**
@@ -88,7 +89,47 @@ int file_create_externals(const char *szFileName,
 						  const symbol_table_arr_t arrSymbols,
 					  	  const code_section_t *pCode)
 {
-	return -1;
+	unsigned int i;
+	FILE* fExternalsFile = NULL;
+
+	if (szFileName == NULL ||
+		arrSymbols == NULL ||
+		pCode == NULL)
+		return -1;
+
+	/* Go over all code section and locate externals
+	 */
+	for (i = 0; i < pCode->IC; ++i)
+	{
+		/* Is this an external? */
+		if (pCode->localities[i] == ADDR_EXTERNAL)
+		{
+			/* Lazy open, is this the first one? */
+			if (fExternalsFile == NULL)
+			{
+				fExternalsFile = open_file_with_ext(szFileName,
+													FILE_EXTERNALS_EXT,
+													"w");
+
+				if (fExternalsFile == NULL)
+					return -1;
+			}
+
+			/* The value of the current code cell is the index in the
+			 * symbol table for the external symbol.
+			 */
+			fprintf(fExternalsFile,
+					"%s %s\n",
+					arrSymbols[pCode->content[i].val].name,
+					parser_int_to_string_base_4(i, 0));
+		}
+	}
+
+	/* Close if needed */
+	if (fExternalsFile != NULL)
+		fclose(fExternalsFile);
+
+	return 0;
 }
 
 FILE* open_file_with_ext(const char* szFileName,

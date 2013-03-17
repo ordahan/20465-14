@@ -26,8 +26,8 @@ int test_files()
 	 * #no input file
 	 * #input file exists
 	 * #no entry symbols
-	 * valid entries
-	 * no externals
+	 * #valid entries
+	 * #no externals
 	 * valid externals
 	 * object file
 	 */
@@ -84,6 +84,51 @@ int test_files()
 	symbol_set_as_entry(symbols, "b");
 	symbol_set_as_entry(symbols, "c");
 	assert(0 == file_create_entry(szFileName, symbols));
+	assert(0 == compare_files(szFileExpected, szFileExpectedName));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_program_data(symbols,
+					  &code,
+					  &data);
+
+	printf("	no externals: ");
+	szFileName = "tests/no_externals";
+	szFileExpectedName = "tests/valid_entries.ext";
+	symbol_add_to_table(symbols, ADDR_ABSOLUTE, "a", 100, ADDR_SECTION_CODE);
+	symbol_add_to_table(symbols, ADDR_RELOCATABLE, "b", 101, ADDR_SECTION_DATA);
+	symbol_add_to_table(symbols, ADDR_ABSOLUTE, "c", 106, ADDR_SECTION_CODE);
+	symbol_set_as_entry(symbols, "b");
+	symbol_set_as_entry(symbols, "c");
+	assert(0 == file_create_externals(szFileName, symbols, &code));
+	assert(NULL == fopen(szFileExpectedName, "r"));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_program_data(symbols,
+					  &code,
+					  &data);
+
+	printf("	valid externals: ");
+	szFileName = "tests/valid_externals";
+	szFileExpectedName = "tests/valid_externals.ext";
+	szFileExpected = "expecteds/valid_externals.ext";
+	symbol_add_to_table(symbols, ADDR_EXTERNAL, "a", 0, ADDR_SECTION_CODE);
+	symbol_add_to_table(symbols, ADDR_EXTERNAL, "b", 0, ADDR_SECTION_CODE);
+	code.IC = 5;
+	code.content[0].val = 0;
+	code.content[1].val = 1;
+	code.content[2].val = 1;
+	code.content[3].val = 0;
+	code.content[4].val = 1;
+	code.localities[0] = ADDR_EXTERNAL;
+	code.localities[1] = ADDR_EXTERNAL;
+	code.localities[2] = ADDR_ABSOLUTE;
+	code.localities[3] = ADDR_EXTERNAL;
+	code.localities[4] = ADDR_EXTERNAL;
+	assert(0 == file_create_externals(szFileName, symbols, &code));
 	assert(0 == compare_files(szFileExpected, szFileExpectedName));
 	printf("PASSED.\n");
 	/**********************************************/

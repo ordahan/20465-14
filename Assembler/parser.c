@@ -911,33 +911,50 @@ int parser_get_consecutive_strings(const char* pStart,
 	return 0;
 }
 
-char* parser_int_to_string_base_4(int num, unsigned int numToExtend)
+/* fixme: Negatives? */
+char* parser_int_to_string_base_4(int num, unsigned int numMinDigitsToFormat)
 {
 	const unsigned int base = 4;
-	static char szResult[MACHINE_CELL_NUM_BASE_4_CHARACTERS + 1];
-	int divisor = num;
-	unsigned int charIndex = 1;
+	static char szResult[sizeof(num) * 8 + 1];
+	int numMaxDigitsAvailable = sizeof(szResult) - 1;
+	int curNum = num;
+	unsigned int numWritten = 0;
 
-	memset(szResult, 0, sizeof(szResult));
+	/* Reset the result */
+	memset(szResult, '0', sizeof(szResult));
+	szResult[numMaxDigitsAvailable + 1] = NULL_TERMINATOR;
 
-	while (divisor != 0)
+	/* Each round, the remainder from division by base
+	 * is the digit we need, starting with the least
+	 * significant digit.
+	 * Execute at least once, in case 0 is the number we parse.
+	 */
+	do
 	{
-		szResult[sizeof(szResult) - charIndex - 1] = '0' + divisor % base;
-		charIndex++;
-		divisor /= base;
-	}
+		/* Place the current digit in the least signifcant
+		 * place + num of chars written so far
+		 */
+		szResult[numMaxDigitsAvailable - numWritten] = '0' + curNum % base;
 
-	/* Cant extend more than this */
-	if (numToExtend > sizeof(szResult))
+		/* Continue to the next division */
+		numWritten++;
+		curNum /= base;
+
+	}while (curNum != 0);
+
+	/* Return the resulting string, making sure to
+	 * return the requested number of digits
+	 */
+	if (numMinDigitsToFormat > numMaxDigitsAvailable)
 	{
 		return szResult;
 	}
-	else if (numToExtend < charIndex)
+	else if (numMinDigitsToFormat < numWritten)
 	{
-		return &szResult[sizeof(szResult) - charIndex];
+		return &szResult[numMaxDigitsAvailable - numWritten + 1];
 	}
 	else
 	{
-		return &szResult[sizeof(szResult) - numToExtend];
+		return &szResult[numMaxDigitsAvailable - numMinDigitsToFormat];
 	}
 }
