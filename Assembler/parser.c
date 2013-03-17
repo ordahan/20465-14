@@ -910,3 +910,34 @@ int parser_get_consecutive_strings(const char* pStart,
 
 	return 0;
 }
+
+char* parser_int_to_string_base_4(int num, unsigned int numToExtend)
+{
+	const unsigned int base = 4;
+	static char szResult[MACHINE_CELL_NUM_BASE_4_CHARACTERS + 1];
+	int divisor = num;
+	unsigned int charIndex = 1;
+
+	memset(szResult, 0, sizeof(szResult));
+
+	while (divisor != 0)
+	{
+		szResult[sizeof(szResult) - charIndex - 1] = '0' + divisor % base;
+		charIndex++;
+		divisor /= base;
+	}
+
+	/* Cant extend more than this */
+	if (numToExtend > sizeof(szResult))
+	{
+		return szResult;
+	}
+	else if (numToExtend < charIndex)
+	{
+		return &szResult[sizeof(szResult) - charIndex];
+	}
+	else
+	{
+		return &szResult[sizeof(szResult) - numToExtend];
+	}
+}

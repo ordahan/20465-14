@@ -7,7 +7,8 @@
  *  This module is responsible for translating the given assembly
  *  program (as text) to data structures the assembler can handle.
  *  Any syntax error that isn't related to the instruction set,
- *  addresses etc will be caught here.
+ *  addresses etc will be caught here. Also, anything related to
+ *  changing formats for numbers is handled here.
  */
 
 #ifndef PARSER_H_
@@ -161,5 +162,15 @@ int parser_get_consecutive_strings(const char* pStart,
 								   const char* pEnd,
 								   const char** arrStrings,
 								   unsigned int nMaxResults);
+
+/**
+ * Returns a string representing the given int in base 4.
+ *
+ * @param num Number to convert
+ * @param fExtend Number of chars to be extended to the left.
+ * @return String representing the given number extended by the amount
+ * requested.
+ */
+char* parser_int_to_string_base_4(int num, unsigned int numToExtend);
 
 #endif /* PARSER_H_ */

@@ -13,6 +13,7 @@
 int compare_files(const char* szFile1 , const char* szFile2)
 {
 	FILE *f1, *f2;
+	unsigned int result = 0;
 
 	f1 = fopen(szFile1, "r");
 	f2 = fopen(szFile2, "r");
@@ -22,7 +23,7 @@ int compare_files(const char* szFile1 , const char* szFile2)
 		printf("Cannot open files for comparison: f1 = %x, f2 = %x\n",
 				(int)f1,
 				(int)f2);
-		return -1;
+		result = -1;
 	}
 	else
 	{
@@ -34,32 +35,24 @@ int compare_files(const char* szFile1 , const char* szFile2)
 		while (fgets(szLine1,
 					 sizeof(szLine1),
 					 f1) != NULL &&
-			   feof(f1) == 0 &&
 			   fgets(szLine2,
 					 sizeof(szLine2),
-					 f2) != NULL &&
-			   feof(f2) == 0)
+					 f2) != NULL)
 		{
 			i++;
 
 			if (strcmp(szLine1, szLine2) != 0)
 			{
-				printf("Line %d doesn't match:\n%s\n%s\n",
+				printf("Line %d don't match:\n%s%s",
 					   i,
 					   szLine1,
 					   szLine2);
-				return -1;
+				result = -1;
 			}
-		}
-
-		/* Check lengths */
-		if (feof(f1) != feof(f2))
-		{
-			return -1;
 		}
 	}
 
-	return 0;
+	return result;
 }
 
 void init_program_data(symbol_table_arr_t symbol_expected,

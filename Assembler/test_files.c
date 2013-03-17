@@ -29,6 +29,7 @@ int test_files()
 	 * valid entries
 	 * no externals
 	 * valid externals
+	 * object file
 	 */
 
 	/**********************************************/
@@ -65,6 +66,25 @@ int test_files()
 	symbol_add_to_table(symbols, ADDR_ABSOLUTE, "abcd", 123, ADDR_SECTION_CODE);
 	assert(0 == file_create_entry(szFileName, symbols));
 	assert(NULL == fopen(szFileExpectedName, "r"));
+	printf("PASSED.\n");
+	/**********************************************/
+
+	/**********************************************/
+	init_program_data(symbols,
+					  &code,
+					  &data);
+
+	printf("	valid entries: ");
+	szFileName = "tests/valid_entries";
+	szFileExpectedName = "tests/valid_entries.ent";
+	szFileExpected = "expecteds/valid_entries.ent";
+	symbol_add_to_table(symbols, ADDR_ABSOLUTE, "a", 100, ADDR_SECTION_CODE);
+	symbol_add_to_table(symbols, ADDR_RELOCATABLE, "b", 101, ADDR_SECTION_DATA);
+	symbol_add_to_table(symbols, ADDR_ABSOLUTE, "c", 106, ADDR_SECTION_CODE);
+	symbol_set_as_entry(symbols, "b");
+	symbol_set_as_entry(symbols, "c");
+	assert(0 == file_create_entry(szFileName, symbols));
+	assert(0 == compare_files(szFileExpected, szFileExpectedName));
 	printf("PASSED.\n");
 	/**********************************************/
 

@@ -15,6 +15,13 @@ typedef struct
 	unsigned int val;
 }machine_cell_t;
 
+#define MACHINE_CELL_NUM_BITS (20)
+/* A pair of bits is 1 base 4 number,
+ * as 2^2 = 4 (base^k = new_base), k = 2
+ * Round up the number of chars.
+ */
+#define MACHINE_CELL_NUM_BASE_4_CHARACTERS (((MACHINE_CELL_NUM_BITS - 1) / 2) + 1)
+
 typedef enum
 {
 	R0 = 0,
