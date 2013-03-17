@@ -627,7 +627,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 				pSymbol = symbol_get_from_table_by_name(arrSymbols, szIndex);
 				if (pSymbol == NULL)
 				{
-					printf("Error! symbol %s isn't defined anywhere.", szIndex);
+					printf("Error! symbol %s isn't defined anywhere.\n", szIndex);
 					return OPERAND_ADDR_NUM;
 				}
 				index = pSymbol->address;
@@ -646,7 +646,7 @@ operand_addressing_t parser_get_operand(char* szOperand,
 		pSymbol = symbol_get_from_table_by_name(arrSymbols, szOperand);
 		if (pSymbol == NULL)
 		{
-			printf("Error! symbol %s isn't defined anywhere.", szOperand);
+			printf("Error! symbol %s isn't defined anywhere.\n", szOperand);
 			return OPERAND_ADDR_NUM;
 		}
 

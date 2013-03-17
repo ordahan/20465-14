@@ -20,6 +20,14 @@ int main(int argc, char** argv)
 	 */
 	for (i = 1; i < argc; ++i)
 	{
+		/* Must be set */
+		if (argv[i] == NULL)
+		{
+			printf("Error with command line arguments, arg %d doesn't exist.\n",
+					i);
+			continue;
+		}
+
 		/* Try to compile the file */
 		if (assembler_compile(file_open_input(argv[i]),
 							  symbols,

@@ -17,23 +17,29 @@ int test_main()
 {
 	char* args[5] = {"Assembler"};
 
-	/* todo:
-	 * #example from book
-	 * without externs
-	 * without entries
-	 * with errors (first pass)
-	 * with errors (second pass)
-	 */
-
 	/**********************************************/
-
-
 	printf("	example from book: ");
-	args[1] = "tests/ps";
-	assert(0 == main(2, args));
-	assert(0 == compare_files("expecteds/ps.ent", "tests/ps.ent"));
-	assert(0 == compare_files("expecteds/ps.ext", "tests/ps.ext"));
-	assert(0 == compare_files("expecteds/ps.ob", "tests/ps.ob"));
+	args[1] = "inputs/ps";
+	args[2] = "inputs/ps_with_errors";
+	args[3] = "inputs/no_externs";
+	args[4] = "inputs/no_entries";
+	assert(0 == main(5, args));
+	assert(0 == compare_files("outputs/ps.ent", "inputs/ps.ent"));
+	assert(0 == compare_files("outputs/ps.ext", "inputs/ps.ext"));
+	assert(0 == compare_files("outputs/ps.ob", "inputs/ps.ob"));
+
+	assert(NULL != fopen("inputs/no_externs.ent", "r"));
+	assert(NULL == fopen("inputs/no_externs.ext", "r"));
+	assert(NULL != fopen("inputs/no_externs.ob", "r"));
+
+	assert(NULL == fopen("inputs/no_entries.ent", "r"));
+	assert(NULL != fopen("inputs/no_entries.ext", "r"));
+	assert(NULL != fopen("inputs/no_entries.ob", "r"));
+
+	assert(NULL == fopen("inputs/ps_with_errors.ent", "r"));
+	assert(NULL == fopen("inputs/ps_with_errors.ext", "r"));
+	assert(NULL == fopen("inputs/ps_with_errors.ob", "r"));
+
 	printf("PASSED.\n");
 	/**********************************************/
 
