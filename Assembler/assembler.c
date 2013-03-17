@@ -37,7 +37,7 @@ int first_pass(FILE* flProgram,
 			   size_t *o_pNumStatements,
 			   symbol_table_arr_t o_arrSymbols,
 			   data_section_t *o_pData,
-			   code_section_t *o_pCode);
+			   memory_section_t *o_pCode);
 
 /**
  * Adds entry symbols to the table, and finalizes any
@@ -51,12 +51,12 @@ int first_pass(FILE* flProgram,
 int second_pass(const statement_t *arrStatements,
 				size_t nNumOfStatements,
 				symbol_table_arr_t io_arrSymbols,
-				code_section_t *io_pCode);
+				memory_section_t *io_pCode);
 
 /* Function Implementation */
 int assembler_compile(FILE* flProgram,
 					  symbol_table_arr_t o_arrSymbols,
-					  code_section_t *o_pCode,
+					  memory_section_t *o_pCode,
 					  data_section_t *o_pData)
 {
 	/* fixme: Should this be placed elsewhere? */
@@ -84,7 +84,7 @@ int assembler_compile(FILE* flProgram,
 	/* Move the data section to its final location so we
 	 * can resolve data symbols properly
 	 */
-	symbol_move_section(o_arrSymbols, ADDR_SECTION_DATA, o_pCode->IC);
+	symbol_move_section(o_arrSymbols, ADDR_SECTION_DATA, o_pCode->counter_a);
 
 	/* First pass completed, resolve addresses */
 	if (second_pass(arrProgramStatements,
@@ -102,7 +102,7 @@ int first_pass(FILE* flProgram,
 			   size_t *o_pNumStatements,
 			   symbol_table_arr_t o_arrSymbols,
 			   data_section_t *o_pData,
-			   code_section_t *o_pCode)
+			   memory_section_t *o_pCode)
 {
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
@@ -118,7 +118,7 @@ int first_pass(FILE* flProgram,
 		return -1;
 
 	/* Start the counters */
-	o_pCode->IC = 0;
+	o_pCode->counter_a = 0;
 	o_pData->DC = 0;
 
 	/* Read each line from the input file */
@@ -182,7 +182,7 @@ int first_pass(FILE* flProgram,
 				if (symbol_add_to_table(o_arrSymbols,
 										ADDR_ABSOLUTE,
 										pCurrStatement->szLabel,
-										o_pCode->IC,
+										o_pCode->counter_a,
 										ADDR_SECTION_CODE) != 0)
 				{
 					return -1;
@@ -190,7 +190,7 @@ int first_pass(FILE* flProgram,
 			}
 
 			/* Reserve it a number of cells */
-			o_pCode->IC += instruction_shallow_parse(pCurrStatement);
+			o_pCode->counter_a += instruction_shallow_parse(pCurrStatement);
 		}
 		else if (pCurrStatement->type == STATEMENT_TYPE_ERROR)
 		{
@@ -211,7 +211,7 @@ int first_pass(FILE* flProgram,
 int second_pass(const statement_t *arrStatements,
 				size_t nNumOfStatements,
 				symbol_table_arr_t io_arrSymbols,
-				code_section_t *io_pCode)
+				memory_section_t *io_pCode)
 {
 	size_t nCurrLine = 0;
 	int nErrorCode = 0;
@@ -224,7 +224,7 @@ int second_pass(const statement_t *arrStatements,
 		return -1;
 
 	/* Start counting the instructions again */
-	io_pCode->IC = 0;
+	io_pCode->counter_a = 0;
 
 	/* Read each line from the input file */
 	for (nCurrLine = 0; nCurrLine < nNumOfStatements; ++nCurrLine)
@@ -253,7 +253,7 @@ int second_pass(const statement_t *arrStatements,
 		/* An instruction */
 		else if (pCurrStatement->type == STATEMENT_TYPE_INSTRUCTION)
 		{
-			/* Count again the current position in the code */
+			/* Compile the instruction fully and evaluate its operands */
 			if (instruction_compile(pCurrStatement,
 									io_pCode,
 									io_arrSymbols) != 0)

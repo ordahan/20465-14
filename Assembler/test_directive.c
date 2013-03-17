@@ -20,7 +20,7 @@ int test_compile_extern();
 int test_compile_entry();
 
 void init_object_blocks(symbol_table_arr_t *symbol_expected,
-					code_section_t *code_expected,
+					memory_section_t *code_expected,
 					data_section_t *data_expected)
 {
 	if (symbol_expected != NULL)

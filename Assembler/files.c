@@ -34,7 +34,7 @@ FILE* file_open_input(const char *szFileName)
 }
 
 int file_create_object(const char *szFileName,
-					   const code_section_t *pCode,
+					   const memory_section_t *pCode,
 		  	  	  	   const data_section_t *pData)
 {
 	const char* szHeader = "Base 4 Address	Base 4 machine code	Absolute, relocatable or external";
@@ -59,20 +59,20 @@ int file_create_object(const char *szFileName,
 	/* Print the sizes of sections */
 	fprintf(fObjectFile,
 			"%s ",
-			parser_int_to_string_base_4(pCode->IC, 0));
+			parser_int_to_string_base_4(section_get_size(pCode), 0));
 	fprintf(fObjectFile,
 			"%s\n",
 			parser_int_to_string_base_4(pData->DC, 0));
 
 	/* Go over the code section and print it */
-	for (i = 0; i < pCode->IC; ++i)
+	for (i = 0; i < section_get_size(pCode); ++i)
 	{
 		fprintf(fObjectFile,
 				"%s\t",
 				parser_int_to_string_base_4(i, 0));
 
 		/* Put 0 instead of externals for the sake of consistency */
-		if (pCode->localities[i] == ADDR_EXTERNAL)
+		if (pCode->localities_a[i] == ADDR_EXTERNAL)
 		{
 			fprintf(fObjectFile,
 					"%s\t",
@@ -83,13 +83,13 @@ int file_create_object(const char *szFileName,
 		{
 			fprintf(fObjectFile,
 					"%s\t",
-					parser_int_to_string_base_4(pCode->content[i].val,
+					parser_int_to_string_base_4(pCode->content_a[i].val,
 												MACHINE_CELL_NUM_BASE_4_CHARACTERS));
 		}
 
 		fprintf(fObjectFile,
 				"%c\n",
-				parser_get_locality_letter(pCode->localities[i]));
+				parser_get_locality_letter(pCode->localities_a[i]));
 	}
 
 	/* Go over the data section and print it */
@@ -97,7 +97,7 @@ int file_create_object(const char *szFileName,
 	{
 		fprintf(fObjectFile,
 				"%s\t",
-				parser_int_to_string_base_4(pCode->IC + i, 0));
+				parser_int_to_string_base_4(section_get_size(pCode) + i, 0));
 		fprintf(fObjectFile,
 				"%s\n",
 				parser_int_to_string_base_4(pData->content[i].val,
@@ -156,7 +156,7 @@ int file_create_entry(const char *szFileName,
 
 int file_create_externals(const char *szFileName,
 						  const symbol_table_arr_t arrSymbols,
-					  	  const code_section_t *pCode)
+					  	  const memory_section_t *pCode)
 {
 	unsigned int i;
 	FILE* fExternalsFile = NULL;
@@ -168,10 +168,10 @@ int file_create_externals(const char *szFileName,
 
 	/* Go over all code section and locate externals
 	 */
-	for (i = 0; i < pCode->IC; ++i)
+	for (i = 0; i < section_get_size(pCode); ++i)
 	{
 		/* Is this an external? */
-		if (pCode->localities[i] == ADDR_EXTERNAL)
+		if (pCode->localities_a[i] == ADDR_EXTERNAL)
 		{
 			/* Lazy open, is this the first one? */
 			if (fExternalsFile == NULL)
@@ -189,7 +189,7 @@ int file_create_externals(const char *szFileName,
 			 */
 			fprintf(fExternalsFile,
 					"%s %s\n",
-					arrSymbols[pCode->content[i].val].name,
+					arrSymbols[pCode->content_a[i].val].name,
 					parser_int_to_string_base_4(i, 0));
 		}
 	}

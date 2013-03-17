@@ -12,7 +12,7 @@
 
 typedef struct
 {
-	unsigned int val;
+	unsigned int val; /*fixme: 20 bit*/
 }machine_cell_t;
 
 #define MACHINE_CELL_NUM_BITS (20)
@@ -21,6 +21,9 @@ typedef struct
  * Round up the number of chars.
  */
 #define MACHINE_CELL_NUM_BASE_4_CHARACTERS (((MACHINE_CELL_NUM_BITS - 1) / 2) + 1)
+
+typedef unsigned int memory_address_t;
+#define MEMORY_ADDRESS_INVALID (0xffffffff)
 
 typedef enum
 {

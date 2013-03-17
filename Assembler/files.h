@@ -45,7 +45,7 @@ FILE* file_open_input(const char *szFileName);
  * @param 0 on success, anything else on error.
  */
 int file_create_object(const char *szFileName,
-					   const code_section_t *pCode,
+					   const memory_section_t *pCode,
 		  	  	  	   const data_section_t *o_pData);
 
 /**
@@ -70,6 +70,6 @@ int file_create_entry(const char *szFileName,
  */
 int file_create_externals(const char *szFileName,
 						  const symbol_table_arr_t arrSymbols,
-					  	  const code_section_t *pCode);
+					  	  const memory_section_t *pCode);
 
 #endif /* FILES_H_ */

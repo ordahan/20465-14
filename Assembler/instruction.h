@@ -80,17 +80,21 @@ typedef struct
 	operand_legal_address_types_t dest;
 }instruction_syntax_t;
 
-typedef struct
+typedef union
 {
-	instruction_comb_t 	 comb 			: 2;
-	machine_registers_t  dest_reg		: 3;
-	operand_addressing_t dest_addressing: 2;
-	machine_registers_t  src_reg		: 3;
-	operand_addressing_t src_addressing	: 2;
-	opcode_t 			 opcode 		: 4;
-	instruction_type_t	 type			: 1;
-	unsigned char		 rfu			: 3;
-	unsigned int 		 pad			: 12;
+	struct
+	{
+		instruction_comb_t 	 comb 			: 2;
+		machine_registers_t  dest_reg		: 3;
+		operand_addressing_t dest_addressing: 2;
+		machine_registers_t  src_reg		: 3;
+		operand_addressing_t src_addressing	: 2;
+		opcode_t 			 opcode 		: 4;
+		instruction_type_t	 type			: 1;
+		unsigned char		 rfu			: 3;
+		unsigned int 		 pad			: 12;
+	};
+	unsigned int raw;
 }instruction_t;
 
 typedef struct
@@ -127,7 +131,7 @@ extern instruction_syntax_t g_arrInstructionSyntax[ILLEGAL];
  * @return 0 on success, anything else on error.
  */
 int instruction_compile(const statement_t *pInstruction,
-						code_section_t* io_pCode,
+						memory_section_t* io_pCode,
 						symbol_table_arr_t io_pSymbols);
 
 /**
@@ -148,5 +152,15 @@ int instruction_shallow_parse(const statement_t *pInstructionStatement);
 void instruction_add_data(instruction_with_operands_t* pInstruction,
 						  unsigned int val,
 						  address_locality_t locality);
+
+/* fixme */
+void instruction_set_values(instruction_t* pInstruction,
+					 instruction_comb_t 	 comb,
+					 machine_registers_t  dest_reg,
+					 operand_addressing_t dest_addressing,
+					 machine_registers_t  src_reg,
+					 operand_addressing_t src_addressing,
+					 opcode_t 			 opcode,
+					 instruction_type_t	 type);
 
 #endif /* INSTRUCTION_H_ */

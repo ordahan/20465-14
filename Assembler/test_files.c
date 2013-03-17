@@ -19,7 +19,7 @@ int test_files()
 	const char* szFileExpected;
 	const char* szFileExpectedName;
 	symbol_table_arr_t symbols;
-	code_section_t code;
+	memory_section_t code;
 	data_section_t data;
 
 	/* todo: tests for files
@@ -117,17 +117,11 @@ int test_files()
 	szFileExpected = "expecteds/valid_externals.ext";
 	symbol_add_to_table(symbols, ADDR_EXTERNAL, "a", 0, ADDR_SECTION_CODE);
 	symbol_add_to_table(symbols, ADDR_EXTERNAL, "b", 0, ADDR_SECTION_CODE);
-	code.IC = 5;
-	code.content[0].val = 0;
-	code.content[1].val = 1;
-	code.content[2].val = 1;
-	code.content[3].val = 0;
-	code.content[4].val = 1;
-	code.localities[0] = ADDR_EXTERNAL;
-	code.localities[1] = ADDR_EXTERNAL;
-	code.localities[2] = ADDR_ABSOLUTE;
-	code.localities[3] = ADDR_EXTERNAL;
-	code.localities[4] = ADDR_EXTERNAL;
+	section_write(&code, 0, ADDR_EXTERNAL);
+	section_write(&code, 1, ADDR_EXTERNAL);
+	section_write(&code, 1, ADDR_ABSOLUTE);
+	section_write(&code, 0, ADDR_EXTERNAL);
+	section_write(&code, 1, ADDR_EXTERNAL);
 	assert(0 == file_create_externals(szFileName, symbols, &code));
 	assert(0 == compare_files(szFileExpected, szFileExpectedName));
 	printf("PASSED.\n");
@@ -142,16 +136,10 @@ int test_files()
 	szFileName = "tests/valid_object";
 	szFileExpectedName = "tests/valid_object.ob";
 	szFileExpected = "expecteds/valid_object.ob";
-
-	code.IC = 4;
-	code.content[0].val = 3;
-	code.content[1].val = 3;
-	code.content[2].val = 3;
-	code.content[3].val = 7;
-	code.localities[0] = ADDR_ABSOLUTE;
-	code.localities[1] = ADDR_RELOCATABLE;
-	code.localities[2] = ADDR_EXTERNAL;
-	code.localities[3] = ADDR_ABSOLUTE;
+	section_write(&code, 3, ADDR_ABSOLUTE);
+	section_write(&code, 3, ADDR_RELOCATABLE);
+	section_write(&code, 3, ADDR_EXTERNAL);
+	section_write(&code, 7, ADDR_ABSOLUTE);
 
 	data.DC = 1;
 	data.content[0].val = 5;

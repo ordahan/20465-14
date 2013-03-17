@@ -111,7 +111,7 @@ int instruction_shallow_parse(const statement_t *pInstructionStatement)
 }
 
 int instruction_compile(const statement_t *pInstructionStatement,
-						code_section_t* io_pCode,
+						memory_section_t* io_pCode,
 						symbol_table_arr_t io_pSymbols)
 {
 	char* arrOperands[MAX_NUM_OPERANDS];
@@ -209,20 +209,17 @@ int instruction_compile(const statement_t *pInstructionStatement,
 
 	/* fixme: make this more elegant */
 	/* Update the code section with the compiled data */
-	memcpy(&io_pCode->content[io_pCode->IC],
-		   pInst,
-		   sizeof(io_pCode->content[io_pCode->IC]));
-	io_pCode->localities[io_pCode->IC] = complete_instruction.localities[0];
-	io_pCode->IC++;
-	memcpy(&io_pCode->content[io_pCode->IC],
-		   complete_instruction.extra_data,
-		   complete_instruction.num_extra_data *
-		   sizeof(io_pCode->content[io_pCode->IC]));
-	memcpy(&io_pCode->localities[io_pCode->IC],
-		   &complete_instruction.localities[1],
-		   complete_instruction.num_extra_data *
-		   sizeof(io_pCode->localities[io_pCode->IC]));
-	io_pCode->IC += complete_instruction.num_extra_data;
+	section_write(io_pCode, pInst->raw, ADDR_ABSOLUTE);
+
+	{
+		unsigned int i;
+		for (i = 0; i < complete_instruction.num_extra_data; ++i)
+		{
+			section_write(io_pCode,
+						  complete_instruction.extra_data[i].val,
+						  complete_instruction.localities[i+1]);
+		}
+	}
 
 	return 0;
 }
@@ -335,4 +332,28 @@ void instruction_add_data(instruction_with_operands_t* pInstruction,
 	pInstruction->extra_data[pInstruction->num_extra_data].val = val;
 	pInstruction->num_extra_data++;
 	pInstruction->localities[pInstruction->num_extra_data] = locality;
+}
+
+
+void instruction_set_values(instruction_t* pInstruction,
+					 instruction_comb_t 	 comb,
+					 machine_registers_t  dest_reg,
+					 operand_addressing_t dest_addressing,
+					 machine_registers_t  src_reg,
+					 operand_addressing_t src_addressing,
+					 opcode_t 			 opcode,
+					 instruction_type_t	 type)
+{
+	if (pInstruction == NULL)
+		return;
+
+	memset(pInstruction, 0, sizeof(*pInstruction));
+
+	pInstruction->comb = comb;
+	pInstruction->dest_reg = dest_reg;
+	pInstruction->dest_addressing = dest_addressing;
+	pInstruction->src_reg = src_reg;
+	pInstruction->src_addressing = src_addressing;
+	pInstruction->opcode = opcode;
+	pInstruction->type = type;
 }

@@ -13,16 +13,16 @@
 
 #include "instruction.h"
 #include "parser.h"
+#include "test_utils.h"
 
 int test_compile_instruction();
 
 int run_test_compile_instruction(const char		*line,
-								 code_section_t *code,
-								 const code_section_t *expected,
+								 memory_section_t *code,
+								 const memory_section_t *expected,
 								 symbol_table_arr_t symbols,
 								 char fShouldSucceed)
 {
-	unsigned i;
 	statement_t statement;
 
 	/* Retrieve the line to compile */
@@ -40,24 +40,18 @@ int run_test_compile_instruction(const char		*line,
 
 	if (fShouldSucceed == 1)
 	{
-		/* Check the IC */
-		assert(expected->IC == code->IC);
-
 		/* Check the label if exists */
 		if (statement.szLabel != NULL)
 		{
 			assert(0 == strcmp(statement.szLabel, symbols[0].name));
-			assert(code->IC == symbols[0].address);
+			assert(code->counter_a == symbols[0].address);
 			assert(ADDR_ABSOLUTE == symbols[0].locality);
 		}
 
-		/* Check the code generated */
-		for (i = 0; i < expected->IC; ++i)
+		if (compare_memory_sections(expected, code) != 0)
 		{
-			assert(0 == memcmp(&expected->content[i],
-							   &code->content[i],
-							   sizeof(expected->content[0])));
-			assert(expected->localities[i] == code->localities[i]);
+			printf("Code sections don't match.\n");
+			return -1;
 		}
 	}
 
@@ -115,9 +109,10 @@ int test_instruction()
 
 int test_compile_instruction()
 {
-	code_section_t code,expected;
+	memory_section_t code,expected;
 	symbol_table_arr_t symbols;
-	instruction_t * const pExpectedInstruction = (instruction_t*)&expected.content[0];
+	instruction_t instruction;
+	instruction_t * const pExpectedInstruction = &instruction;
 
 	/*
 	 * #No operands
@@ -140,9 +135,8 @@ int test_compile_instruction()
 	printf("	No operands: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->opcode = STOP;
-	expected.IC = 1;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
 	assert(0 == run_test_compile_instruction("stop/0",
 											 &code,
 											 &expected,
@@ -154,11 +148,10 @@ int test_compile_instruction()
 	printf("	One operand: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R7;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = INC;
-	expected.IC = 1;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
 	assert(0 == run_test_compile_instruction("inc/0 r7",
 											 &code,
 											 &expected,
@@ -170,13 +163,12 @@ int test_compile_instruction()
 	printf("	Two operands: \n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->src_reg = R0;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = MOV;
-	expected.IC = 1;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
@@ -200,26 +192,32 @@ int test_compile_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Consecutive instructions: ");
+	printf("	Consecutive instructions: \n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->src_reg = R0;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = MOV;
-	expected.IC = 1;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
 											 &expected,
 											 symbols,
 											 1));
-	expected.localities[1] = ADDR_ABSOLUTE;
-	((instruction_t*)&expected.content[1])->dest_reg = R0;
-	((instruction_t*)&expected.content[1])->dest_addressing = OPERAND_ADDR_REGISTER;
-	((instruction_t*)&expected.content[1])->opcode = INC;
-	expected.IC = 2;
+
+	instruction_set_values(pExpectedInstruction,
+						   0,
+						   R0,
+						   OPERAND_ADDR_REGISTER,
+						   0,
+						   0,
+						   INC,
+						   0);
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("inc/0 r0",
 											 &code,
 											 &expected,
@@ -232,23 +230,26 @@ int test_compile_instruction()
 	printf("	Label: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->src_reg = R0;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = MOV;
-	expected.IC = 1;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
 	assert(0 == run_test_compile_instruction("mov/0 r0,r1",
 											 &code,
 											 &expected,
 											 symbols,
 											 1));
-	expected.localities[1] = ADDR_ABSOLUTE;
-	((instruction_t*)&expected.content[1])->dest_reg = R0;
-	((instruction_t*)&expected.content[1])->dest_addressing = OPERAND_ADDR_REGISTER;
-	((instruction_t*)&expected.content[1])->opcode = INC;
-	expected.IC = 2;
+	instruction_set_values(pExpectedInstruction,
+						   0,
+						   R0,
+						   OPERAND_ADDR_REGISTER,
+						   0,
+						   0,
+						   INC,
+						   0);
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
 	assert(0 == run_test_compile_instruction("inc/0 r0",
 											 &code,
 											 &expected,
@@ -262,14 +263,12 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	memset(symbols, 0, sizeof(symbols));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_DIRECT;
 	pExpectedInstruction->opcode = MOV;
-	expected.localities[1] = ADDR_RELOCATABLE;
-	expected.content[1].val = 0;
-	expected.IC = 2;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
 	strcpy(symbols[0].name, "x");
 	symbols[0].locality = ADDR_RELOCATABLE;
 	assert(0 == run_test_compile_instruction("mov/0 x,r1",
@@ -284,15 +283,17 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	memset(symbols, 0, sizeof(symbols));
-	expected.localities[0] = ADDR_ABSOLUTE;
-	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
-	pExpectedInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-	pExpectedInstruction->opcode = MOV;
-	expected.localities[1] = ADDR_ABSOLUTE;
-	expected.content[1].val = 3;
-	expected.localities[2] = ADDR_RELOCATABLE;
-	expected.content[2].val = 0;
-	expected.IC = 3;
+	instruction_set_values(pExpectedInstruction,
+						   0,
+						   0,
+						   OPERAND_ADDR_DIRECT,
+						   0,
+						   OPERAND_ADDR_IMMEDIATE,
+						   MOV,
+						   0);
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&expected, 3, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
 	strcpy(symbols[0].name, "y");
 	symbols[0].locality = ADDR_RELOCATABLE;
 	assert(0 == run_test_compile_instruction("mov/0 #3,y",
@@ -307,17 +308,13 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	memset(symbols, 0, sizeof(symbols));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
-	expected.localities[1] = ADDR_RELOCATABLE;
-	expected.content[1].val = 0;
-	expected.localities[2] = ADDR_ABSOLUTE;
-	expected.content[2].val = 5;
-	expected.localities[3] = ADDR_RELOCATABLE;
-	expected.content[3].val = 0;
-	expected.IC = 4;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
+	section_write(&expected, 5, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
 	strcpy(symbols[0].name, "x");
 	symbols[0].locality = ADDR_RELOCATABLE;
 	strcpy(symbols[1].name, "y");
@@ -334,19 +331,14 @@ int test_compile_instruction()
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	memset(symbols, 0, sizeof(symbols));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
-	expected.localities[1] = ADDR_RELOCATABLE;
-	expected.content[1].val = 0;
-	expected.localities[2] = ADDR_ABSOLUTE;
-	expected.content[2].val = 5;
-	expected.localities[3] = ADDR_RELOCATABLE;
-	expected.content[3].val = 0;
-	expected.localities[4] = ADDR_RELOCATABLE;
-	expected.content[4].val = 0;
-	expected.IC = 5;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
+	section_write(&expected, 5, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
 	strcpy(symbols[0].name, "x");
 	symbols[0].locality = ADDR_RELOCATABLE;
 	strcpy(symbols[1].name, "y");
@@ -361,7 +353,7 @@ int test_compile_instruction()
 	/**********************************************/
 
 	/**********************************************/
-	printf("	Index with register: ");
+	printf("	Index with register: \n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
 	memset(symbols, 0, sizeof(symbols));
@@ -369,28 +361,26 @@ int test_compile_instruction()
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->opcode = MOV;
 	pExpectedInstruction->dest_reg = R2;
-	expected.content[1].val = 3;
-	expected.content[2].val = 0;
-	expected.localities[0] = ADDR_ABSOLUTE;
-	expected.localities[1] = ADDR_ABSOLUTE;
-	expected.localities[2] = ADDR_RELOCATABLE;
-	expected.IC = 3;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&expected, 3, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
 	strcpy(symbols[0].name, "y");
 	symbols[0].locality = ADDR_RELOCATABLE;
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 #3,y{r2}",
 											 &code,
 											 &expected,
 											 symbols,
 											 1));
 	memset(&code, 0, sizeof(code));
+	memset(&expected, 0, sizeof(expected));
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_INDEX;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->src_reg = R6;
 	pExpectedInstruction->dest_reg = R1;
-	expected.content[1].val = 0;
-	expected.localities[0] = ADDR_ABSOLUTE;
-	expected.localities[1] = ADDR_RELOCATABLE;
-	expected.IC = 2;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&expected, 0, ADDR_RELOCATABLE);
+	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 y{r6},r1",
 												 &code,
 												 &expected,
@@ -402,8 +392,6 @@ int test_compile_instruction()
 	printf("	Invalid addressing:\n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
-	expected.IC = 0;
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/0 r0,#0",
 											 &code,
@@ -420,7 +408,6 @@ int test_compile_instruction()
 	printf("	Type'd instruction: ");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
 	pExpectedInstruction->comb = INST_COMB_MSB_LSB;
 	pExpectedInstruction->dest_reg = R1;
 	pExpectedInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
@@ -428,7 +415,7 @@ int test_compile_instruction()
 	pExpectedInstruction->src_addressing = OPERAND_ADDR_REGISTER;
 	pExpectedInstruction->opcode = MOV;
 	pExpectedInstruction->type = INST_TYPE_10_BIT;
-	expected.IC = 1;
+	section_write(&expected, pExpectedInstruction->raw, ADDR_ABSOLUTE);
 	assert(0 == run_test_compile_instruction("mov/1/0/1 r0,r1",
 											 &code,
 											 &expected,
@@ -440,8 +427,6 @@ int test_compile_instruction()
 	printf("	Invalid type'd instruction:\n");
 	memset(&code, 0, sizeof(code));
 	memset(&expected, 0, sizeof(expected));
-	expected.localities[0] = ADDR_ABSOLUTE;
-	expected.IC = 0;
 	printf("\t\t");
 	assert(0 == run_test_compile_instruction("mov/1 r0,r1",
 											 &code,

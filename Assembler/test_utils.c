@@ -56,10 +56,47 @@ int compare_files(const char* szFile1 , const char* szFile2)
 }
 
 void init_program_data(symbol_table_arr_t symbol_expected,
-					   code_section_t *code_expected,
+					   memory_section_t *pMem1,
 					   data_section_t *data_expected)
 {
 	memset(symbol_expected, 0, sizeof(symbol_table_arr_t));
-	memset(code_expected, 0, sizeof(*code_expected));
+	memset(pMem1, 0, sizeof(*pMem1));
 	memset(data_expected, 0, sizeof(*data_expected));
+}
+
+
+int compare_memory_sections(const memory_section_t* pMem1,
+							const memory_section_t* pMem2)
+{
+	unsigned int i;
+
+	if (pMem1->counter_a != pMem2->counter_a)
+	{
+		printf("Sizes not as expected: [%d != %d]\n",
+				pMem1->counter_a,
+				pMem2->counter_a);
+		return -1;
+	}
+
+	for (i = 0; i < pMem2->counter_a; ++i)
+	{
+		if (pMem1->content_a[i].val != pMem2->content_a[i].val)
+		{
+			printf("Memory in index %d doesn't match: [%d != %d]\n",
+					i,
+					pMem1->content_a[i].val,
+					pMem2->content_a[i].val);
+			return -2;
+		}
+		else if (pMem1->localities_a[i] != pMem2->localities_a[i])
+		{
+			printf("Locality in index %d doesn't match: [%d != %d]\n",
+					i,
+					pMem1->localities_a[i],
+					pMem2->localities_a[i]);
+			return -3;
+		}
+	}
+
+	return 0;
 }

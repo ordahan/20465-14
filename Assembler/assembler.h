@@ -16,29 +16,7 @@
 
 #include "machine.h"
 #include "symbol.h"
-
-/* TODO: Is this rly the restriction we need?
- * can a program weigh more?
- */
-#define ASSEMBLER_CODE_MAX_SIZE_CELLS 2000
-#define ASSEMBLER_DATA_MAX_SIZE_CELLS 2000
-
-/* Typedefs */
-typedef struct
-{
-	machine_cell_t 	content[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-	address_locality_t localities[ASSEMBLER_CODE_MAX_SIZE_CELLS];
-	unsigned	   IC;
-}code_section_t;
-
-typedef struct
-{
-	machine_cell_t content[ASSEMBLER_DATA_MAX_SIZE_CELLS];
-	unsigned	   DC;
-}data_section_t;
-
-/* todo: Add tests for the lengths of the given sections */
-/* todo: API for code / data sections */
+#include "section.h"
 
 /* External functions */
 /**
@@ -51,7 +29,7 @@ typedef struct
  */
 int assembler_compile(FILE* pAssemblyFile,
 					  symbol_table_arr_t o_arrSymbols,
-					  code_section_t *o_pCode,
+					  memory_section_t *o_pCode,
 					  data_section_t *o_pData);
 
 #endif /* ASSEMBLER_H_ */

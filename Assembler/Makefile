@@ -4,7 +4,7 @@
 CC=gcc
 CFLAGS=-c -Wall -g -O0 -ansi
 LDFLAGS=
-SOURCES=main.c assembler.c parser.c directive.c symbol.c instruction.c files.c
+SOURCES=main.c assembler.c parser.c directive.c symbol.c instruction.c files.c section.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=assembler
 

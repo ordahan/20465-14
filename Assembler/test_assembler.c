@@ -12,25 +12,23 @@
 
 #include "assembler.h"
 #include "instruction.h"
+#include "test_utils.h"
 
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t symbol_expected,
-						   code_section_t *code_expected,
+						   memory_section_t *code_expected,
 						   data_section_t *data_expected,
 						   int expected_result);
-
-void init_program_data(symbol_table_arr_t symbol_expected,
-						   	   	 code_section_t *code_expected,
-						   	   	 data_section_t *data_expected);
 
 int test_assembler()
 {
 	static symbol_table_arr_t symbols_expected;
-	static code_section_t code_expected;
+	static memory_section_t code_expected;
 	static data_section_t data_expected;
 
 	symbol_t *pSymbol = NULL;
-	instruction_t *pInstruction = NULL;
+	instruction_t instruction;
+	instruction_t *pInstruction = &instruction;
 
 	printf("Testing assembler module:\n");
 
@@ -38,6 +36,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	printf("	Empty file: ");
 	assert(0 == test_assembler_compile("tests/empty.as",
@@ -52,6 +51,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 					  &code_expected,
 					  &data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	printf("	File only with comments: ");
 	assert(0 == test_assembler_compile("tests/comments.as",
@@ -66,6 +66,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_EXTERNAL;
@@ -82,24 +83,24 @@ int test_assembler()
 
 	/**********************************************/
 	init_program_data(symbols_expected,
-								&code_expected,
-								&data_expected);
+					  &code_expected,
+					  &data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_ABSOLUTE;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
-	code_expected.IC = 2;
-	code_expected.localities[0] = ADDR_ABSOLUTE;
-	code_expected.localities[1] = ADDR_ABSOLUTE;
+
 	/*mov/0 #3,r1*/
-	pInstruction = (instruction_t*)&code_expected.content[0].val;
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
 	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pInstruction->dest_reg = R1;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-	code_expected.content[1].val = 3;
+
+	section_write(&code_expected, instruction.raw, ADDR_ABSOLUTE);
+	section_write(&code_expected, 3, ADDR_ABSOLUTE);
 
 	printf("	File with entry and instruction: ");
 	assert(0 == test_assembler_compile("tests/entry.as",
@@ -114,6 +115,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	printf("	Syntax error: ");
 	assert(0 == test_assembler_compile("tests/syntax_err.as",
@@ -128,6 +130,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	printf("	Invalid extern: ");
 	assert(0 == test_assembler_compile("tests/invalid_extern.as",
@@ -142,6 +145,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	printf("	Invalid entry: ");
 	assert(0 == test_assembler_compile("tests/invalid_entry.as",
@@ -156,6 +160,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_RELOCATABLE;
@@ -191,6 +196,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	printf("	.data error ");
 	assert(0 == test_assembler_compile("tests/data_error.as",
@@ -219,23 +225,22 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	pSymbol = &symbols_expected[2];
 	pSymbol->locality = ADDR_ABSOLUTE;
 	pSymbol->address = 0;
 	strcpy(pSymbol->name, "ThisIsMySymbol!");
-	code_expected.IC = 2;
-	code_expected.localities[0] = ADDR_ABSOLUTE;
-	code_expected.localities[1] = ADDR_ABSOLUTE;
-	/*mov/0 #3,r1*/
-	pInstruction = (instruction_t*)&code_expected.content[0].val;
+
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
 	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pInstruction->dest_reg = R1;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-	code_expected.content[1].val = 3;
+
+	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&code_expected, 3, ADDR_ABSOLUTE);
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_RELOCATABLE;
@@ -272,6 +277,7 @@ int test_assembler()
 	init_program_data(symbols_expected,
 								&code_expected,
 								&data_expected);
+	memset(pInstruction, 0, sizeof(*pInstruction));
 
 	pSymbol = &symbols_expected[0];
 	pSymbol->locality = ADDR_RELOCATABLE;
@@ -293,44 +299,36 @@ int test_assembler()
 	pSymbol->address = 6;
 	strcpy(pSymbol->name, "kicks");
 
-	code_expected.IC = 9;
-
-	pInstruction = (instruction_t*)&code_expected.content[0].val;
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
 	pInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_IMMEDIATE;
-	code_expected.localities[0] = ADDR_ABSOLUTE;
-	code_expected.localities[1] = ADDR_ABSOLUTE;
-	code_expected.localities[2] = ADDR_RELOCATABLE; /* fixme: entry is relocatable? */
-	code_expected.content[1].val = 1;
-	code_expected.content[2].val = 9;
 
-	pInstruction = (instruction_t*)&code_expected.content[3].val;
+	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&code_expected, 1, ADDR_ABSOLUTE);
+	section_write(&code_expected, 9, ADDR_RELOCATABLE); /* fixme: entry is relocatable? */
+
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
 	pInstruction->dest_addressing = OPERAND_ADDR_DIRECT;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_DIRECT;
-	code_expected.localities[3] = ADDR_ABSOLUTE;
-	code_expected.localities[4] = ADDR_EXTERNAL;
-	code_expected.localities[5] = ADDR_RELOCATABLE;
-	code_expected.content[4].val = 0;
-	code_expected.content[5].val = 9;
 
-	pInstruction = (instruction_t*)&code_expected.content[6].val;
+	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&code_expected, 0, ADDR_EXTERNAL);
+	section_write(&code_expected, 9, ADDR_RELOCATABLE);
+
 	pInstruction->comb = INST_COMB_MSB_MSB;
 	pInstruction->type = INST_TYPE_20_BIT;
 	pInstruction->dest_addressing = OPERAND_ADDR_REGISTER;
 	pInstruction->dest_reg = R2;
 	pInstruction->opcode = MOV;
 	pInstruction->src_addressing = OPERAND_ADDR_INDEX;
-	code_expected.content[7].val = 10;
-	code_expected.content[8].val = 9;
-	code_expected.localities[6] = ADDR_ABSOLUTE;
-	code_expected.localities[7] = ADDR_RELOCATABLE;
-	code_expected.localities[8] = ADDR_RELOCATABLE;
+
+	section_write(&code_expected, pInstruction->raw, ADDR_ABSOLUTE);
+	section_write(&code_expected, 10, ADDR_RELOCATABLE);
+	section_write(&code_expected, 9, ADDR_RELOCATABLE); /* fixme: entry is relocatable? */
 
 	data_expected.DC = 5;
 	data_expected.content[0].val = -20;
@@ -364,12 +362,12 @@ int test_assembler()
 
 int test_assembler_compile(const char* szTestFile,
 						   symbol_table_arr_t symbol_expected,
-						   code_section_t *code_expected,
+						   memory_section_t *code_expected,
 						   data_section_t *data_expected,
 						   int expected_result)
 {
 	static symbol_table_arr_t symbols;
-	static code_section_t code;
+	static memory_section_t code;
 	static data_section_t data;
 	int compile_res = 0;
 
@@ -409,38 +407,8 @@ int test_assembler_compile(const char* szTestFile,
 	}
 
 	/* Check the code section */
-	/* fixme: make this a function for test utils */
-	{
-		unsigned i;
-
-		if (code_expected->IC != code.IC)
-		{
-			printf("IC not as expected: [%d != %d]\n",
-					code_expected->IC,
-					code.IC);
-			return -1;
-		}
-
-		for (i = 0; i < code.IC; ++i)
-		{
-			if (code_expected->content[i].val != code.content[i].val)
-			{
-				printf("Code in index %d doesn't match: [%d != %d]\n",
-						i,
-						code_expected->content[i].val,
-						code.content[i].val);
-				return -2;
-			}
-			else if (code_expected->localities[i] != code.localities[i])
-			{
-				printf("Locality in index %d doesn't match: [%d != %d]\n",
-						i,
-						code_expected->localities[i],
-						code.localities[i]);
-				return -3;
-			}
-		}
-	}
+	if (compare_memory_sections(code_expected, &code) != 0)
+		return -1;
 
 	/* fixme: make this a function for test utils */
 	{
