@@ -29,7 +29,7 @@ int test_files()
 	 * #valid entries
 	 * #no externals
 	 * #valid externals
-	 * object file
+	 * #object file
 	 */
 
 	/**********************************************/

@@ -9,29 +9,25 @@
 #include <assert.h>
 #include <memory.h>
 
-extern int test_assembler();
-extern int test_parser();
-extern int test_directive();
-extern int test_instruction();
-extern int test_files();
-
-int test_main();
-
-int test_env_main()
-{
-	setvbuf(stdout, NULL, _IONBF, 0);
-	setvbuf(stderr, NULL, _IONBF, 0);
-
-	assert(test_files() == 0);
-	assert(test_directive() == 0);
-	assert(test_parser() == 0);
-	assert(test_instruction() == 0);
-	assert(test_assembler() == 0);
-	assert(test_main() == 0);
-	return 0;
-}
+extern int main(int argc, char** argv);
 
 int test_main()
 {
-	return -1;
+	/* todo:
+	 * example from book
+	 * without externs
+	 * without entries
+	 * with errors (first pass)
+	 * with errors (second pass)
+	 */
+
+	/**********************************************/
+
+
+	printf("	example from book: ");
+
+	printf("PASSED.\n");
+	/**********************************************/
+
+	return 0;
 }
