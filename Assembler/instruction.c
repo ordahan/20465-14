@@ -299,6 +299,12 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 		addressingDest = parser_get_operand(arrOperands[1],
 								pInstruction,
 								arrSymbols);
+
+		if (addressingDest == OPERAND_ADDR_NUM ||
+			addresingSrc == OPERAND_ADDR_NUM)
+		{
+			return -1;
+		}
 	}
 	/* Unary operation */
 	else if(nOperands == 1)
@@ -307,6 +313,11 @@ int retrieve_operands(instruction_with_operands_t* pInstruction,
 		addressingDest = parser_get_operand(arrOperands[0],
 								pInstruction,
 								arrSymbols);
+
+		if (addressingDest == OPERAND_ADDR_NUM)
+		{
+			return -1;
+		}
 	}
 
 	/* Test addressing types for the opcode */

@@ -19,9 +19,9 @@ jsr/0 PRTSTR
 mov/1/1/0 STRADD{-5}, LASTCHAR{r3}
 mov/1/1/1 STR{7}, r7
 add/0 COUNT{K}, r3
-dec/1/1/1 LASTCHAR{K}
-inc/0 K
+REVERSE:dec/1/1/1 LASTCHAR{K}
+PRTSTR:inc/0 K
 jsr/0 REVERSE
-jsr/0 PRTSTR
+COUNT:jsr/0 PRTSTR
 
 stop/0

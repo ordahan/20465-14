@@ -28,13 +28,15 @@ int main(int argc, char** argv)
 			continue;
 		}
 
+		printf("Compiling %s...", argv[i]);
+
 		/* Try to compile the file */
 		if (assembler_compile(file_open_input(argv[i]),
 							  symbols,
 							  &code,
 							  &data) != 0)
 		{
-			printf("Aborting compilation of %s\n", argv[i]);
+			printf("Aborted compilation of %s, errors.\n", argv[i]);
 
 			/* No need to create outputs, next file */
 			continue;
@@ -59,6 +61,8 @@ int main(int argc, char** argv)
 		{
 			printf("Error! cannot create an object file for %s", argv[i]);
 		}
+
+		printf("DONE.\n");
 	}
 
 	return 0;

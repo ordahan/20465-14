@@ -19,6 +19,7 @@ int test_main()
 
 	/**********************************************/
 	printf("	example from book: ");
+	system("cd inputs; rm *.ext *.ent *.ob");
 	args[1] = "inputs/ps";
 	args[2] = "inputs/ps_with_errors";
 	args[3] = "inputs/no_externs";
