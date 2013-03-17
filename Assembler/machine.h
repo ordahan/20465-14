@@ -22,6 +22,9 @@ typedef struct
  */
 #define MACHINE_CELL_NUM_BASE_4_CHARACTERS (((MACHINE_CELL_NUM_BITS - 1) / 2) + 1)
 
+/* Twos complement in 20 bit */
+#define MACHINE_GET_TWOS_COMPLEMENT(x) (0xFFFFF - (x & 0xFFFFF) + 1)
+
 typedef unsigned int memory_address_t;
 #define MEMORY_ADDRESS_INVALID (0xffffffff)
 

@@ -937,51 +937,65 @@ int parser_get_consecutive_strings(const char* pStart,
 	return 0;
 }
 
-/* fixme: Negatives? */
-char* parser_int_to_string_base_4(int num, unsigned int numMinDigitsToFormat)
+char* parser_int_to_string_base_4(int num, unsigned int numMinDigits)
 {
-	const unsigned int base = 4;
+	/* At most 32 bit numbers + NULL-TERMINATOR */
 	static char szResult[sizeof(num) * 8 + 1];
 	int numMaxDigitsAvailable = sizeof(szResult) - 1;
-	int curNum = num;
-	unsigned int numWritten = 0;
+	/*Get first 2 binary digits (1 base 4 digit = 2 base 2 digits*/
+	unsigned int mask = 0x3;
+	int currNum = num;
+	unsigned int numDigitsWritten = 0;
+
+	/* Deal with negative numbers */
+	if (num < 0)
+	{
+		/* We need to represent number as a two's complement
+		 * negative number in the machine word size (20bits)
+		 */
+		currNum = MACHINE_GET_TWOS_COMPLEMENT(-1 * num);
+	}
 
 	/* Reset the result */
 	memset(szResult, '0', sizeof(szResult));
 	szResult[numMaxDigitsAvailable] = NULL_TERMINATOR;
 
-	/* Each round, the remainder from division by base
-	 * is the digit we need, starting with the least
-	 * significant digit.
-	 * Execute at least once, in case 0 is the number we parse.
+	/* Base4 digit is 2 Base2 digits, convert pair by pair
 	 */
 	do
 	{
-		/* Place the current digit in the least signifcant
-		 * place + num of chars written so far
+		/* Place the current digit from the LSB upwards
 		 */
-		szResult[numMaxDigitsAvailable - numWritten - 1] = '0' + curNum % base;
+		szResult[numMaxDigitsAvailable - numDigitsWritten - 1] = '0' + (mask & currNum);
 
-		/* Continue to the next division */
-		numWritten++;
-		curNum /= base;
+		/* Continue to the next digit */
+		numDigitsWritten++;
+		currNum >>= 2;
 
-	}while (curNum != 0);
+		/* If we reached the minimum and there's nothing
+		 * more to add - stop
+		 */
+		if (numDigitsWritten >= numMinDigits &&
+			(currNum == 0 ||
+			 (num < 0 && currNum == -1)))
+			break;
+
+	}while (numDigitsWritten < numMaxDigitsAvailable);
 
 	/* Return the resulting string, making sure to
 	 * return the requested number of digits
 	 */
-	if (numMinDigitsToFormat > numMaxDigitsAvailable)
+	if (numMinDigits > numMaxDigitsAvailable)
 	{
 		return szResult;
 	}
-	else if (numMinDigitsToFormat < numWritten)
+	else if (numMinDigits < numDigitsWritten)
 	{
-		return &szResult[numMaxDigitsAvailable - numWritten];
+		return &szResult[numMaxDigitsAvailable - numDigitsWritten];
 	}
 	else
 	{
-		return &szResult[numMaxDigitsAvailable - numMinDigitsToFormat];
+		return &szResult[numMaxDigitsAvailable - numMinDigits];
 	}
 }
 
